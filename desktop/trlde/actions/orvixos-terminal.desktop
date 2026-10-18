@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Action
+Name=Terminalde aç
+Icon=utilities-terminal
+Profiles=orvixos;
+TargetLocation=true
+TargetContext=false
+TargetToolbar=false
+
+[X-Action-Profile orvixos]
+Name=Terminalde aç
+Exec=foot
+SelectionCount=0

@@ -1,6 +1,14 @@
 #!/bin/sh
 # Canlı sistemde oturum açılınca "Dene / Kur" penceresini gösterir.
 [ -d /run/live/medium ] || exit 0
+# Masaüstüne "OrvixOS'u Kur" simgesi
+desktop_dir=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
+mkdir -p "$desktop_dir"
+if [ ! -e "$desktop_dir/orvixos-install.desktop" ]; then
+    cp /usr/share/applications/orvixos-install.desktop "$desktop_dir/"
+    chmod +x "$desktop_dir/orvixos-install.desktop"
+    gio set "$desktop_dir/orvixos-install.desktop" metadata::trusted true 2>/dev/null || true
+fi
 command -v zenity >/dev/null 2>&1 || exit 0
 sleep 3
 if zenity --question --width=420 --title="OrvixOS" \

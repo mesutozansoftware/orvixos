@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Action
+Name=Görev çubuğunu düzenle
+Icon=view-grid
+Profiles=orvixos;
+TargetLocation=true
+TargetContext=false
+TargetToolbar=false
+
+[X-Action-Profile orvixos]
+Name=Görev çubuğunu düzenle
+Exec=trlde-taskbar --manage
+SelectionCount=0

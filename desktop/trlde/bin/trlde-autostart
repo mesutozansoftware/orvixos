@@ -59,7 +59,11 @@ EOF
     command -v gsettings >/dev/null 2>&1 && {
         gsettings set org.gnome.desktop.interface color-scheme prefer-dark || true
         gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark || true
-        gsettings set org.gnome.desktop.interface icon-theme Adwaita || true
+        if [ -d /usr/share/icons/Papirus-Dark ]; then
+            gsettings set org.gnome.desktop.interface icon-theme Papirus-Dark || true
+        else
+            gsettings set org.gnome.desktop.interface icon-theme Adwaita || true
+        fi
     }
     command -v xdg-mime >/dev/null 2>&1 && {
         for browser in $(trlde_browsers); do
@@ -113,13 +117,27 @@ if command -v wlr-randr >/dev/null 2>&1; then
     fi
 fi
 
-start_if_available swaybg -i "$wallpaper" -m fill
+# Masaüstü: simgeler, seçim karesi ve duvar kâğıdı pcmanfm-qt'den gelir
+# (Wayland layer-shell). Yoksa yalnızca duvar kâğıdı çizilir.
+if command -v pcmanfm-qt >/dev/null 2>&1; then
+    profile_dir=$config_home/pcmanfm-qt/orvixos
+    if [ ! -r "$profile_dir/settings.conf" ]; then
+        install -d -m 0700 "$profile_dir"
+        cp "$share_dir/pcmanfm-qt/orvixos/settings.conf" "$profile_dir/settings.conf"
+    fi
+    sed -i "s|^Wallpaper=.*|Wallpaper=$wallpaper|" "$profile_dir/settings.conf" 2>/dev/null || true
+    QT_QPA_PLATFORMTHEME=lxqt pcmanfm-qt --desktop --profile=orvixos &
+else
+    start_if_available swaybg -i "$wallpaper" -m fill
+fi
 
 if ! systemctl --user start mako.service >/dev/null 2>&1; then
     start_if_available mako -c "$share_dir/mako/config"
 fi
 
-start_if_available waybar -c "$share_dir/waybar/config.jsonc" -s "$share_dir/waybar/style.css"
+# Görev çubuğu: sabitlenmiş uygulamalarla üretilen ayar (trlde-taskbar).
+waybar_config=$(trlde-taskbar --generate 2>/dev/null) || waybar_config=$share_dir/waybar/config.jsonc
+start_if_available waybar -c "$waybar_config" -s "$share_dir/waybar/style.css"
 start_if_available nm-applet --indicator
 start_if_available blueman-applet
 start_if_available swayidle -w timeout 600 "trlde-lock" before-sleep "trlde-lock"

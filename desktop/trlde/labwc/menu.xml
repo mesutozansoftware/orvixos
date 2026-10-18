@@ -56,6 +56,9 @@
     <item label="Görev yöneticisi" icon="orvixos-taskmanager">
       <action name="Execute" command="foot -T 'Görev Yöneticisi' -e top" />
     </item>
+    <item label="Görev çubuğunu düzenle" icon="orvixos-apps">
+      <action name="Execute" command="trlde-taskbar --manage" />
+    </item>
     <item label="Ayarlar" icon="orvixos-settings">
       <action name="Execute" command="trlde-settings" />
     </item>

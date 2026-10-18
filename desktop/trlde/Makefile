@@ -55,6 +55,7 @@ install:
 	install -m 755 bin/trlde-backup $(DESTDIR)$(PREFIX)/bin/trlde-backup
 	install -m 755 bin/trlde-input $(DESTDIR)$(PREFIX)/bin/trlde-input
 	install -m 755 bin/trlde-display-profiles $(DESTDIR)$(PREFIX)/bin/trlde-display-profiles
+	install -m 755 bin/trlde-taskbar $(DESTDIR)$(PREFIX)/bin/trlde-taskbar
 	install -m 755 bin/trlde-autostart $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	install -m 755 bin/trlde-clipboard-watch $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	install -m 644 sessions/trlde.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
@@ -69,6 +70,12 @@ install:
 	install -m 644 waybar/config.jsonc $(DESTDIR)$(DATADIR)/trlde/waybar/config.jsonc
 	install -m 644 waybar/style.css $(DESTDIR)$(DATADIR)/trlde/waybar/style.css
 	install -m 644 waybar/start.svg $(DESTDIR)$(DATADIR)/trlde/waybar/start.svg
+	install -d $(DESTDIR)$(DATADIR)/trlde/pcmanfm-qt/orvixos
+	install -m 644 pcmanfm-qt/orvixos/settings.conf $(DESTDIR)$(DATADIR)/trlde/pcmanfm-qt/orvixos/settings.conf
+	install -d $(DESTDIR)$(DATADIR)/file-manager/actions
+	install -m 644 actions/*.desktop $(DESTDIR)$(DATADIR)/file-manager/actions/
+	install -d $(DESTDIR)$(SYSCONFDIR)/xdg/lxqt
+	install -m 644 lxqt/lxqt.conf $(DESTDIR)$(SYSCONFDIR)/xdg/lxqt/lxqt.conf
 	install -m 644 wofi/style.css $(DESTDIR)$(DATADIR)/trlde/wofi/style.css
 	install -m 644 mako/config $(DESTDIR)$(DATADIR)/trlde/mako/config
 	install -m 644 mako/config $(DESTDIR)$(SYSCONFDIR)/xdg/mako/config

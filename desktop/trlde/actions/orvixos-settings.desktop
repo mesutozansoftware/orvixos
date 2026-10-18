@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Action
+Name=Ayarlar
+Icon=preferences-system
+Profiles=orvixos;
+TargetLocation=true
+TargetContext=false
+TargetToolbar=false
+
+[X-Action-Profile orvixos]
+Name=Ayarlar
+Exec=trlde-settings
+SelectionCount=0

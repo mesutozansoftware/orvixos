@@ -1,7 +1,7 @@
 [Icon Theme]
 Name=OrvixOS
 Comment=OrvixOS menü ikonları (vektörel)
-Inherits=Adwaita,hicolor
+Inherits=Papirus-Dark,Adwaita,hicolor
 Directories=scalable/actions
 
 [scalable/actions]

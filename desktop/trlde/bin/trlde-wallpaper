@@ -12,5 +12,9 @@ config_home=${XDG_CONFIG_HOME:-$HOME/.config}
 install -d -m 0700 "$config_home/trlde"
 printf '%s\n' "$wallpaper" > "$config_home/trlde/wallpaper"
 
-pkill -x swaybg >/dev/null 2>&1 || true
-swaybg -i "$wallpaper" -m fill >/dev/null 2>&1 &
+if pgrep -x pcmanfm-qt >/dev/null 2>&1; then
+    pcmanfm-qt --profile=orvixos --set-wallpaper "$wallpaper" --wallpaper-mode zoom >/dev/null 2>&1 &
+else
+    pkill -x swaybg >/dev/null 2>&1 || true
+    swaybg -i "$wallpaper" -m fill >/dev/null 2>&1 &
+fi

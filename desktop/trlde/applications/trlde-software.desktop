@@ -6,3 +6,4 @@ Icon=system-software-install
 Type=Application
 Categories=System;PackageManager;
 Keywords=yazılım;uygulama;paket;flatpak;apt;vpx;
+StartupWMClass=org.trlde.Software

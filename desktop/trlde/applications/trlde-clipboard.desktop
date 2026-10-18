@@ -6,3 +6,4 @@ Icon=edit-paste
 Type=Application
 Categories=Utility;
 Keywords=pano;kopyala;clipboard;geçmiş;
+StartupWMClass=org.trlde.Clipboard

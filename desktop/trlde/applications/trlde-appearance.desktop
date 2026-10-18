@@ -6,4 +6,4 @@ Icon=preferences-desktop-theme
 Type=Application
 Categories=Settings;DesktopSettings;
 Keywords=duvar;kağıdı;tema;görünüm;
-
+StartupWMClass=org.trlde.Appearance

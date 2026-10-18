@@ -122,14 +122,3 @@ tooltip label {
   background: rgba(255, 84, 112, 0.22);
   color: #ffffff;
 }
-
-/* Sabitlenmiş uygulamalar (trlde-taskbar) */
-#image {
-  padding: 0 9px;
-  margin: 5px 1px;
-  border-radius: 10px;
-}
-
-#image:hover {
-  background: rgba(255, 255, 255, 0.09);
-}

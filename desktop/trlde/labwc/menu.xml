@@ -28,6 +28,29 @@
     </item>
   </menu>
 
+  <!-- Sabit simgeye sağ tık (dinamik) -->
+  <menu id="orvixos-pin-menu" label="" execute="trlde-taskbar --pipemenu pin" />
+
+  <!-- Görev çubuğunun boş alanına sağ tık -->
+  <menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new" execute="trlde-taskbar --pipemenu running" />
+  <menu id="orvixos-taskbar-menu">
+    <item label="Görev yöneticisi" icon="orvixos-taskmanager">
+      <action name="Execute" command="foot -T 'Görev Yöneticisi' -e top" />
+    </item>
+    <separator />
+    <menu id="orvixos-pin-running" />
+    <item label="Görev çubuğunu düzenle" icon="orvixos-apps">
+      <action name="Execute" command="trlde-taskbar --manage" />
+    </item>
+    <item label="Görev çubuğunu yeniden başlat" icon="orvixos-refresh">
+      <action name="Execute" command="trlde-taskbar --restart" />
+    </item>
+    <separator />
+    <item label="Ayarlar" icon="orvixos-settings">
+      <action name="Execute" command="trlde-settings" />
+    </item>
+  </menu>
+
   <menu id="root-menu">
     <item label="Uygulamalar" icon="orvixos-apps">
       <action name="Execute" command="trlde-launcher" />

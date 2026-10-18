@@ -6,3 +6,4 @@ Icon=preferences-desktop-display
 Type=Application
 Categories=Settings;HardwareSettings;
 Keywords=ekran;monitör;profil;display;
+StartupWMClass=org.trlde.DisplayProfiles

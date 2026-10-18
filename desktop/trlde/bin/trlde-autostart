@@ -126,7 +126,11 @@ if command -v pcmanfm-qt >/dev/null 2>&1; then
         cp "$share_dir/pcmanfm-qt/orvixos/settings.conf" "$profile_dir/settings.conf"
     fi
     sed -i "s|^Wallpaper=.*|Wallpaper=$wallpaper|" "$profile_dir/settings.conf" 2>/dev/null || true
-    QT_QPA_PLATFORMTHEME=lxqt pcmanfm-qt --desktop --profile=orvixos &
+    # İlk açılışta oturum hazır olmadan çökebilir; kendiliğinden yeniden başlar.
+    (while :; do
+        QT_QPA_PLATFORMTHEME=lxqt pcmanfm-qt --desktop --profile=orvixos
+        sleep 2
+    done) &
 else
     start_if_available swaybg -i "$wallpaper" -m fill
 fi
@@ -136,12 +140,23 @@ if ! systemctl --user start mako.service >/dev/null 2>&1; then
 fi
 
 # Görev çubuğu: sabitlenmiş uygulamalarla üretilen ayar (trlde-taskbar).
-waybar_config=$(trlde-taskbar --generate 2>/dev/null) || waybar_config=$share_dir/waybar/config.jsonc
-start_if_available waybar -c "$waybar_config" -s "$share_dir/waybar/style.css"
+# Açık pencereler izlenir (sabit simgelerdeki "açık" çizgisi için).
+(while :; do trlde-taskbar --poll; sleep 2; done) &
+(while :; do
+    if waybar_config=$(trlde-taskbar --generate 2>/dev/null); then
+        waybar -c "$waybar_config" -s "${XDG_CACHE_HOME:-$HOME/.cache}/trlde/waybar-style.css"
+    else
+        waybar -c "$share_dir/waybar/config.jsonc" -s "$share_dir/waybar/style.css"
+    fi
+    # trlde-taskbar --restart görev çubuğunu kendisi başlatır; çift başlamasın.
+    sleep 3
+    while pgrep -x waybar >/dev/null 2>&1; do sleep 2; done
+done) &
 start_if_available nm-applet --indicator
 start_if_available blueman-applet
 start_if_available swayidle -w timeout 600 "trlde-lock" before-sleep "trlde-lock"
-start_if_available trlde-welcome --first-run
+# Canlı sistemde kurulum penceresi zaten çıkıyor; ikinci karşılama gösterilmez.
+[ -d /run/live/medium ] || start_if_available trlde-welcome --first-run
 
 polkit_agent=
 for candidate in \

@@ -6,4 +6,4 @@ Icon=trlde-logo
 Type=Application
 Categories=Utility;System;
 Keywords=hoş;geldin;yardım;kısayol;başlangıç;
-
+StartupWMClass=org.trlde.Welcome

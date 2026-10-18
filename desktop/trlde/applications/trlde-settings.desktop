@@ -6,4 +6,4 @@ Icon=preferences-system
 Type=Application
 Categories=Settings;System;
 Keywords=ayarlar;settings;ağ;ses;ekran;
-
+StartupWMClass=org.trlde.Settings

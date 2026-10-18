@@ -48,6 +48,13 @@
   <keyboard>
     <default />
 
+    <!-- Görev çubuğu menüleri (trlde-taskbar bu kısayolları wtype ile tetikler) -->
+    <keybind key="W-A-S-F10">
+      <action name="ShowMenu" menu="orvixos-taskbar-menu" />
+    </keybind>
+    <keybind key="W-A-S-F11">
+      <action name="ShowMenu" menu="orvixos-pin-menu" />
+    </keybind>
     <keybind key="W-x">
       <action name="ShowMenu" menu="root-menu" />
     </keybind>

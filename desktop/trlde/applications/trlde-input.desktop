@@ -6,3 +6,4 @@ Icon=input-touchpad
 Type=Application
 Categories=Settings;HardwareSettings;
 Keywords=klavye;dokunmatik;yüzey;touchpad;libinput;
+StartupWMClass=org.trlde.Input

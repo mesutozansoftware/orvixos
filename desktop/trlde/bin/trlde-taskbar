@@ -1,28 +1,42 @@
 #!/usr/bin/python3
-"""OrvixOS/TRLDE görev çubuğu: sabitlenmiş uygulamalar.
+"""OrvixOS/TRLDE görev çubuğu: sabitlenmiş uygulamalar (Windows tarzı).
 
-  trlde-taskbar --generate   Sabitlenenlerle Waybar ayarını üretir, yolunu yazar.
-  trlde-taskbar --restart    Ayarı üretip görev çubuğunu yeniden başlatır.
-  trlde-taskbar --manage     "Görev çubuğunu düzenle" penceresi.
-  trlde-taskbar --pin ID     Uygulamayı sabitler (ör. thunar.desktop).
-  trlde-taskbar --unpin ID   Sabitlemeyi kaldırır.
+Sabit bir uygulama açıldığında ayrı bir simge çıkmaz; sabit simgenin altında
+"açık" çizgisi belirir. Tıklayınca açıksa pencereye geçilir, kapalıysa açılır.
 
-Sabitler ~/.config/trlde/taskbar-pins dosyasında, her satırda bir .desktop
-kimliği olarak tutulur. "@browser" o anki varsayılan tarayıcıyı gösterir.
+  trlde-taskbar --generate          Waybar ayarını ve stilini üretir (yolu yazar).
+  trlde-taskbar --restart           Ayarı üretip görev çubuğunu yeniden başlatır.
+  trlde-taskbar --poll              Açık pencereleri izler (oturumda çalışır).
+  trlde-taskbar --activate N        N. sabit uygulamaya geç ya da onu aç.
+  trlde-taskbar --menu N            N. sabit simgenin sağ tık menüsü.
+  trlde-taskbar --taskbar-menu      Görev çubuğunun sağ tık menüsü.
+  trlde-taskbar --pipemenu pin|running   labwc dinamik menü içeriği.
+  trlde-taskbar --manage            "Görev çubuğunu düzenle" penceresi.
+  trlde-taskbar --pin ID|DOSYA      Uygulamayı sabitler.
+  trlde-taskbar --unpin ID          Sabitlemeyi kaldırır.
+
+Sabitler ~/.config/trlde/taskbar-pins dosyasında tutulur ("@browser" =
+varsayılan tarayıcı).
 """
 
 import json
 import os
 import subprocess
 import sys
+import time
+from html import escape
 from pathlib import Path
 
 SYSTEM_CONFIG = Path("/usr/share/trlde/waybar/config.jsonc")
 SYSTEM_STYLE = Path("/usr/share/trlde/waybar/style.css")
 CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
 CACHE_HOME = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+RUNTIME = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "trlde"
 PINS_FILE = CONFIG_HOME / "trlde" / "taskbar-pins"
 GENERATED = CACHE_HOME / "trlde" / "waybar-config.json"
+GENERATED_STYLE = CACHE_HOME / "trlde" / "waybar-style.css"
+TOPLEVELS = RUNTIME / "toplevels"
+MENU_TARGET = RUNTIME / "menu-target"
 DEFAULT_PINS = [
     "thunar.desktop",
     "@browser",
@@ -30,8 +44,12 @@ DEFAULT_PINS = [
     "org.xfce.mousepad.desktop",
     "trlde-settings.desktop",
 ]
-ICON_SIZE = 26
+# labwc kısayolları (rc.xml) — menüler bunlarla imleç konumunda açılır.
+TASKBAR_MENU_KEYS = ["-M", "logo", "-M", "alt", "-M", "shift", "-k", "F10"]
+PIN_MENU_KEYS = ["-M", "logo", "-M", "alt", "-M", "shift", "-k", "F11"]
 
+
+# --- Sabitler ve .desktop dosyaları -------------------------------------------
 
 def read_pins():
     try:
@@ -46,15 +64,36 @@ def write_pins(pins):
     PINS_FILE.write_text("\n".join(pins) + "\n", encoding="utf-8")
 
 
+def data_dirs():
+    dirs = [Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))]
+    dirs += [Path(d) for d in os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":") if d]
+    return dirs
+
+
+def find_desktop_file(desktop_id):
+    for directory in data_dirs():
+        path = directory / "applications" / desktop_id
+        if path.is_file():
+            return path
+    return None
+
+
+def all_desktop_files():
+    seen = {}
+    for directory in reversed(data_dirs()):
+        apps = directory / "applications"
+        if apps.is_dir():
+            for path in apps.glob("*.desktop"):
+                seen[path.name] = path
+    return seen
+
+
 def default_browser():
     try:
-        result = subprocess.run(
-            ["xdg-mime", "query", "default", "x-scheme-handler/https"],
-            capture_output=True, text=True, timeout=5, check=False,
-        )
-        name = result.stdout.strip()
-        if name:
-            return name
+        result = subprocess.run(["xdg-mime", "query", "default", "x-scheme-handler/https"],
+                                capture_output=True, text=True, timeout=5, check=False)
+        if result.stdout.strip():
+            return result.stdout.strip()
     except (OSError, subprocess.SubprocessError):
         pass
     for candidate in ("vira-browser.desktop", "firefox-esr.desktop", "chromium.desktop"):
@@ -63,18 +102,7 @@ def default_browser():
     return None
 
 
-def find_desktop_file(desktop_id):
-    dirs = [Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))]
-    dirs += [Path(d) for d in os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":") if d]
-    for directory in dirs:
-        path = directory / "applications" / desktop_id
-        if path.is_file():
-            return path
-    return None
-
-
 def desktop_entry(path):
-    """[Desktop Entry] bölümündeki Name/Icon değerleri (yerel ad öncelikli)."""
     lang = (os.environ.get("LANG") or "").split(".")[0]
     short = lang.split("_")[0]
     values = {}
@@ -84,12 +112,28 @@ def desktop_entry(path):
         if line.startswith("["):
             section = line
             continue
-        if section != "[Desktop Entry]" or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        values[key] = value
-    name = values.get(f"Name[{lang}]") or values.get(f"Name[{short}]") or values.get("Name", path.stem)
-    return {"name": name, "icon": values.get("Icon", ""), "nodisplay": values.get("NoDisplay") == "true"}
+        if section == "[Desktop Entry]" and "=" in line:
+            key, value = line.split("=", 1)
+            values[key] = value
+    return {
+        "name": values.get(f"Name[{lang}]") or values.get(f"Name[{short}]") or values.get("Name", path.stem),
+        "icon": values.get("Icon", ""),
+        "wmclass": values.get("StartupWMClass", ""),
+        "exec": values.get("Exec", ""),
+        "nodisplay": values.get("NoDisplay") == "true",
+    }
+
+
+def app_ids(desktop_id, entry):
+    """Bu .desktop dosyasının açtığı pencerenin olası Wayland app_id'leri."""
+    stem = desktop_id[:-8] if desktop_id.endswith(".desktop") else desktop_id
+    ids = {stem, stem.lower(), stem.split(".")[-1].lower()}
+    if entry["wmclass"]:
+        ids |= {entry["wmclass"], entry["wmclass"].lower()}
+    executable = entry["exec"].split()[0] if entry["exec"] else ""
+    if executable:
+        ids.add(os.path.basename(executable).lower())
+    return sorted(i for i in ids if i)
 
 
 def icon_path(icon):
@@ -107,8 +151,9 @@ def icon_path(icon):
             return info.get_filename()
     except Exception:
         pass
-    for base in ("/usr/share/icons/hicolor/scalable/apps", "/usr/share/icons/hicolor/256x256/apps",
-                 "/usr/share/icons/hicolor/128x128/apps", "/usr/share/pixmaps"):
+    for base in ("/usr/share/icons/Papirus-Dark/64x64/apps", "/usr/share/icons/hicolor/scalable/apps",
+                 "/usr/share/icons/hicolor/256x256/apps", "/usr/share/icons/hicolor/128x128/apps",
+                 "/usr/share/pixmaps"):
         for ext in (".svg", ".png"):
             candidate = Path(base) / f"{icon}{ext}"
             if candidate.exists():
@@ -118,68 +163,277 @@ def icon_path(icon):
 
 def resolve(pin):
     desktop_id = default_browser() if pin == "@browser" else pin
-    if not desktop_id:
-        return None
-    path = find_desktop_file(desktop_id)
+    path = find_desktop_file(desktop_id) if desktop_id else None
     if not path:
         return None
     entry = desktop_entry(path)
-    return {"id": desktop_id, "name": entry["name"], "icon": icon_path(entry["icon"])}
+    return {"pin": pin, "id": desktop_id, "name": entry["name"], "icon": icon_path(entry["icon"]),
+            "app_ids": app_ids(desktop_id, entry)}
+
+
+def resolved_pins():
+    return [app for app in (resolve(pin) for pin in read_pins()) if app and app["icon"]]
+
+
+# --- Açık pencereler ----------------------------------------------------------
+
+def list_toplevels():
+    """wlrctl çıktısı: 'app_id: başlık' satırları."""
+    try:
+        result = subprocess.run(["wlrctl", "toplevel", "list"], capture_output=True,
+                                text=True, timeout=3, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [line.split(":", 1)[0].strip() for line in result.stdout.splitlines() if ":" in line]
+
+
+def running_ids():
+    try:
+        return [line for line in TOPLEVELS.read_text().splitlines() if line]
+    except OSError:
+        return list_toplevels()
+
+
+def matching_app_id(app, running):
+    wanted = {i.lower() for i in app["app_ids"]}
+    for app_id in running:
+        if app_id.lower() in wanted:
+            return app_id
+    return None
+
+
+def poll():
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    previous = None
+    while True:
+        current = "\n".join(sorted(set(list_toplevels())))
+        if current != previous:
+            tmp = TOPLEVELS.with_suffix(".tmp")
+            tmp.write_text(current + "\n")
+            tmp.replace(TOPLEVELS)
+            previous = current
+        time.sleep(1)
+
+
+# --- Waybar ayarı ---------------------------------------------------------------
+
+def escape_sh(text):
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def status_command(app):
+    """Her saniye 'açık' durumunu JSON olarak yazan kabuk döngüsü."""
+    patterns = " ".join(f"-e {i}" for i in app["app_ids"] if "'" not in i and " " not in i)
+    tooltip = app["name"].replace("'", "").replace('"', "")
+    running = '{"text":" ","class":"running","tooltip":"%s"}' % tooltip
+    idle = '{"text":" ","class":"idle","tooltip":"%s"}' % tooltip
+    return (
+        "sh -c 'f=${XDG_RUNTIME_DIR:-/tmp}/trlde/toplevels; while :; do "
+        f"if grep -qixF {patterns} \"$f\" 2>/dev/null; then echo \"{escape_sh(running)}\"; "
+        f"else echo \"{escape_sh(idle)}\"; fi; sleep 1; done'"
+    )
+
+
+def screen_width():
+    try:
+        import gi
+        gi.require_version("Gdk", "3.0")
+        from gi.repository import Gdk
+        display = Gdk.Display.get_default()
+        monitor = display.get_monitor(0) if display else None
+        if monitor:
+            return monitor.get_geometry().width
+    except Exception:
+        pass
+    return 1280
 
 
 def generate():
     config = json.loads(SYSTEM_CONFIG.read_text(encoding="utf-8"))
-    left = [m for m in config.get("modules-left", []) if not m.startswith("image#pin")]
-    pins_modules = []
-    for index, pin in enumerate(read_pins()):
-        app = resolve(pin)
-        if not app or not app["icon"]:
-            continue
-        name = f"image#pin{index}"
+    left = [m for m in config.get("modules-left", [])
+            if not m.startswith(("image#pin", "custom/pin"))]
+    pins = resolved_pins()
+    modules = []
+    css = [SYSTEM_STYLE.read_text(encoding="utf-8"), "\n/* Sabitlenmiş uygulamalar (üretildi) */"]
+    ignore = []
+    for index, app in enumerate(pins):
+        name = f"custom/pin{index}"
         config[name] = {
-            "path": app["icon"],
-            "size": ICON_SIZE,
+            "exec": status_command(app),
+            "return-type": "json",
+            "format": "{}",
             "tooltip": True,
-            "tooltip-format": app["name"],
-            "on-click": f"gtk-launch {app['id'][:-8] if app['id'].endswith('.desktop') else app['id']}",
-            "on-click-right": "trlde-taskbar --manage",
+            "on-click": f"trlde-taskbar --activate {index}",
+            "on-click-middle": f"gtk-launch {app['id'][:-8]}",
+            "on-click-right": f"trlde-taskbar --menu {index}",
         }
-        pins_modules.append(name)
+        modules.append(name)
+        ignore += app["app_ids"]
+        css.append(
+            f'#custom-pin{index} {{ background-image: url("{app["icon"]}"); background-size: 24px 24px; '
+            "background-position: center; background-repeat: no-repeat; min-width: 42px; "
+            "margin: 5px 1px; border-radius: 10px; border-bottom: 3px solid transparent; }\n"
+            f"#custom-pin{index}:hover {{ background-color: rgba(255, 255, 255, 0.09); }}\n"
+            f"#custom-pin{index}.running {{ background-color: rgba(255, 255, 255, 0.06); "
+            "border-bottom: 3px solid #2ee6d6; }"
+        )
     position = left.index("custom/launcher") + 1 if "custom/launcher" in left else 0
-    config["modules-left"] = left[:position] + pins_modules + left[position:]
+    config["modules-left"] = left[:position] + modules + left[position:]
+    # Sabit uygulamalar açıkken açık pencereler listesinde ikinci kez görünmez.
+    config.setdefault("wlr/taskbar", {})["ignore-list"] = sorted(set(ignore))
+    # Boş alana ve saate sağ tık: görev çubuğu menüsü; başlat: hızlı menü.
+    config["modules-center"] = ["custom/spacer"]
+    config["custom/spacer"] = {"format": " ", "tooltip": False,
+                               "on-click-right": "trlde-taskbar --taskbar-menu"}
+    config.setdefault("custom/launcher", {})["on-click-right"] = "wtype -M logo -k x -m logo"
+    config.setdefault("clock", {})["on-click-right"] = "trlde-taskbar --taskbar-menu"
+    css.append(f"#custom-spacer {{ min-width: {max(120, int(screen_width() * 0.22))}px; }}")
+
     GENERATED.parent.mkdir(parents=True, exist_ok=True)
     GENERATED.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
+    GENERATED_STYLE.write_text("\n".join(css) + "\n", encoding="utf-8")
     return GENERATED
 
 
 def restart():
-    path = generate()
+    generate()
     subprocess.run(["pkill", "-x", "waybar"], check=False)
-    subprocess.Popen(
-        ["waybar", "-c", str(path), "-s", str(SYSTEM_STYLE)],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
-    )
+    subprocess.Popen(["waybar", "-c", str(GENERATED), "-s", str(GENERATED_STYLE)],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 
+
+# --- Tıklama ve menüler -------------------------------------------------------
+
+def pin_by_index(index):
+    pins = resolved_pins()
+    return pins[index] if 0 <= index < len(pins) else None
+
+
+def launch(desktop_id):
+    subprocess.Popen(["gtk-launch", desktop_id[:-8] if desktop_id.endswith(".desktop") else desktop_id],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+def activate(index):
+    app = pin_by_index(index)
+    if not app:
+        return
+    app_id = matching_app_id(app, running_ids())
+    if app_id:
+        subprocess.run(["wlrctl", "toplevel", "focus", f"app_id:{app_id}"], check=False)
+    else:
+        launch(app["id"])
+
+
+SYSTEM_MENU = Path("/usr/share/trlde/labwc/menu.xml")
+USER_MENU = CONFIG_HOME / "trlde" / "labwc" / "menu.xml"
+
+
+def show_menu(keys, target=None):
+    """Dinamik menüleri yazar, labwc'yi yeniden yükler ve menüyü imleçte açar.
+
+    labwc'nin dinamik (pipe) menüleri önbelleğe alındığı için içerik her sağ
+    tıkta menu.xml'e yazılır ve labwc'ye SIGHUP gönderilir.
+    """
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    if target is not None:
+        MENU_TARGET.write_text(str(target))
+    base = SYSTEM_MENU.read_text(encoding="utf-8")
+    pin_items = "\n".join(pipemenu_items("pin"))
+    running_items = "\n".join(pipemenu_items("running"))
+    base = base.replace(
+        '<menu id="orvixos-pin-menu" label="" execute="trlde-taskbar --pipemenu pin" />',
+        f'<menu id="orvixos-pin-menu">\n{pin_items}\n</menu>')
+    base = base.replace(
+        '<menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new" '
+        'execute="trlde-taskbar --pipemenu running" />',
+        f'<menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new">\n'
+        f'{running_items}\n</menu>')
+    USER_MENU.parent.mkdir(parents=True, exist_ok=True)
+    USER_MENU.write_text(base, encoding="utf-8")
+    pid = os.environ.get("LABWC_PID")
+    if pid:
+        subprocess.run(["kill", "-HUP", pid], check=False)
+    else:
+        subprocess.run(["pkill", "-HUP", "-x", "-u", str(os.getuid()), "labwc"], check=False)
+    time.sleep(0.25)
+    subprocess.run(["wtype"] + keys + ["-m", "shift", "-m", "alt", "-m", "logo"], check=False)
+
+
+def item(label, command, icon=None):
+    icon_attr = f' icon="{escape(icon)}"' if icon else ""
+    return (f'<item label="{escape(label)}"{icon_attr}>'
+            f'<action name="Execute" command="{escape(command)}" /></item>')
+
+
+def pipemenu_items(kind):
+    out = []
+    running = running_ids()
+    if kind == "pin":
+        try:
+            app = pin_by_index(int(MENU_TARGET.read_text().strip()))
+        except (OSError, ValueError):
+            app = None
+        if app:
+            app_id = matching_app_id(app, running)
+            out.append(item(f"{app['name']} aç" if not app_id else "Yeni pencere",
+                            f"gtk-launch {app['id'][:-8]}", "orvixos-new"))
+            out.append(item("Görev çubuğundan kaldır", f"trlde-taskbar --unpin {app['pin']}", "orvixos-apps"))
+            if app_id:
+                out.append("<separator />")
+                out.append(item("Pencereyi kapat", f"wlrctl toplevel close app_id:{app_id}", "orvixos-power"))
+        out.append("<separator />")
+        out.append(item("Görev çubuğunu düzenle", "trlde-taskbar --manage", "orvixos-settings"))
+    elif kind == "running":
+        pinned = set()
+        for app in resolved_pins():
+            pinned |= {i.lower() for i in app["app_ids"]}
+        offered = set()
+        files = all_desktop_files()
+        for app_id in running:
+            if app_id.lower() in pinned or app_id in offered:
+                continue
+            match = None
+            for desktop_id, path in files.items():
+                entry = desktop_entry(path)
+                if entry["nodisplay"]:
+                    continue
+                if app_id.lower() in {i.lower() for i in app_ids(desktop_id, entry)}:
+                    match = (desktop_id, entry)
+                    break
+            if match:
+                offered.add(app_id)
+                out.append(item(f"{match[1]['name']} — sabitle", f"trlde-taskbar --pin {match[0]}",
+                                "orvixos-new"))
+        if not offered:
+            out.append('<item label="Sabitlenecek açık uygulama yok" />')
+    return out
+
+
+def pipemenu(kind):
+    print("\n".join(["<openbox_pipe_menu>"] + pipemenu_items(kind) + ["</openbox_pipe_menu>"]))
+
+
+# --- Düzenleme penceresi ------------------------------------------------------
 
 def manage():
     import gi
     gi.require_version("Gtk", "3.0")
     from gi.repository import Gio, Gtk
 
+    settings = Gtk.Settings.get_default()
+    if settings:
+        settings.set_property("gtk-application-prefer-dark-theme", True)
     pins = read_pins()
     browser = default_browser()
     pinned = {browser if pin == "@browser" else pin for pin in pins}
 
     apps = []
     for info in Gio.AppInfo.get_all():
-        if not info.should_show() or not info.get_id():
-            continue
-        apps.append((info.get_display_name(), info.get_id(), info.get_icon()))
-    apps.sort(key=lambda item: item[0].casefold())
+        if info.should_show() and info.get_id():
+            apps.append((info.get_display_name(), info.get_id(), info.get_icon()))
+    apps.sort(key=lambda entry: entry[0].casefold())
 
-    settings = Gtk.Settings.get_default()
-    if settings:
-        settings.set_property("gtk-application-prefer-dark-theme", True)
     window = Gtk.Window(title="Görev çubuğunu düzenle")
     window.set_default_size(460, 560)
     window.connect("destroy", Gtk.main_quit)
@@ -192,17 +446,16 @@ def manage():
         row:hover { background: rgba(255,255,255,0.06); }
         button.suggested-action { background: #2ee6d6; color: #07101d; border: none; }
     """)
-    Gtk.StyleContext.add_provider_for_screen(
-        window.get_screen(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    Gtk.StyleContext.add_provider_for_screen(window.get_screen(), css,
+                                             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
     box.set_border_width(16)
     window.add(box)
-    hint = Gtk.Label(
-        label="Görev çubuğunda sabit durmasını istediğin uygulamaları seç.", xalign=0, wrap=True)
+    hint = Gtk.Label(label="Görev çubuğunda sabit durmasını istediğin uygulamaları seç.",
+                     xalign=0, wrap=True)
     hint.get_style_context().add_class("hint")
     box.pack_start(hint, False, False, 0)
-
     search = Gtk.SearchEntry(placeholder_text="Uygulama ara")
     box.pack_start(search, False, False, 0)
 
@@ -227,13 +480,12 @@ def manage():
         line.pack_end(switch, False, False, 0)
         row.add(line)
         listbox.add(row)
-
     listbox.set_filter_func(lambda row: search.get_text().casefold() in row.app_name.casefold())
     search.connect("search-changed", lambda *_: listbox.invalidate_filter())
 
     def save(_button):
         ordered = []
-        for pin in pins:  # mevcut sıra korunur
+        for pin in pins:
             app_id = browser if pin == "@browser" else pin
             if app_id in switches and switches[app_id].get_active():
                 ordered.append(pin)
@@ -254,23 +506,47 @@ def manage():
     buttons.pack_start(reset, False, False, 0)
     buttons.pack_end(done, False, False, 0)
     box.pack_start(buttons, False, False, 0)
-
     window.show_all()
     Gtk.main()
 
 
+def pin_argument(value):
+    """--pin için .desktop kimliği; dosya yolu verilirse kimliğe çevrilir."""
+    path = Path(value)
+    if path.suffix == ".desktop" and path.is_file():
+        if find_desktop_file(path.name):
+            return path.name
+        target = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "applications"
+        target.mkdir(parents=True, exist_ok=True)
+        (target / path.name).write_bytes(path.read_bytes())
+        return path.name
+    return value
+
+
 def main():
     args = sys.argv[1:]
-    if not args or args[0] == "--manage":
+    command = args[0] if args else "--manage"
+    if command == "--manage":
         manage()
-    elif args[0] == "--generate":
+    elif command == "--generate":
         print(generate())
-    elif args[0] == "--restart":
+    elif command == "--restart":
         restart()
-    elif args[0] in ("--pin", "--unpin") and len(args) == 2:
-        pins = [pin for pin in read_pins() if pin != args[1]]
-        if args[0] == "--pin":
-            pins.append(args[1])
+    elif command == "--poll":
+        poll()
+    elif command == "--activate" and len(args) == 2:
+        activate(int(args[1]))
+    elif command == "--menu" and len(args) == 2:
+        show_menu(PIN_MENU_KEYS, int(args[1]))
+    elif command == "--taskbar-menu":
+        show_menu(TASKBAR_MENU_KEYS)
+    elif command == "--pipemenu" and len(args) == 2:
+        pipemenu(args[1])
+    elif command in ("--pin", "--unpin") and len(args) == 2:
+        target = pin_argument(args[1]) if command == "--pin" else args[1]
+        pins = [pin for pin in read_pins() if pin != target]
+        if command == "--pin":
+            pins.append(target)
         write_pins(pins)
         restart()
     else:

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Action
+Name=Görev çubuğuna sabitle
+Icon=view-pin
+Profiles=orvixos;
+TargetLocation=false
+TargetContext=true
+TargetToolbar=false
+
+[X-Action-Profile orvixos]
+Name=Görev çubuğuna sabitle
+Exec=trlde-taskbar --pin %f
+MimeTypes=application/x-desktop;
+SelectionCount=1

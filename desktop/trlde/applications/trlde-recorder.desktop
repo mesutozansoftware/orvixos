@@ -6,3 +6,4 @@ Icon=media-record
 Type=Application
 Categories=Utility;AudioVideo;Recorder;
 Keywords=ekran;kayıt;video;record;
+StartupWMClass=org.trlde.Recorder

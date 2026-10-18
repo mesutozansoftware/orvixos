@@ -6,3 +6,4 @@ Icon=org.gnome.DejaDup
 Type=Application
 Categories=Utility;System;
 Keywords=yedek;geri yükle;kurtarma;backup;restore;
+StartupWMClass=org.trlde.Backup

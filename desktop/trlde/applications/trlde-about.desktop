@@ -6,4 +6,4 @@ Icon=trlde-logo
 Type=Application
 Categories=System;
 Keywords=trlde;hakkında;sürüm;
-
+StartupWMClass=org.trlde.About

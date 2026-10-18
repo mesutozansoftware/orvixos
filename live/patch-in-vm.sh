@@ -34,6 +34,7 @@ rm -f "$work/old.squashfs"
 echo "==> OrvixOS paketleri ve dosyaları güncelleniyor"
 mkdir -p "$root/tmp/orvixos"
 cp "$src"/debs/*.deb "$root/tmp/orvixos/"
+[ -f "$src/extra-packages" ] && cp "$src/extra-packages" "$root/tmp/orvixos/extra-packages"
 cp -a "$src/includes/." "$root/"
 cp "$root/etc/resolv.conf" "$work/resolv.conf.orig" 2>/dev/null || true
 rm -f "$root/etc/resolv.conf"
@@ -53,6 +54,10 @@ chroot "$root" sh -c '
     dpkg -i /tmp/orvixos/*.deb || true
     apt-get -q -y -o APT::Install-Recommends=false -f install
     apt-get -q -y -o APT::Install-Recommends=false install pcmanfm-qt-l10n || true
+    # Sürücüler ve donanım yazılımları (live/drivers.list)
+    if [ -s /tmp/orvixos/extra-packages ]; then
+        apt-get -q -y -o APT::Install-Recommends=false install $(cat /tmp/orvixos/extra-packages)
+    fi
     apt-get clean
     rm -f /usr/sbin/policy-rc.d
 '

@@ -15,14 +15,14 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 arch=${1:-}
 case "$arch" in
-    arm64) firmware="firmware-brcm80211 firmware-realtek firmware-atheros firmware-iwlwifi"
-           bootloader_pool="grub-efi grub-efi-arm64 grub-efi-arm64-bin"
+    arm64) bootloader_pool="grub-efi grub-efi-arm64 grub-efi-arm64-bin"
            bootloader_chroot="grub-efi-arm64-bin efibootmgr" ;;
-    amd64) firmware="firmware-brcm80211 firmware-realtek firmware-atheros firmware-iwlwifi firmware-sof-signed amd64-microcode intel-microcode"
-           bootloader_pool="grub-efi grub-efi-amd64 grub-efi-amd64-bin"
+    amd64) bootloader_pool="grub-efi grub-efi-amd64 grub-efi-amd64-bin"
            bootloader_chroot="grub-efi-amd64-bin grub-pc-bin efibootmgr" ;;
     *) printf 'Kullanım: %s arm64|amd64\n' "$0" >&2; exit 2 ;;
 esac
+# Sürücüler ve donanım yazılımları: live/drivers.list
+firmware=$(sh "$root/tools/drivers.sh" "$arch" | tr '\n' ' ')
 
 vm="$root/tests/vm.sh"
 key=$root/build/test/id_ed25519

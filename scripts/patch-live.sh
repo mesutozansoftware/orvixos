@@ -46,6 +46,7 @@ for arch in "$@"; do
     cp -R live/config/includes.chroot "$stage/includes"
     cp live/config/hooks/live/*.hook.chroot "$stage/hooks/"
     cp live/patch-in-vm.sh "$stage/"
+    sh tools/drivers.sh "$arch" > "$stage/extra-packages"
     (cd "$stage" && COPYFILE_DISABLE=1 tar --no-xattrs -cf ../$arch.tar .)
     to_vm "outputs/$iso" "/srv/orvixos-live/in/$iso"
     to_vm "build/patch-src/$arch.tar" "/srv/orvixos-live/in/src-$arch.tar"

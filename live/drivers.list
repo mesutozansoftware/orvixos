@@ -1,0 +1,34 @@
+# OrvixOS'ta hazır gelen sürücüler ve donanım yazılımları (firmware).
+# İnternet olmadan da Wi-Fi, ekran kartı, ses ve Bluetooth çalışsın diye canlı
+# ISO'ya ve kurulan sisteme eklenir. Satır başındaki [amd64] yalnızca o mimari.
+
+# Ekran kartları: AMD, Intel, NVIDIA (açık kaynak nouveau için GSP), Mesa
+firmware-linux-nonfree
+firmware-misc-nonfree
+firmware-amd-graphics
+firmware-intel-graphics
+firmware-nvidia-graphics
+mesa-vulkan-drivers
+mesa-va-drivers
+[amd64] intel-media-va-driver
+
+# Wi-Fi ve kablolu ağ: Intel, Realtek, MediaTek, Qualcomm Atheros, Broadcom, TI, Marvell
+firmware-iwlwifi
+firmware-realtek
+firmware-mediatek
+firmware-atheros
+firmware-brcm80211
+firmware-libertas
+firmware-ti-connectivity
+firmware-intel-misc
+firmware-bnx2
+firmware-bnx2x
+
+# Ses ve Bluetooth
+firmware-sof-signed
+firmware-cirrus
+bluez-firmware
+
+# İşlemci mikro kodu
+[amd64] amd64-microcode
+[amd64] intel-microcode

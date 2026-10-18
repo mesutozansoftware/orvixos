@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OrvixOS — Debian tabanlı, hızlı ve sade işletim sistemi</title>
-  <meta name="description" content="OrvixOS; Debian 13 tabanlı, TRLDE Wayland masaüstü ve vpx paket yöneticisiyle gelen ücretsiz ve özgür bir işletim sistemidir. ARM64 ve x64 için indir.">
+  <meta name="description" content="OrvixOS; Debian tabanlı, TRLDE Wayland masaüstü ve vpx paket yöneticisiyle gelen ücretsiz ve özgür bir işletim sistemidir. ARM64 ve x64 için indir.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="OrvixOS — Debian tabanlı işletim sistemi">
   <meta property="og:description" content="TRLDE masaüstü, vpx paket yöneticisi ve kurulumda seçilen tarayıcı. ARM64 ve x64.">
@@ -180,9 +180,9 @@
   <main>
     <section class="hero">
       <div class="container">
-        <div class="badge">OrvixOS 1.0 “Origin” • Debian 13 tabanlı</div>
+        <div class="badge">OrvixOS 1.0 “Origin” • Debian tabanlı</div>
         <h1>Sade, hızlı ve<br><span class="grad">tamamen özgür.</span></h1>
-        <p class="lead">OrvixOS; Debian'ın sağlam temeli üzerine kurulu, Türkçe TRLDE Wayland masaüstü ve
+        <p class="lead">OrvixOS; Debian tabanlı, Türkçe TRLDE Wayland masaüstü ve
           <b>vpx</b> paket yöneticisiyle gelen ücretsiz bir işletim sistemidir. Hem ARM64 hem x64 bilgisayarlarda çalışır.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#indir">OrvixOS'u indir</a>
@@ -193,7 +193,7 @@
         <div class="terminal" aria-label="vpx örneği">
           <div class="terminal-bar"><i></i><i></i><i></i><span>orvix@orvixos: ~</span></div>
 <pre><span class="p">$</span> vpx install htop
-<span class="c">Paketler Debian sunucularından indiriliyor…</span>
+<span class="c">Paketler indiriliyor…</span>
 <span class="ok">✓</span> htop kuruldu
 <span class="p">$</span> vpx search editör
 <span class="p">$</span> vpx sync   <span class="c"># listeleri yenile ve tüm sistemi güncelle</span></pre>
@@ -217,12 +217,12 @@
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
             <h3>vpx paket yöneticisi</h3>
-            <p>APT'nin gücü, daha kısa komutlarla. <code>vpx install</code>, <code>vpx remove</code>, <code>vpx sync</code> — paketler doğrudan Debian'dan gelir.</p>
+            <p>APT'nin gücü, daha kısa komutlarla. <code>vpx install</code>, <code>vpx remove</code>, <code>vpx sync</code> — paketler doğrudan depodan indirilir.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg></div>
-            <h3>Debian güvenilirliği</h3>
-            <p>Debian 13 “trixie” üzerine kurulu: 60.000'den fazla paket ve düzenli güvenlik güncellemeleri.</p>
+            <h3>Sağlam temel</h3>
+            <p>Debian tabanlı: 60.000'den fazla paket ve düzenli güvenlik güncellemeleri.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
@@ -258,11 +258,11 @@
           </div>
           <div class="card browser">
             <h3>Firefox ESR</h3>
-            <p>Mozilla'nın uzun süreli destek sürümü. Güvenlik güncellemeleri Debian'dan, <code>vpx sync</code> ile.</p>
+            <p>Mozilla'nın uzun süreli destek sürümü. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
           </div>
           <div class="card browser">
             <h3>Chromium</h3>
-            <p>Chrome'un açık kaynak temeli. Güvenlik güncellemeleri Debian'dan, <code>vpx sync</code> ile.</p>
+            <p>Chrome'un açık kaynak temeli. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
           </div>
         </div>
       </div>
@@ -273,7 +273,7 @@
         <div class="section-head">
           <div class="eyebrow">İndir</div>
           <h2>OrvixOS 1.0 “Origin”</h2>
-          <p>Bilgisayarına uygun sürümü seç. Kurulum sırasında internet bağlantısı gerekir; paketler Debian sunucularından indirilir.</p>
+          <p>Bilgisayarına uygun sürümü seç. Kurulum sırasında internet bağlantısı gerekir; paketler internetten indirilir.</p>
         </div>
         <div class="downloads">
           <div class="card download">
@@ -344,10 +344,9 @@
         </div>
         <div class="faq">
           <details><summary>OrvixOS ücretsiz mi?</summary><p>Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
-          <details><summary>vpx ile apt arasındaki fark nedir?</summary><p>vpx, APT'nin üzerinde çalışır ve aynı Debian depolarını kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
+          <details><summary>vpx ile apt arasındaki fark nedir?</summary><p>vpx, APT'nin üzerinde çalışır ve aynı depoları kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
           <details><summary>Başka masaüstü kurabilir miyim?</summary><p>Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranındaki dişli menüsünden oturumu seçebilirsin.</p></details>
-          <details><summary>Neden kurulumda internet gerekiyor?</summary><p>OrvixOS ISO'su küçük bir ağ kurulum kalıbıdır. Masaüstü ve uygulamalar kurulum sırasında Debian sunucularından en güncel hâlleriyle indirilir.</p></details>
-          <details><summary>Debian ile ilişkisi nedir?</summary><p>OrvixOS, Debian 13 tabanlı bağımsız bir projedir. Debian projesi tarafından desteklenmez veya onaylanmaz; “Debian”, Software in the Public Interest, Inc.'in tescilli markasıdır.</p></details>
+          <details><summary>Neden kurulumda internet gerekiyor?</summary><p>OrvixOS ISO'su küçük bir ağ kurulum kalıbıdır. Masaüstü ve uygulamalar kurulum sırasında internetten en güncel hâlleriyle indirilir.</p></details>
         </div>
       </div>
     </section>

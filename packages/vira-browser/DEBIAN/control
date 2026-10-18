@@ -7,9 +7,9 @@ Priority: optional
 Provides: www-browser, gnome-www-browser
 Depends: libgtk-3-0t64, libnss3, libasound2t64, libgbm1, libxss1, libxtst6, libatspi2.0-0t64, libatk-bridge2.0-0t64, libcups2t64, libdrm2, libxkbcommon0, libxrandr2, libxcomposite1, libxdamage1, libsecret-1-0, libnotify4, libuuid1, libexpat1, xdg-utils
 Description: Vira Browser — gizlilik odaklı web tarayıcısı
- Vira Browser; yerleşik reklam ve izleyici engelleyici (Vira Shields),
- şifreli DNS ve ECH tüneli (Secure Engine) ile tasarlanmış masaüstü web
- tarayıcısıdır. OrvixOS'un varsayılan tarayıcısıdır.
+ Vira Browser; yerleşik reklam ve izleyici engelleyici (Vira Shields) ile
+ tasarlanmış, hızlı ve gizlilik odaklı masaüstü web tarayıcısıdır. OrvixOS'un
+ varsayılan tarayıcısıdır.
  .
  Ana sayfa: https://virabrowser.vercel.app
  Electron @ELECTRON_VERSION@ üzerinde çalışır.

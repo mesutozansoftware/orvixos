@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vira-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "/Volumes/240GB SSD/ApexOS/build/virabrowser-site"],
+      "port": 8765
+    },
+    {
+      "name": "orvixos-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8766", "--directory", "/Volumes/240GB SSD/ApexOS/site"],
+      "port": 8766
+    }
+  ]
+}

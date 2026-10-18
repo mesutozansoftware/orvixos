@@ -163,6 +163,15 @@
       section { padding: 64px 0; }
       .terminal pre { font-size: 12.5px; padding: 18px; }
     }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .lang { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .lang button { background: transparent; color: var(--muted); border: 0; padding: 7px 10px; font: 600 13px 'Inter', sans-serif; cursor: pointer; }
+    .lang button.active { background: rgba(46, 230, 214, 0.14); color: var(--teal); }
+    .live-info { margin-top: 18px; }
+    .live-info h3 { font-size: 18px; margin-bottom: 6px; }
+    .live-info p { color: var(--muted); font-size: 15px; margin-bottom: 12px; }
+    .cred { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; font-size: 15px; color: var(--muted); }
+    .cred code { color: var(--teal); background: rgba(46, 230, 214, 0.08); border: 1px solid var(--border-accent); padding: 4px 10px; border-radius: 8px; font-size: 15px; }
   </style>
 </head>
 <body>
@@ -173,32 +182,38 @@
     <div class="container nav">
       <a class="brand" href="#"><img src="logo.svg" alt=""><strong>Orvix<span>OS</span></strong></a>
       <nav class="nav-links">
-        <a href="#ozellikler">Özellikler</a>
-        <a href="#tarayici">Tarayıcı</a>
-        <a href="#kurulum">Kurulum</a>
-        <a href="#sanal-makine">Sanal makine</a>
-        <a href="#sss">SSS</a>
+        <a href="#ozellikler" data-i18n="nav.features">Özellikler</a>
+        <a href="#tarayici" data-i18n="nav.browser">Tarayıcı</a>
+        <a href="#kurulum" data-i18n="nav.install">Kurulum</a>
+        <a href="#sanal-makine" data-i18n="nav.vm">Sanal makine</a>
+        <a href="#sss" data-i18n="nav.faq">SSS</a>
       </nav>
-      <a class="btn btn-primary" href="#indir">İndir</a>
+      <div class="nav-right">
+        <div class="lang" role="group" aria-label="Dil / Language">
+          <button type="button" data-lang="tr">TR</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+        <a class="btn btn-primary" href="#indir" data-i18n="nav.download">İndir</a>
+      </div>
     </div>
   </header>
 
   <main>
     <section class="hero">
       <div class="container">
-        <div class="badge">OrvixOS 1.0 “Origin” • Debian tabanlı</div>
-        <h1>Sade, hızlı ve<br><span class="grad">tamamen özgür.</span></h1>
-        <p class="lead">OrvixOS; Debian tabanlı, Türkçe TRLDE Wayland masaüstü ve
+        <div class="badge" data-i18n="hero.badge">OrvixOS 1.0 “Origin” • Debian tabanlı</div>
+        <h1 data-i18n="hero.title">Sade, hızlı ve<br><span class="grad">tamamen özgür.</span></h1>
+        <p class="lead" data-i18n="hero.lead">OrvixOS; Debian tabanlı, Türkçe TRLDE Wayland masaüstü ve
           <b>vpx</b> paket yöneticisiyle gelen ücretsiz bir işletim sistemidir. Kurmadan önce canlı olarak dene; ARM64 ve x64 bilgisayarlarda çalışır.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#indir">OrvixOS'u indir</a>
-          <a class="btn btn-ghost" href="#ozellikler">Neler var?</a>
+          <a class="btn btn-primary" href="#indir" data-i18n="hero.cta">OrvixOS'u indir</a>
+          <a class="btn btn-ghost" href="#ozellikler" data-i18n="hero.more">Neler var?</a>
         </div>
-        <div class="hero-meta">Ücretsiz • Açık kaynak • ARM64 ve x64 uyumlu</div>
+        <div class="hero-meta" data-i18n="hero.meta">Ücretsiz • Açık kaynak • ARM64 ve x64 uyumlu</div>
 
-        <div class="terminal" aria-label="vpx örneği">
+        <div class="terminal" aria-label="vpx">
           <div class="terminal-bar"><i></i><i></i><i></i><span>orvix@orvixos: ~</span></div>
-<pre><span class="p">$</span> vpx install htop
+<pre data-i18n="hero.terminal"><span class="p">$</span> vpx install htop
 <span class="c">Paketler indiriliyor…</span>
 <span class="ok">✓</span> htop kuruldu
 <span class="p">$</span> vpx search editör
@@ -210,40 +225,40 @@
     <section id="ozellikler">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">Özellikler</div>
-          <h2>Günlük kullanım için hazır</h2>
-          <p>Kurulumdan çıktığı anda masaüstü, uygulamalar ve güncellemeler hazırdır.</p>
+          <div class="eyebrow" data-i18n="features.eyebrow">Özellikler</div>
+          <h2 data-i18n="features.title">Günlük kullanım için hazır</h2>
+          <p data-i18n="features.lead">Kurulumdan çıktığı anda masaüstü, uygulamalar ve güncellemeler hazırdır.</p>
         </div>
         <div class="grid">
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
-            <h3>TRLDE masaüstü</h3>
-            <p>labwc üzerinde Wayland tabanlı, hafif ve Türkçe masaüstü: panel, uygulama menüsü, hızlı ayarlar, bildirim merkezi ve dört çalışma alanı.</p>
+            <h3 data-i18n="f1.title">TRLDE masaüstü</h3>
+            <p data-i18n="f1.text">labwc üzerinde Wayland tabanlı, hafif ve Türkçe masaüstü: panel, uygulama menüsü, hızlı ayarlar, bildirim merkezi ve dört çalışma alanı.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
-            <h3>vpx paket yöneticisi</h3>
-            <p>APT'nin gücü, daha kısa komutlarla. <code>vpx install</code>, <code>vpx remove</code>, <code>vpx sync</code> — paketler doğrudan depodan indirilir.</p>
+            <h3 data-i18n="f2.title">vpx paket yöneticisi</h3>
+            <p data-i18n="f2.text">APT'nin gücü, daha kısa komutlarla. <code>vpx install</code>, <code>vpx remove</code>, <code>vpx sync</code> — paketler doğrudan depodan indirilir.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg></div>
-            <h3>Sağlam temel</h3>
-            <p>Debian tabanlı: 60.000'den fazla paket ve düzenli güvenlik güncellemeleri.</p>
+            <h3 data-i18n="f3.title">Sağlam temel</h3>
+            <p data-i18n="f3.text">Debian tabanlı: 60.000'den fazla paket ve düzenli güvenlik güncellemeleri.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
-            <h3>Tarayıcını sen seç</h3>
-            <p>Kurulum sırasında Vira Browser, Firefox ESR ya da Chromium'dan birini seçersin; seçtiğin tarayıcı varsayılan olur.</p>
+            <h3 data-i18n="f4.title">Tarayıcını sen seç</h3>
+            <p data-i18n="f4.text">Kurulum sırasında Vira Browser, Firefox ESR ya da Chromium'dan birini seçersin; seçtiğin tarayıcı varsayılan olur.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg></div>
-            <h3>ARM64 ve x64</h3>
-            <p>ARM64 ve Intel/AMD (x64) bilgisayarlarda, ister doğrudan ister sanal makinede kurulur.</p>
+            <h3 data-i18n="f5.title">Önce dene, sonra kur</h3>
+            <p data-i18n="f5.text">ISO canlı olarak açılır; bilgisayarına dokunmadan dener, beğenirsen birkaç dakikada kurarsın. ARM64 ve x64.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
-            <h3>İstediğin masaüstü</h3>
-            <p>KDE Plasma, GNOME veya XFCE mi istiyorsun? <code>vpx install task-kde-desktop</code> ve giriş ekranından seç.</p>
+            <h3 data-i18n="f6.title">İstediğin masaüstü</h3>
+            <p data-i18n="f6.text">KDE Plasma, GNOME veya XFCE mi istiyorsun? <code>vpx install task-kde-desktop</code> ve giriş ekranından seç.</p>
           </div>
         </div>
       </div>
@@ -252,23 +267,23 @@
     <section id="tarayici">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">Tarayıcı seçimi</div>
-          <h2>Kurulumda üç seçenek</h2>
-          <p>Canlı sistemde üçü de hazır; kurulum sırasında hangisini istediğini seçersin, diğerleri kaldırılır.</p>
+          <div class="eyebrow" data-i18n="browser.eyebrow">Tarayıcı seçimi</div>
+          <h2 data-i18n="browser.title">Kurulumda üç seçenek</h2>
+          <p data-i18n="browser.lead">Canlı sistemde üçü de hazır; kurulum sırasında hangisini istediğini seçersin, diğerleri kaldırılır.</p>
         </div>
         <div class="browsers">
           <div class="card browser recommended">
-            <div class="pill">Önerilen</div>
+            <div class="pill" data-i18n="browser.recommended">Önerilen</div>
             <h3>Vira Browser</h3>
-            <p>Yerleşik reklam ve izleyici engelleyici (Vira Shields), şifreli DNS ve Secure Engine.</p>
+            <p data-i18n="browser.vira">Hızlı ve gizlilik odaklı; yerleşik reklam ve izleyici engelleyici (Vira Shields).</p>
           </div>
           <div class="card browser">
             <h3>Firefox ESR</h3>
-            <p>Mozilla'nın uzun süreli destek sürümü. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
+            <p data-i18n="browser.firefox">Mozilla'nın uzun süreli destek sürümü. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
           </div>
           <div class="card browser">
             <h3>Chromium</h3>
-            <p>Chrome'un açık kaynak temeli. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
+            <p data-i18n="browser.chromium">Chrome'un açık kaynak temeli. Güvenlik güncellemeleri <code>vpx sync</code> ile gelir.</p>
           </div>
         </div>
       </div>
@@ -277,61 +292,68 @@
     <section id="indir">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">İndir</div>
+          <div class="eyebrow" data-i18n="dl.eyebrow">İndir</div>
           <h2>OrvixOS 1.0 “Origin”</h2>
-          <p>Bilgisayarına uygun sürümü seç. ISO açılınca OrvixOS canlı olarak çalışır: önce dene, beğenirsen birkaç dakikada kur. Kurulum için internet gerekmez.</p>
+          <p data-i18n="dl.lead">Bilgisayarına uygun sürümü seç. ISO açılınca OrvixOS canlı olarak çalışır: önce dene, beğenirsen birkaç dakikada kur. Kurulum için internet gerekmez.</p>
         </div>
         <div class="downloads">
           <div class="card download">
             <h3>ARM64</h3>
-            <div class="for">ARM64 işlemcili bilgisayarlar ve sanal makineler</div>
-            <div class="facts"><span>Canlı ISO • 1,14 GB</span><span>UEFI</span></div>
-            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-arm64.iso">ARM64 ISO'yu indir</a>
+            <div class="for" data-i18n="dl.arm64.for">ARM64 işlemcili bilgisayarlar ve sanal makineler</div>
+            <div class="facts"><span data-i18n="dl.arm64.size">Canlı ISO • 1,14 GB</span><span>UEFI</span></div>
+            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-arm64.iso" data-i18n="dl.arm64.button">ARM64 ISO'yu indir</a>
             <div class="sha"><b>SHA-256:</b> <span class="mono">7f2b610abde058c47e0a14632cb832beadccd775578b98760d772fbf9c6f806a</span></div>
           </div>
           <div class="card download">
             <h3>x64</h3>
-            <div class="for">Intel ve AMD işlemcili bilgisayarlar</div>
-            <div class="facts"><span>Canlı ISO</span><span>UEFI ve BIOS</span></div>
-            <span class="btn btn-ghost" id="x64-pending" style="width:100%;cursor:default">Canlı x64 ISO hazırlanıyor…</span>
-            <div class="sha">Hazır olunca bu sayfadan indirilebilecek.</div>
+            <div class="for" data-i18n="dl.x64.for">Intel ve AMD işlemcili bilgisayarlar</div>
+            <div class="facts"><span data-i18n="dl.x64.size">Canlı ISO • 1,23 GB</span><span data-i18n="dl.x64.boot">UEFI ve BIOS</span></div>
+            <!--X64-->
+            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-amd64.iso" data-i18n="dl.x64.button">x64 ISO'yu indir</a>
+            <div class="sha"><b>SHA-256:</b> <span class="mono">740375dba2222e104a7cf63c6062a996e3696082d86bf2d6a7ba782778434f23</span></div>
+            <!--/X64-->
           </div>
         </div>
+        <div class="card live-info">
+          <h3 data-i18n="live.title">Canlı sistem girişi</h3>
+          <p data-i18n="live.text">Canlı sistem otomatik giriş yapar. Terminalde, kilit ekranında ya da başka bir yerde şifre sorulursa:</p>
+          <div class="cred"><span data-i18n="live.user">Kullanıcı adı</span><code>orvix</code><span data-i18n="live.pass">Şifre</span><code>live</code></div>
+        </div>
         <div class="card minimal">
-          <h3>Minimal sürüm (ağ kurulumu)</h3>
-          <p>Daha küçük ISO; masaüstü ve uygulamalar kurulum sırasında internetten indirilir. Canlı deneme yoktur.</p>
+          <h3 data-i18n="min.title">Minimal sürüm (ağ kurulumu)</h3>
+          <p data-i18n="min.text">Daha küçük ISO; masaüstü ve uygulamalar kurulum sırasında internetten indirilir. Canlı deneme yoktur.</p>
           <ul>
-            <li><b>İnternet gerektirir</b> — kurulum boyunca bağlantı açık olmalı.</li>
-            <li><b>Kurulum uzun sürer</b> — internet hızına göre 20–40 dakika.</li>
-            <li>Son adımda ilerleme göstermeden uzun süre bekleyebilir; kapatma, kendiliğinden devam eder.</li>
+            <li data-i18n="min.l1"><b>İnternet gerektirir</b> — kurulum boyunca bağlantı açık olmalı.</li>
+            <li data-i18n="min.l2"><b>Kurulum uzun sürer</b> — internet hızına göre 20–40 dakika.</li>
+            <li data-i18n="min.l3">Son adımda ilerleme göstermeden uzun süre bekleyebilir; kapatma, kendiliğinden devam eder.</li>
           </ul>
           <div class="minimal-links">
             <a class="btn btn-ghost" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-arm64.iso">ARM64 minimal • 782 MB</a>
             <a class="btn btn-ghost" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-amd64.iso">x64 minimal • 842 MB</a>
           </div>
-          <div class="sha"><b>SHA-256:</b> değerleri <a href="https://github.com/mesutozansoftware/orvixos/releases/tag/v1.0.0" style="color: var(--teal)">GitHub sürüm sayfasında</a></div>
+          <div class="sha" data-i18n="min.sha"><b>SHA-256:</b> değerleri <a href="https://github.com/mesutozansoftware/orvixos/releases/tag/v1.0.0" style="color: var(--teal)">GitHub sürüm sayfasında</a></div>
         </div>
-        <p class="note">Kaynak kodu ve lisanslar: <a href="https://github.com/mesutozansoftware/orvixos" style="color: var(--teal)">github.com/mesutozansoftware/orvixos</a></p>
+        <p class="note"><span data-i18n="dl.source">Kaynak kodu ve lisanslar:</span> <a href="https://github.com/mesutozansoftware/orvixos" style="color: var(--teal)">github.com/mesutozansoftware/orvixos</a></p>
       </div>
     </section>
 
     <section id="kurulum">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">Kurulum</div>
-          <h2>Dört adımda hazır</h2>
+          <div class="eyebrow" data-i18n="inst.eyebrow">Kurulum</div>
+          <h2 data-i18n="inst.title">Dört adımda hazır</h2>
         </div>
         <div class="steps">
-          <div class="card step"><h3>ISO'yu indir</h3><p>ARM64 ya da x64 sürümünü indir; dilersen SHA-256 değerini doğrula.</p></div>
-          <div class="card step"><h3>Önyükleme ortamı</h3><p>ISO'yu balenaEtcher ile USB belleğe yaz ya da sanal makineye önyükleme diski olarak ekle.</p></div>
-          <div class="card step"><h3>Kurulumu başlat</h3><p>Menüden “OrvixOS'u dene veya kur”u seç. Masaüstü açılınca <b>OrvixOS'u Kur</b>'a bas; diskini, kullanıcını ve tarayıcını seç.</p></div>
-          <div class="card step"><h3>Giriş yap</h3><p>Kurulum birkaç dakikada biter. ISO'yu çıkar, yeniden başlat ve TRLDE masaüstüne giriş yap.</p></div>
+          <div class="card step"><h3 data-i18n="s1.title">ISO'yu indir</h3><p data-i18n="s1.text">ARM64 ya da x64 sürümünü indir; dilersen SHA-256 değerini doğrula.</p></div>
+          <div class="card step"><h3 data-i18n="s2.title">Önyükleme ortamı</h3><p data-i18n="s2.text">ISO'yu balenaEtcher ile USB belleğe yaz ya da sanal makineye önyükleme diski olarak ekle.</p></div>
+          <div class="card step"><h3 data-i18n="s3.title">Kurulumu başlat</h3><p data-i18n="s3.text">Menüden “OrvixOS'u dene veya kur”u seç. Masaüstü açılınca <b>OrvixOS'u Kur</b>'a bas; diskini, kullanıcını ve tarayıcını seç.</p></div>
+          <div class="card step"><h3 data-i18n="s4.title">Giriş yap</h3><p data-i18n="s4.text">Kurulum birkaç dakikada biter. ISO'yu çıkar, yeniden başlat ve TRLDE masaüstüne giriş yap.</p></div>
         </div>
         <div class="specs" style="margin-top: 36px">
-          <div class="card spec"><b>2 çekirdek</b><span>en az işlemci (4 önerilir)</span></div>
-          <div class="card spec"><b>4 GB</b><span>bellek</span></div>
-          <div class="card spec"><b>25 GB</b><span>disk alanı</span></div>
-          <div class="card spec"><b>4 GB</b><span>USB bellek (canlı ISO için)</span></div>
+          <div class="card spec"><b data-i18n="spec.cpu">2 çekirdek</b><span data-i18n="spec.cpu.note">en az işlemci (4 önerilir)</span></div>
+          <div class="card spec"><b>4 GB</b><span data-i18n="spec.ram">bellek</span></div>
+          <div class="card spec"><b>25 GB</b><span data-i18n="spec.disk">disk alanı</span></div>
+          <div class="card spec"><b>4 GB</b><span data-i18n="spec.usb">USB bellek (canlı ISO için)</span></div>
         </div>
       </div>
     </section>
@@ -339,17 +361,17 @@
     <section id="sanal-makine">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">Sanal makine</div>
-          <h2>Sanal makine ayarları</h2>
+          <div class="eyebrow" data-i18n="vm.eyebrow">Sanal makine</div>
+          <h2 data-i18n="vm.title">Sanal makine ayarları</h2>
         </div>
         <div class="card vm-settings">
           <ul>
-            <li><b>UEFI Boot</b><span>Açık</span></li>
-            <li><b>Secure Boot / TPM</b><span>Kapalı</span></li>
-            <li><b>Display</b><span><code>virtio-ramfb</code> veya <code>virtio-gpu-pci</code></span></li>
-            <li><b>Network</b><span>İnternet erişimli (NAT / Shared)</span></li>
-            <li><b>Bellek</b><span>4 GB</span></li>
-            <li><b>İşlemci</b><span>4 çekirdek</span></li>
+            <li><b>UEFI Boot</b><span data-i18n="vm.on">Açık</span></li>
+            <li><b>Secure Boot / TPM</b><span data-i18n="vm.off">Kapalı</span></li>
+            <li><b>Display</b><span data-i18n="vm.display"><code>virtio-ramfb</code> veya <code>virtio-gpu-pci</code></span></li>
+            <li><b>Network</b><span data-i18n="vm.network">İnternet erişimli (NAT / Shared)</span></li>
+            <li><b data-i18n="vm.ram">Bellek</b><span>4 GB</span></li>
+            <li><b data-i18n="vm.cpu">İşlemci</b><span data-i18n="vm.cpu.value">4 çekirdek</span></li>
             <li><b>Disk</b><span>25 GB</span></li>
           </ul>
         </div>
@@ -359,14 +381,15 @@
     <section id="sss">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">SSS</div>
-          <h2>Sık sorulan sorular</h2>
+          <div class="eyebrow" data-i18n="faq.eyebrow">SSS</div>
+          <h2 data-i18n="faq.title">Sık sorulan sorular</h2>
         </div>
         <div class="faq">
-          <details><summary>OrvixOS ücretsiz mi?</summary><p>Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
-          <details><summary>vpx ile apt arasındaki fark nedir?</summary><p>vpx, APT'nin üzerinde çalışır ve aynı depoları kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
-          <details><summary>Başka masaüstü kurabilir miyim?</summary><p>Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranındaki dişli menüsünden oturumu seçebilirsin.</p></details>
-          <details><summary>Kurmadan deneyebilir miyim?</summary><p>Evet. ISO'yu açtığında OrvixOS canlı olarak çalışır; bilgisayarındaki hiçbir şey değişmez. Beğenirsen masaüstündeki <b>OrvixOS'u Kur</b> ile kurarsın. Kurulum için internet gerekmez.</p></details>
+          <details><summary data-i18n="q1">OrvixOS ücretsiz mi?</summary><p data-i18n="a1">Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
+          <details><summary data-i18n="q2">vpx ile apt arasındaki fark nedir?</summary><p data-i18n="a2">vpx, APT'nin üzerinde çalışır ve aynı depoları kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
+          <details><summary data-i18n="q3">Başka masaüstü kurabilir miyim?</summary><p data-i18n="a3">Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranının sağ altındaki <b>Oturum</b> menüsünden seçebilirsin.</p></details>
+          <details><summary data-i18n="q4">Kurmadan deneyebilir miyim?</summary><p data-i18n="a4">Evet. ISO'yu açtığında OrvixOS canlı olarak çalışır; bilgisayarındaki hiçbir şey değişmez. Beğenirsen masaüstündeki <b>OrvixOS'u Kur</b> ile kurarsın. Kurulum için internet gerekmez.</p></details>
+          <details><summary data-i18n="q5">Canlı sistemin şifresi nedir?</summary><p data-i18n="a5">Canlı sistem otomatik giriş yapar. Terminalde, kilit ekranında ya da başka bir yerde sorulursa kullanıcı adı <code>orvix</code>, şifre <code>live</code>. Kurduğun sistemde ise kurulumda belirlediğin şifre geçerlidir.</p></details>
         </div>
       </div>
     </section>
@@ -374,13 +397,117 @@
 
   <footer>
     <div class="container foot">
-      <div>© 2026 OrvixOS Projesi • Debian tabanlı bağımsız bir dağıtım</div>
+      <div data-i18n="foot.copy">© 2026 OrvixOS Projesi • Debian tabanlı bağımsız bir dağıtım</div>
       <div class="foot-links">
-        <a href="https://github.com/mesutozansoftware/orvixos">Kaynak kodu</a>
-        <a href="https://github.com/mesutozansoftware/orvixos/blob/main/SOURCES.md">Lisanslar</a>
+        <a href="https://github.com/mesutozansoftware/orvixos" data-i18n="foot.source">Kaynak kodu</a>
+        <a href="https://github.com/mesutozansoftware/orvixos/blob/main/SOURCES.md" data-i18n="foot.licenses">Lisanslar</a>
         <a href="https://virabrowser.vercel.app">Vira Browser</a>
       </div>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var EN = {
+        "title": "OrvixOS — a simple, fast Debian-based operating system",
+        "nav.features": "Features", "nav.browser": "Browser", "nav.install": "Install",
+        "nav.vm": "Virtual machine", "nav.faq": "FAQ", "nav.download": "Download",
+        "hero.badge": "OrvixOS 1.0 “Origin” • Debian based",
+        "hero.title": "Simple, fast and<br><span class=\"grad\">completely free.</span>",
+        "hero.lead": "OrvixOS is a free, Debian-based operating system with the TRLDE Wayland desktop and the <b>vpx</b> package manager. Try it live before installing; it runs on ARM64 and x64 computers.",
+        "hero.cta": "Download OrvixOS", "hero.more": "What's inside?",
+        "hero.meta": "Free • Open source • ARM64 and x64",
+        "hero.terminal": "<span class=\"p\">$</span> vpx install htop\n<span class=\"c\">Downloading packages…</span>\n<span class=\"ok\">✓</span> htop installed\n<span class=\"p\">$</span> vpx search editor\n<span class=\"p\">$</span> vpx sync   <span class=\"c\"># refresh lists and update the whole system</span>",
+        "features.eyebrow": "Features", "features.title": "Ready for everyday use",
+        "features.lead": "Desktop, apps and updates are ready the moment installation finishes.",
+        "f1.title": "TRLDE desktop",
+        "f1.text": "A lightweight Wayland desktop built on labwc: panel, app menu, quick settings, notification center and four workspaces.",
+        "f2.title": "vpx package manager",
+        "f2.text": "The power of APT with shorter commands. <code>vpx install</code>, <code>vpx remove</code>, <code>vpx sync</code> — packages come straight from the repositories.",
+        "f3.title": "Solid foundation", "f3.text": "Debian based: more than 60,000 packages and regular security updates.",
+        "f4.title": "Pick your browser",
+        "f4.text": "Choose Vira Browser, Firefox ESR or Chromium during installation; your choice becomes the default browser.",
+        "f5.title": "Try first, then install",
+        "f5.text": "The ISO boots into a live session: try it without touching your computer and install in a few minutes if you like it. ARM64 and x64.",
+        "f6.title": "Any desktop you want",
+        "f6.text": "Prefer KDE Plasma, GNOME or XFCE? Run <code>vpx install task-kde-desktop</code> and pick it on the login screen.",
+        "browser.eyebrow": "Browser choice", "browser.title": "Three options at install time",
+        "browser.lead": "All three are ready in the live session; pick the one you want during installation and the others are removed.",
+        "browser.recommended": "Recommended",
+        "browser.vira": "Fast and privacy-focused, with a built-in ad and tracker blocker (Vira Shields).",
+        "browser.firefox": "Mozilla's extended support release. Security updates arrive with <code>vpx sync</code>.",
+        "browser.chromium": "The open-source base of Chrome. Security updates arrive with <code>vpx sync</code>.",
+        "dl.eyebrow": "Download",
+        "dl.lead": "Pick the version for your computer. The ISO boots into a live OrvixOS session: try it first, then install in a few minutes. No internet needed to install.",
+        "dl.arm64.for": "Computers and virtual machines with ARM64 processors",
+        "dl.arm64.size": "Live ISO • 1.14 GB", "dl.arm64.button": "Download ARM64 ISO",
+        "dl.x64.for": "Computers with Intel and AMD processors",
+        "dl.x64.size": "Live ISO • 1.23 GB", "dl.x64.boot": "UEFI and BIOS",
+        "dl.x64.button": "Download x64 ISO",
+        "dl.x64.pending": "x64 live ISO is being prepared…",
+        "dl.x64.pendingnote": "It will be available on this page when ready.",
+        "live.title": "Live session login",
+        "live.text": "The live session logs in automatically. If a password is asked in the terminal, on the lock screen or anywhere else:",
+        "live.user": "Username", "live.pass": "Password",
+        "min.title": "Minimal edition (network install)",
+        "min.text": "Smaller ISO; the desktop and apps are downloaded from the internet during installation. No live session.",
+        "min.l1": "<b>Requires internet</b> — keep the connection on during installation.",
+        "min.l2": "<b>Installation takes longer</b> — 20–40 minutes depending on your connection.",
+        "min.l3": "The last step may wait for a long time without showing progress; don't turn it off, it continues on its own.",
+        "min.sha": "<b>SHA-256:</b> checksums are on the <a href=\"https://github.com/mesutozansoftware/orvixos/releases/tag/v1.0.0\" style=\"color: var(--teal)\">GitHub release page</a>",
+        "dl.source": "Source code and licenses:",
+        "inst.eyebrow": "Install", "inst.title": "Ready in four steps",
+        "s1.title": "Download the ISO", "s1.text": "Download the ARM64 or x64 version; optionally verify its SHA-256 checksum.",
+        "s2.title": "Boot media", "s2.text": "Write the ISO to a USB stick with balenaEtcher, or attach it to a virtual machine as a boot disk.",
+        "s3.title": "Start the installer", "s3.text": "Choose “Try or install OrvixOS” in the menu. When the desktop appears, click <b>Install OrvixOS</b>; pick your disk, user and browser.",
+        "s4.title": "Log in", "s4.text": "Installation finishes in a few minutes. Remove the ISO, restart and log in to the TRLDE desktop.",
+        "spec.cpu": "2 cores", "spec.cpu.note": "minimum CPU (4 recommended)", "spec.ram": "memory",
+        "spec.disk": "disk space", "spec.usb": "USB stick (for the live ISO)",
+        "vm.eyebrow": "Virtual machine", "vm.title": "Virtual machine settings",
+        "vm.on": "On", "vm.off": "Off",
+        "vm.display": "<code>virtio-ramfb</code> or <code>virtio-gpu-pci</code>",
+        "vm.network": "With internet access (NAT / Shared)", "vm.ram": "Memory", "vm.cpu": "CPU", "vm.cpu.value": "4 cores",
+        "faq.eyebrow": "FAQ", "faq.title": "Frequently asked questions",
+        "q1": "Is OrvixOS free?", "a1": "Yes. OrvixOS and everything in it is free and open-source software.",
+        "q2": "How is vpx different from apt?",
+        "a2": "vpx runs on top of APT and uses the same repositories. Type <code>vpx install</code> instead of <code>apt install</code>; it asks for admin rights by itself when needed. It also offers shortcuts like <code>vpx sync</code>, <code>vpx files</code> and <code>vpx owner</code>, and passes any other command straight to apt.",
+        "q3": "Can I install another desktop?",
+        "a3": "Yes: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> or <code>task-mate-desktop</code>. Then pick it from the <b>Session</b> menu at the bottom right of the login screen.",
+        "q4": "Can I try it without installing?",
+        "a4": "Yes. The ISO boots into a live OrvixOS session and nothing on your computer changes. If you like it, click <b>Install OrvixOS</b> on the desktop. No internet needed to install.",
+        "q5": "What is the live session password?",
+        "a5": "The live session logs in automatically. If a password is asked in the terminal, on the lock screen or anywhere else, the username is <code>orvix</code> and the password is <code>live</code>. On the installed system, use the password you set during installation.",
+        "foot.copy": "© 2026 OrvixOS Project • An independent Debian-based distribution",
+        "foot.source": "Source code", "foot.licenses": "Licenses"
+      };
+      var nodes = document.querySelectorAll("[data-i18n]");
+      var original = {};
+      nodes.forEach(function (node) { original[node.getAttribute("data-i18n")] = node.innerHTML; });
+      var trTitle = document.title;
+
+      function apply(lang) {
+        nodes.forEach(function (node) {
+          var key = node.getAttribute("data-i18n");
+          node.innerHTML = lang === "en" && EN[key] ? EN[key] : original[key];
+        });
+        document.title = lang === "en" ? EN.title : trTitle;
+        document.documentElement.lang = lang;
+        document.querySelectorAll(".lang button").forEach(function (button) {
+          button.classList.toggle("active", button.getAttribute("data-lang") === lang);
+        });
+        try { localStorage.setItem("orvixos-lang", lang); } catch (e) {}
+      }
+
+      var saved = null;
+      try { saved = localStorage.getItem("orvixos-lang"); } catch (e) {}
+      var browserLang = (navigator.language || "tr").toLowerCase();
+      apply(saved || (browserLang.indexOf("tr") === 0 ? "tr" : "en"));
+
+      document.querySelectorAll(".lang button").forEach(function (button) {
+        button.addEventListener("click", function () { apply(button.getAttribute("data-lang")); });
+      });
+    })();
+  </script>
 </body>
+
 </html>

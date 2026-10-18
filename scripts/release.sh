@@ -50,7 +50,8 @@ if [ "${SKIP_BUILD:-0}" != 1 ]; then
         printf ' hazır\n'
     fi
     # QEMU ağında yavaş DNS'i önler (her paket için 5 sn beklemesin).
-    sh tests/vm.sh 'grep -q single-request /etc/resolv.conf || echo "options single-request-reopen timeout:1 attempts:2" >> /etc/resolv.conf; rm -rf /srv/orvixos-live/work-* /srv/orvixos-live/src-*'
+    # Yarım kalmış derlemenin bağlama noktaları (proc/sys/dev) silmeden önce ayrılır.
+    sh tests/vm.sh 'grep -q single-request /etc/resolv.conf || echo "options single-request-reopen timeout:1 attempts:2" >> /etc/resolv.conf; mount | grep /srv/orvixos-live | cut -d" " -f3 | sort -r | while read m; do umount -lf "$m"; done; rm -rf /srv/orvixos-live/work-* /srv/orvixos-live/src-*'
 
     say "OrvixOS paketleri"
     [ -f downloads/Packages-arm64.xz ] || sh scripts/fetch.sh

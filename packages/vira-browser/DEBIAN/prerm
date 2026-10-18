@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = remove ]; then
+    update-alternatives --remove x-www-browser /usr/bin/vira-browser
+    update-alternatives --remove gnome-www-browser /usr/bin/vira-browser
+fi
+exit 0

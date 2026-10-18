@@ -1,0 +1,7 @@
+[Unit]
+Description=TRLDE sistem güncellemelerini denetle
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/trlde-update --check

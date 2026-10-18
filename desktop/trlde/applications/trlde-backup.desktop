@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Yedekleme ve Kurtarma
+Comment=Kişisel dosyalarını yedekle veya geri yükle
+Exec=trlde-backup
+Icon=org.gnome.DejaDup
+Type=Application
+Categories=Utility;System;
+Keywords=yedek;geri yükle;kurtarma;backup;restore;

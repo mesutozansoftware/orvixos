@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="140" viewBox="0 0 600 140">
+  <defs>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2ee6d6"/>
+      <stop offset="1" stop-color="#7c5cff"/>
+    </linearGradient>
+    <mask id="gap">
+      <rect width="600" height="140" fill="#fff"/>
+      <circle cx="104" cy="31" r="17" fill="#000"/>
+    </mask>
+  </defs>
+  <path d="M66 22a46 46 0 1 0 0.01 0zM66 39a29 29 0 1 1 -0.01 0z" fill="url(#orbit)" fill-rule="evenodd" mask="url(#gap)"/>
+  <circle cx="104" cy="31" r="12" fill="#2ee6d6"/>
+  <text x="140" y="94" font-family="Inter, Noto Sans, DejaVu Sans, sans-serif" font-size="66" font-weight="700" fill="#ffffff">Orvix<tspan fill="#2ee6d6">OS</tspan></text>
+</svg>

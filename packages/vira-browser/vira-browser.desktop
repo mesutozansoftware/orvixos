@@ -1,0 +1,17 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Vira Browser
+GenericName=Web Tarayıcısı
+GenericName[en]=Web Browser
+Comment=Hızlı, gizlilik odaklı web tarayıcısı (Vira Shields, Secure Engine)
+Comment[en]=Fast, privacy-focused web browser
+Exec=/usr/bin/vira-browser %U
+TryExec=/usr/bin/vira-browser
+Icon=vira-browser
+Terminal=false
+StartupNotify=true
+StartupWMClass=vira-browser
+Categories=Network;WebBrowser;
+Keywords=tarayıcı;internet;web;browser;vira;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;

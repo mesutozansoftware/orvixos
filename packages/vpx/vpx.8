@@ -1,0 +1,84 @@
+.TH VPX 8 "2026" "OrvixOS" "OrvixOS Sistem Yönetimi"
+.SH AD
+vpx \- OrvixOS paket yöneticisi (APT tabanlı)
+.SH ÖZET
+.B vpx
+.I komut
+.RI [ seçenekler ]
+.RI [ paket ...]
+.SH AÇIKLAMA
+.B vpx
+OrvixOS'un paket yöneticisidir. Debian'ın APT altyapısını kullanır; paketler
+doğrudan Debian sunucularından (deb.debian.org) indirilir.
+.B apt install
+yerine
+.B vpx install
+yazılır. Yönetici yetkisi gereken komutlar gerektiğinde kendiliğinden
+.BR sudo (8)
+ile yeniden çalıştırılır.
+.SH KOMUTLAR
+.TP
+.BI install " paket..."
+Paket kurar. Yerel dosyalar için \fB./dosya.deb\fR yazılabilir.
+.TP
+.BI remove " paket..." ", purge " paket...
+Paketi kaldırır; purge ayar dosyalarını da siler.
+.TP
+.B autoremove
+Artık gerekmeyen bağımlılıkları kaldırır.
+.TP
+.B update
+Paket listelerini Debian depolarından yeniler.
+.TP
+.BR upgrade ", " full-upgrade
+Kurulu paketleri günceller.
+.TP
+.B sync
+update ve upgrade komutlarını art arda çalıştırır.
+.TP
+.BI search " kelime"
+Depolarda paket arar.
+.TP
+.BI show " paket" ", info " paket
+Paket ayrıntılarını gösterir.
+.TP
+.B list
+Paketleri listeler (\-\-installed, \-\-upgradable).
+.TP
+.BI policy " paket" ", depends " paket ", rdepends " paket
+APT önbelleğini sorgular.
+.TP
+.BI files " paket"
+Kurulu paketin dosyalarını listeler.
+.TP
+.BI owner " dosya"
+Dosyanın hangi pakete ait olduğunu bulur.
+.TP
+.BR clean ", " autoclean
+Paket önbelleğini temizler.
+.TP
+.B doctor
+Yarım kalmış kurulumları tamamlar ve bozuk bağımlılıkları onarır.
+.TP
+.B sources
+Etkin depo tanımlarını gösterir.
+.PP
+Tanınmayan diğer komutlar ve seçenekler olduğu gibi
+.BR apt (8)
+komutuna aktarılır.
+.SH ÖRNEKLER
+.nf
+vpx update
+vpx install htop
+vpx search editör
+vpx remove htop
+vpx sync
+.fi
+.SH DOSYALAR
+.TP
+.I /etc/apt/sources.list
+OrvixOS'un kullandığı Debian depoları.
+.SH AYRICA BAKINIZ
+.BR apt (8),
+.BR apt-get (8),
+.BR dpkg (1)

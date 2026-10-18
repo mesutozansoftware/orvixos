@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -eu
+
+exec wofi --show run --normal-window --insensitive \
+    --prompt "Komut çalıştır" --width 620 --height 420 \
+    --style /usr/share/trlde/wofi/style.css

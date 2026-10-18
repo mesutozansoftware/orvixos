@@ -1,0 +1,9 @@
+[Unit]
+Description=TRLDE graphical user session
+Documentation=https://github.com/labwc/labwc
+Wants=graphical-session-pre.target
+Wants=trlde-clipboard.service
+Requires=graphical-session.target
+After=graphical-session-pre.target
+Before=graphical-session.target
+BindsTo=graphical-session.target

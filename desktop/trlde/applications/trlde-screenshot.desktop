@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TRLDE Ekran Görüntüsü
+Comment=Ekranın seçilen alanını görüntü olarak kaydet
+Exec=trlde-screenshot area
+Icon=applets-screenshooter
+Type=Application
+Categories=Utility;Graphics;
+Keywords=ekran;görüntüsü;screenshot;yakala;
+

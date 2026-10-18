@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TRLDE Ayarları
+Comment=Masaüstü, ağ, ses ve cihaz ayarları
+Exec=trlde-settings
+Icon=preferences-system
+Type=Application
+Categories=Settings;System;
+Keywords=ayarlar;settings;ağ;ses;ekran;
+

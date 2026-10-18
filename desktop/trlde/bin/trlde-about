@@ -1,0 +1,27 @@
+#!/usr/bin/python3
+
+import sys
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+
+app = Gtk.Application(application_id="org.trlde.About")
+
+
+def activate(application):
+    dialog = Gtk.AboutDialog(transient_for=None, modal=False)
+    dialog.set_application(application)
+    dialog.set_program_name("TRLDE")
+    dialog.set_version("0.4.0")
+    dialog.set_comments("Türkçe odaklı, hafif ve Wayland tabanlı masaüstü ortamı")
+    dialog.set_website("https://github.com/labwc/labwc")
+    dialog.set_copyright("TRLDE contributors, 2026")
+    dialog.connect("response", lambda widget, *_: widget.destroy())
+    dialog.show_all()
+
+
+app.connect("activate", activate)
+app.run(sys.argv)

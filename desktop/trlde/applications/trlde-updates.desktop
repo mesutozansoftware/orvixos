@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Sistem Güncellemeleri
+Comment=OrvixOS ve TRLDE paketlerini güncelle
+Exec=trlde-update
+Icon=software-update-available
+Type=Application
+Categories=System;Settings;
+Keywords=güncelleme;update;paket;apt;vpx;

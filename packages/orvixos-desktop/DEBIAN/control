@@ -1,0 +1,12 @@
+Package: orvixos-desktop
+Version: @ORVIXOS_VERSION@
+Architecture: all
+Maintainer: OrvixOS Project <noreply@orvixos.invalid>
+Section: metapackages
+Priority: optional
+Depends: orvixos-base (= @ORVIXOS_VERSION@), vpx, trlde, vira-browser | firefox-esr | chromium, gdm3, network-manager, pipewire-audio, xdg-user-dirs, sudo, locales
+Recommends: fonts-noto-color-emoji, bash-completion, unattended-upgrades
+Description: OrvixOS masaüstü (TRLDE + seçilen tarayıcı)
+ OrvixOS'un tam masaüstü kurulumunu sağlayan üst pakettir: TRLDE masaüstü
+ ortamı, GDM giriş ekranı, kurulumda seçilen web tarayıcısı (Vira Browser,
+ Firefox ESR veya Chromium) ve vpx paket yöneticisi. Giriş ekranında varsayılan oturum TRLDE olarak ayarlanır.

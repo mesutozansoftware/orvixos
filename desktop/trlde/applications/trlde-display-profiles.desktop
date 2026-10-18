@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Ekran Profilleri
+Comment=Çoklu monitör düzenlerini kaydet ve uygula
+Exec=trlde-display-profiles
+Icon=preferences-desktop-display
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=ekran;monitör;profil;display;

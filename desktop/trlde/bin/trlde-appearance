@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk
+
+
+def spawn(argv):
+    try:
+        subprocess.Popen(argv, start_new_session=True)
+    except OSError:
+        pass
+
+
+class Appearance(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Appearance")
+        self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
+            button { min-height: 54px; border-radius: 11px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            .heading { font-size: 18px; font-weight: 800; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Görünüm")
+        self.window.set_default_size(520, 430)
+
+        header = Gtk.HeaderBar(title="TRLDE Görünüm")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        box.set_border_width(20)
+        self.window.add(box)
+
+        title = Gtk.Label(label="Duvar Kağıdı", xalign=0)
+        title.get_style_context().add_class("heading")
+        box.pack_start(title, False, False, 0)
+
+        wallpapers = [
+            ("TRLDE Gece", "/usr/share/backgrounds/trlde/trlde.svg"),
+            ("Turkuaz Akış", "/usr/share/backgrounds/trlde/trlde-turquoise.svg"),
+            ("Gün Batımı", "/usr/share/backgrounds/trlde/trlde-sunset.svg"),
+        ]
+        for label, path in wallpapers:
+            button = Gtk.Button(label=label)
+            button.connect("clicked", lambda _button, selected=path: spawn(["trlde-wallpaper", selected]))
+            box.pack_start(button, False, False, 0)
+
+        theme_title = Gtk.Label(label="Uyumlu Uygulama Teması", xalign=0)
+        theme_title.get_style_context().add_class("heading")
+        box.pack_start(theme_title, False, False, 0)
+
+        themes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        dark = Gtk.Button(label="Koyu")
+        dark.connect("clicked", lambda *_: self.set_theme("dark"))
+        light = Gtk.Button(label="Açık")
+        light.connect("clicked", lambda *_: self.set_theme("light"))
+        themes.pack_start(dark, True, True, 0)
+        themes.pack_start(light, True, True, 0)
+        box.pack_start(themes, False, False, 0)
+
+        self.window.show_all()
+
+    def set_theme(self, mode):
+        if mode == "dark":
+            color_scheme = "prefer-dark"
+            gtk_theme = "Adwaita-dark"
+        else:
+            color_scheme = "prefer-light"
+            gtk_theme = "Adwaita"
+        spawn(["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", color_scheme])
+        spawn(["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", gtk_theme])
+
+
+Appearance().run(sys.argv)

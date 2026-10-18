@@ -1,0 +1,50 @@
+# OrvixOS @ORVIXOS_VERSION@ kurulum ön yanıtları (debian-installer preseed)
+# Dil ve klavye önyükleme menüsünden gelir (locale=, keymap=).
+
+# Ağ: bilgisayar adı orvixos, alan adı sorulmaz.
+d-i netcfg/choose_interface select auto
+d-i netcfg/get_hostname string orvixos
+d-i netcfg/get_domain string
+d-i netcfg/wireless_wep string
+d-i hw-detect/load_firmware boolean true
+
+# Paketler doğrudan Debian sunucularından indirilir.
+d-i mirror/country string manual
+d-i mirror/http/hostname string @DEBIAN_MIRROR@
+d-i mirror/http/directory string /debian
+d-i mirror/http/proxy string
+d-i mirror/suite string @DEBIAN_CODENAME@
+
+# Kullanıcı: root hesabı kapalı, ilk kullanıcı sudo yetkisi alır.
+d-i passwd/root-login boolean false
+
+# Saat
+d-i clock-setup/utc boolean true
+d-i clock-setup/ntp boolean true
+
+# Depolar: main + contrib + non-free-firmware, güvenlik ve güncellemeler.
+d-i apt-setup/contrib boolean true
+d-i apt-setup/non-free boolean false
+d-i apt-setup/non-free-firmware boolean true
+d-i apt-setup/services-select multiselect security, updates
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/disable-cdrom-entries boolean true
+
+# Tarayıcı seçimi disk bölümlemeden hemen önce sorulur.
+d-i partman/early_command string sh /cdrom/orvixos/choose-browser.sh
+
+# Yazılım seçimi: Debian görev seçicisi yerine OrvixOS masaüstü.
+tasksel tasksel/first multiselect standard
+d-i pkgsel/run_tasksel boolean true
+d-i pkgsel/include string @PKGSEL_INCLUDE@
+d-i pkgsel/upgrade select safe-upgrade
+d-i pkgsel/update-policy select unattended-upgrades
+popularity-contest popularity-contest/participate boolean false
+
+# Önyükleyici
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean true
+d-i grub-installer/force-efi-extra-removable boolean true
+
+# OrvixOS paketleri (TRLDE, vpx, tarayıcı, markalama) kurulur.
+d-i preseed/late_command string sh /cdrom/orvixos/late-install.sh

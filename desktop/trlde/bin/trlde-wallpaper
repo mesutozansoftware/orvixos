@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+wallpaper=${1:-}
+if [ -z "$wallpaper" ] || [ ! -r "$wallpaper" ]; then
+    printf '%s\n' "Duvar kağıdı okunamıyor: $wallpaper" >&2
+    exit 1
+fi
+
+config_home=${XDG_CONFIG_HOME:-$HOME/.config}
+install -d -m 0700 "$config_home/trlde"
+printf '%s\n' "$wallpaper" > "$config_home/trlde/wallpaper"
+
+pkill -x swaybg >/dev/null 2>&1 || true
+swaybg -i "$wallpaper" -m fill >/dev/null 2>&1 &

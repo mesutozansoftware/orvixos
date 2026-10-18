@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TRLDE Görünüm
+Comment=Duvar kağıdı ve uygulama temasını değiştir
+Exec=trlde-appearance
+Icon=preferences-desktop-theme
+Type=Application
+Categories=Settings;DesktopSettings;
+Keywords=duvar;kağıdı;tema;görünüm;
+

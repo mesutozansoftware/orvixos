@@ -1,0 +1,12 @@
+Package: vpx
+Version: @VPX_VERSION@
+Architecture: all
+Maintainer: OrvixOS Project <noreply@orvixos.invalid>
+Section: admin
+Priority: important
+Depends: apt (>= 2.6), dpkg, sudo
+Description: OrvixOS paket yöneticisi (APT tabanlı)
+ vpx, OrvixOS'un paket yöneticisidir. Debian'ın APT altyapısını kullanır ve
+ paketleri doğrudan Debian sunucularından indirir: "apt install" yerine
+ "vpx install" yazılır. Ek olarak sync, files, owner ve doctor gibi kısa
+ komutlar sunar; diğer tüm komutları apt'ye aktarır.

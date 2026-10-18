@@ -1,0 +1,7 @@
+.DS_Store
+._*
+/downloads/
+/build/
+/outputs/
+/site/.vercel/
+__pycache__/

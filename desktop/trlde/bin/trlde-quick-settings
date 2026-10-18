@@ -1,0 +1,212 @@
+#!/usr/bin/python3
+
+import os
+import re
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gio, GLib, Gtk
+
+
+def command_output(argv):
+    env = os.environ.copy()
+    env["LC_ALL"] = "C"
+    try:
+        return subprocess.run(
+            argv,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+            env=env,
+        ).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def spawn(argv):
+    try:
+        subprocess.Popen(argv, start_new_session=True)
+    except OSError:
+        pass
+
+
+class QuickSettings(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.QuickSettings")
+        self.window = None
+        self.refreshing = False
+        self.volume_timer = 0
+        self.brightness_timer = 0
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
+            .title { font-size: 19px; font-weight: 800; }
+            button { min-height: 42px; border-radius: 10px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            button.suggested-action { background: #d62e4f; color: #ffffff; }
+            scale trough { min-height: 8px; border-radius: 8px; background: #273442; }
+            scale highlight { border-radius: 8px; background: #39d6c5; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window is not None:
+            self.window.present()
+            return
+
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Hızlı Ayarlar")
+        self.window.set_default_size(440, 500)
+        self.window.set_resizable(False)
+
+        header = Gtk.HeaderBar()
+        header.set_show_close_button(True)
+        header.props.title = "TRLDE Hızlı Ayarlar"
+        self.window.set_titlebar(header)
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        outer.set_border_width(18)
+        self.window.add(outer)
+
+        toggles = Gtk.Grid(column_spacing=10, row_spacing=10)
+        toggles.set_column_homogeneous(True)
+        outer.pack_start(toggles, False, False, 0)
+
+        self.wifi_button = Gtk.Button()
+        self.wifi_button.connect("clicked", self.toggle_wifi)
+        toggles.attach(self.wifi_button, 0, 0, 1, 1)
+
+        self.bluetooth_button = Gtk.Button()
+        self.bluetooth_button.connect("clicked", self.toggle_bluetooth)
+        toggles.attach(self.bluetooth_button, 1, 0, 1, 1)
+
+        network_settings = Gtk.Button(label="Ağ Ayarları")
+        network_settings.connect("clicked", lambda *_: spawn(["nm-connection-editor"]))
+        toggles.attach(network_settings, 0, 1, 1, 1)
+
+        display_settings = Gtk.Button(label="Ekranlar")
+        display_settings.connect("clicked", lambda *_: spawn(["wdisplays"]))
+        toggles.attach(display_settings, 1, 1, 1, 1)
+
+        outer.pack_start(Gtk.Label(label="Ses", xalign=0), False, False, 0)
+        self.volume = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
+        self.volume.set_draw_value(True)
+        self.volume.set_value_pos(Gtk.PositionType.RIGHT)
+        self.volume.connect("value-changed", self.schedule_volume)
+        outer.pack_start(self.volume, False, False, 0)
+
+        outer.pack_start(Gtk.Label(label="Parlaklık", xalign=0), False, False, 0)
+        self.brightness = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1, 100, 1)
+        self.brightness.set_draw_value(True)
+        self.brightness.set_value_pos(Gtk.PositionType.RIGHT)
+        self.brightness.connect("value-changed", self.schedule_brightness)
+        outer.pack_start(self.brightness, False, False, 0)
+
+        actions = Gtk.Grid(column_spacing=10, row_spacing=10)
+        actions.set_column_homogeneous(True)
+        outer.pack_start(actions, False, False, 0)
+
+        for index, (label, command) in enumerate(
+            [
+                ("Bildirimler", ["trlde-notifications"]),
+                ("Pano Geçmişi", ["trlde-clipboard"]),
+                ("Ekran Kaydı", ["trlde-recorder"]),
+                ("Görünüm", ["trlde-appearance"]),
+                ("Ekranı Kilitle", ["trlde-lock"]),
+                ("Güç Menüsü", ["trlde-power"]),
+            ]
+        ):
+            button = Gtk.Button(label=label)
+            if label == "Güç Menüsü":
+                button.get_style_context().add_class("suggested-action")
+            button.connect("clicked", lambda _button, argv=command: spawn(argv))
+            actions.attach(button, index % 2, index // 2, 1, 1)
+
+        self.refresh()
+        GLib.timeout_add_seconds(5, self.refresh)
+        self.window.show_all()
+
+    def refresh(self):
+        self.refreshing = True
+
+        wifi = command_output(["nmcli", "-t", "-f", "WIFI", "general"])
+        self.wifi_button.set_label("Wi-Fi açık" if wifi == "enabled" else "Wi-Fi kapalı")
+
+        bluetooth = command_output(["timeout", "2", "bluetoothctl", "show"])
+        if not bluetooth:
+            self.bluetooth_button.set_label("Bluetooth yok")
+            self.bluetooth_button.set_sensitive(False)
+        else:
+            self.bluetooth_button.set_sensitive(True)
+            self.bluetooth_button.set_label(
+                "Bluetooth açık" if "Powered: yes" in bluetooth else "Bluetooth kapalı"
+            )
+
+        volume = command_output(["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"]) 
+        match = re.search(r"Volume:\s+([0-9.]+)", volume)
+        self.volume.set_value(float(match.group(1)) * 100 if match else 0)
+
+        brightness = command_output(["brightnessctl", "-c", "backlight", "-m"])
+        match = re.search(r",(\d+)%", brightness)
+        if match:
+            self.brightness.set_sensitive(True)
+            self.brightness.set_value(int(match.group(1)))
+        else:
+            self.brightness.set_value(1)
+            self.brightness.set_sensitive(False)
+            self.brightness.set_tooltip_text("Bu cihazda parlaklık denetimi bulunmuyor")
+
+        self.refreshing = False
+        return True
+
+    def toggle_wifi(self, _button):
+        wifi = command_output(["nmcli", "-t", "-f", "WIFI", "general"])
+        spawn(["nmcli", "radio", "wifi", "off" if wifi == "enabled" else "on"])
+        GLib.timeout_add(700, self.refresh)
+
+    def toggle_bluetooth(self, _button):
+        bluetooth = command_output(["timeout", "2", "bluetoothctl", "show"])
+        spawn(["bluetoothctl", "power", "off" if "Powered: yes" in bluetooth else "on"])
+        GLib.timeout_add(700, self.refresh)
+
+    def schedule_volume(self, scale):
+        if self.refreshing:
+            return
+        if self.volume_timer:
+            GLib.source_remove(self.volume_timer)
+        value = scale.get_value()
+        self.volume_timer = GLib.timeout_add(120, self.apply_volume, value)
+
+    def apply_volume(self, value):
+        spawn(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", f"{value / 100:.2f}"])
+        self.volume_timer = 0
+        return False
+
+    def schedule_brightness(self, scale):
+        if self.refreshing or not scale.get_sensitive():
+            return
+        if self.brightness_timer:
+            GLib.source_remove(self.brightness_timer)
+        value = int(scale.get_value())
+        self.brightness_timer = GLib.timeout_add(120, self.apply_brightness, value)
+
+    def apply_brightness(self, value):
+        spawn(["brightnessctl", "-c", "backlight", "-q", "set", f"{value}%"])
+        self.brightness_timer = 0
+        return False
+
+
+QuickSettings().run(sys.argv)

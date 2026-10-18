@@ -1,0 +1,172 @@
+#!/usr/bin/python3
+
+"""TRLDE klavye ve dokunmatik yüzey ayarları."""
+
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk
+
+
+CONFIG = Path.home() / ".config" / "trlde" / "labwc" / "rc.xml"
+SYSTEM_CONFIG = Path("/usr/share/trlde/labwc/rc.xml")
+
+
+def child(parent, name, text=None):
+    node = parent.find(name)
+    if node is None:
+        node = ET.SubElement(parent, name)
+    if text is not None:
+        node.text = text
+    return node
+
+
+def ensure_config():
+    if not CONFIG.exists():
+        CONFIG.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        shutil.copy2(SYSTEM_CONFIG, CONFIG)
+    return CONFIG
+
+
+class InputSettings(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Input")
+        self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            .hero { font-size: 23px; font-weight: 800; color: #fff; }
+            .accent { color: #39d6c5; font-weight: 700; }
+            .muted { color: #91a0ad; }
+            button { min-height: 44px; border-radius: 10px; background: #202c38; color: #e7edf2; }
+            button.suggested-action { background: #d62e4f; color: #fff; }
+            combobox button { background: #202c38; }
+            switch:checked, scale highlight { background: #39d6c5; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Giriş Aygıtları")
+        self.window.set_default_size(620, 560)
+        header = Gtk.HeaderBar(title="Klavye ve Dokunmatik Yüzey")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        outer.set_border_width(24)
+        self.window.add(outer)
+        title = Gtk.Label(label="Giriş aygıtlarını kişiselleştir", xalign=0)
+        title.get_style_context().add_class("hero")
+        outer.pack_start(title, False, False, 0)
+        self.add_heading(outer, "Klavye düzeni")
+        self.layout = Gtk.ComboBoxText()
+        self.layout.append("tr", "Türkçe")
+        self.layout.append("us", "English (US)")
+        self.layout.append("tr_us", "Türkçe + English (Alt+Shift)")
+        outer.pack_start(self.layout, False, False, 0)
+        self.add_heading(outer, "Dokunmatik yüzey")
+        self.tap = self.switch_row(outer, "Dokunarak tıklama")
+        self.natural = self.switch_row(outer, "Doğal kaydırma")
+        self.drag = self.switch_row(outer, "Dokunarak sürükleme")
+        self.disable_typing = self.switch_row(outer, "Yazarken dokunmatik yüzeyi devre dışı bırak")
+        speed_label = Gtk.Label(label="İşaretçi hızı", xalign=0)
+        outer.pack_start(speed_label, False, False, 0)
+        self.speed = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.05)
+        self.speed.set_value_pos(Gtk.PositionType.RIGHT)
+        self.speed.set_digits(2)
+        outer.pack_start(self.speed, False, False, 0)
+        save = Gtk.Button(label="Uygula")
+        save.get_style_context().add_class("suggested-action")
+        save.connect("clicked", self.save)
+        outer.pack_start(save, False, False, 8)
+        self.status = Gtk.Label(xalign=0, wrap=True)
+        self.status.get_style_context().add_class("muted")
+        outer.pack_start(self.status, False, False, 0)
+        self.load()
+        self.window.show_all()
+
+    def add_heading(self, box, text):
+        label = Gtk.Label(label=text, xalign=0)
+        label.get_style_context().add_class("accent")
+        box.pack_start(label, False, False, 4)
+
+    def switch_row(self, box, text):
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        row.pack_start(Gtk.Label(label=text, xalign=0), True, True, 0)
+        control = Gtk.Switch()
+        row.pack_end(control, False, False, 0)
+        box.pack_start(row, False, False, 0)
+        return control
+
+    def load(self):
+        try:
+            root = ET.parse(ensure_config()).getroot()
+            keyboard = root.find("keyboard/default")
+            layout = keyboard.findtext("layout", "tr") if keyboard is not None else "tr"
+            self.layout.set_active_id("tr_us" if "," in layout else layout if layout in ("tr", "us") else "tr")
+            device = root.find("libinput/device[@category='touchpad']")
+            values = {
+                "tap": "yes", "naturalScroll": "yes", "tapAndDrag": "yes", "disableWhileTyping": "yes"
+            }
+            if device is not None:
+                for key in values:
+                    values[key] = device.findtext(key, values[key])
+                try:
+                    self.speed.set_value(float(device.findtext("pointerSpeed", "0")))
+                except ValueError:
+                    self.speed.set_value(0)
+            self.tap.set_active(values["tap"] == "yes")
+            self.natural.set_active(values["naturalScroll"] == "yes")
+            self.drag.set_active(values["tapAndDrag"] == "yes")
+            self.disable_typing.set_active(values["disableWhileTyping"] == "yes")
+            self.status.set_text("Ayarlar hazır.")
+        except (OSError, ET.ParseError) as error:
+            self.status.set_text("Ayarlar okunamadı: " + str(error))
+
+    def save(self, _button):
+        try:
+            config = ensure_config()
+            backup = config.with_suffix(".xml.bak")
+            shutil.copy2(config, backup)
+            tree = ET.parse(config)
+            root = tree.getroot()
+            keyboard = child(child(root, "keyboard"), "default")
+            selected = self.layout.get_active_id() or "tr"
+            child(keyboard, "layout", "tr,us" if selected == "tr_us" else selected)
+            child(keyboard, "options", "grp:alt_shift_toggle" if selected == "tr_us" else "")
+            libinput = child(root, "libinput")
+            device = root.find("libinput/device[@category='touchpad']")
+            if device is None:
+                device = ET.SubElement(libinput, "device", {"category": "touchpad"})
+            child(device, "tap", "yes" if self.tap.get_active() else "no")
+            child(device, "naturalScroll", "yes" if self.natural.get_active() else "no")
+            child(device, "tapAndDrag", "yes" if self.drag.get_active() else "no")
+            child(device, "disableWhileTyping", "yes" if self.disable_typing.get_active() else "no")
+            child(device, "pointerSpeed", f"{self.speed.get_value():.2f}")
+            ET.indent(tree, space="  ")
+            tree.write(config, encoding="UTF-8", xml_declaration=True)
+            subprocess.run(["labwc", "--reconfigure"], check=False)
+            self.status.set_text("Ayarlar uygulandı. Yedek: " + str(backup))
+        except (OSError, ET.ParseError) as error:
+            self.status.set_text("Ayarlar kaydedilemedi: " + str(error))
+
+
+InputSettings().run(sys.argv)

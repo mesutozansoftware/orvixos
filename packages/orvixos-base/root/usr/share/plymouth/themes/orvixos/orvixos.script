@@ -1,0 +1,68 @@
+Window.SetBackgroundTopColor(0.04, 0.07, 0.13);
+Window.SetBackgroundBottomColor(0.05, 0.08, 0.15);
+
+logo_image = Image("logo.png").Scale(128, 128);
+logo_sprite = Sprite(logo_image);
+logo_sprite.SetX(Window.GetWidth() / 2 - logo_image.GetWidth() / 2);
+logo_sprite.SetY(Window.GetHeight() / 2 - logo_image.GetHeight() - 30);
+
+title_image = Image.Text("OrvixOS", 1.0, 1.0, 1.0, 1.0, "Sans Bold 34");
+title_sprite = Sprite(title_image);
+title_sprite.SetX(Window.GetWidth() / 2 - title_image.GetWidth() / 2);
+title_sprite.SetY(Window.GetHeight() / 2 + 4);
+
+subtitle_image = Image.Text("TRLDE MASAÜSTÜ • DEBIAN TABANLI", 0.18, 0.90, 0.84, 1.0, "Sans 11");
+subtitle_sprite = Sprite(subtitle_image);
+subtitle_sprite.SetX(Window.GetWidth() / 2 - subtitle_image.GetWidth() / 2);
+subtitle_sprite.SetY(Window.GetHeight() / 2 + 56);
+
+progress = 0;
+dot_image = Image.Text("•", 0.18, 0.90, 0.84, 1.0, "Sans Bold 18");
+for (i = 0; i < 3; i++) {
+    dots[i] = Sprite(dot_image);
+    dots[i].SetX(Window.GetWidth() / 2 - 24 + i * 20);
+    dots[i].SetY(Window.GetHeight() * 0.72);
+}
+
+fun refresh_callback() {
+    progress++;
+    for (i = 0; i < 3; i++) {
+        if (Math.Int(progress / 12) % 3 == i)
+            dots[i].SetOpacity(1);
+        else
+            dots[i].SetOpacity(0.25);
+    }
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+fun message_callback(text) {
+    message_image = Image.Text(text, 0.72, 0.78, 0.82, 1.0, "Sans 11");
+    message_sprite.SetImage(message_image);
+    message_sprite.SetX(Window.GetWidth() / 2 - message_image.GetWidth() / 2);
+    message_sprite.SetY(Window.GetHeight() * 0.80);
+}
+message_sprite = Sprite();
+Plymouth.SetMessageFunction(message_callback);
+
+# Şifreli disk parolası istemi
+fun display_password_callback(prompt, bullets) {
+    prompt_image = Image.Text(prompt, 1.0, 1.0, 1.0, 1.0, "Sans 12");
+    prompt_sprite.SetImage(prompt_image);
+    prompt_sprite.SetX(Window.GetWidth() / 2 - prompt_image.GetWidth() / 2);
+    prompt_sprite.SetY(Window.GetHeight() * 0.62);
+    text = "";
+    for (i = 0; i < bullets; i++) text += "•";
+    if (text == "") text = " ";
+    bullet_image = Image.Text(text, 0.18, 0.90, 0.84, 1.0, "Sans 16");
+    bullet_sprite.SetImage(bullet_image);
+    bullet_sprite.SetX(Window.GetWidth() / 2 - bullet_image.GetWidth() / 2);
+    bullet_sprite.SetY(Window.GetHeight() * 0.62 + 30);
+}
+fun display_normal_callback() {
+    prompt_sprite.SetImage(Image.Text(" ", 0, 0, 0, 0));
+    bullet_sprite.SetImage(Image.Text(" ", 0, 0, 0, 0));
+}
+prompt_sprite = Sprite();
+bullet_sprite = Sprite();
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+Plymouth.SetDisplayNormalFunction(display_normal_callback);

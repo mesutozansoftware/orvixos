@@ -1,0 +1,5 @@
+[org/gnome/login-screen]
+logo='/usr/share/pixmaps/trlde-logo.svg'
+banner-message-enable=true
+banner-message-text='TRLDE • Türkçe Linux Masaüstü Ortamı'
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=TRLDE güncelleme denetimi zamanlayıcısı
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=8h
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

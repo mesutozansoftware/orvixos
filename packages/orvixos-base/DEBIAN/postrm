@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+undivert() {
+    dpkg-divert --package orvixos-base --remove --rename \
+        --divert "$1.debian" "$1" >/dev/null
+}
+
+case "$1" in
+    remove|abort-install|disappear)
+        undivert /usr/lib/os-release
+        undivert /etc/issue
+        undivert /etc/issue.net
+        if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+            plymouth-set-default-theme --reset || true
+        fi
+        if command -v update-grub >/dev/null 2>&1 && [ -e /boot/grub/grub.cfg ]; then
+            update-grub || true
+        fi
+        ;;
+esac
+exit 0

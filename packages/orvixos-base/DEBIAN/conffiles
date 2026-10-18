@@ -1,0 +1,4 @@
+/etc/orvixos-release
+/etc/default/grub.d/orvixos.cfg
+/etc/dconf/db/gdm.d/02-orvixos
+/etc/update-motd.d/05-orvixos

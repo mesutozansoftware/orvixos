@@ -1,0 +1,78 @@
+#!/bin/sh
+
+set -u
+
+status=0
+
+check_command() {
+    if command -v "$1" >/dev/null 2>&1; then
+        printf '  [OK]    %s\n' "$1"
+    else
+        printf '  [EKSİK] %s\n' "$1"
+        status=1
+    fi
+}
+
+check_process() {
+    if pgrep -x "$1" >/dev/null 2>&1; then
+        printf '  [ÇALIŞIYOR] %s\n' "$1"
+    else
+        printf '  [DURMUŞ]    %s\n' "$1"
+        status=1
+    fi
+}
+
+check_user_unit() {
+    if systemctl --user is-active --quiet "$1" 2>/dev/null; then
+        printf '  [ÇALIŞIYOR] %s\n' "$1"
+    else
+        printf '  [DURMUŞ]    %s\n' "$1"
+        status=1
+    fi
+}
+
+printf 'TRLDE sistem denetimi\n'
+printf 'Sürüm: 0.4.0 | Mimari: %s | Oturum: %s\n\n' "$(uname -m)" "${XDG_SESSION_TYPE:-bilinmiyor}"
+printf 'Temel bileşenler:\n'
+for program in labwc waybar trlde-drawer mako swaybg foot wpctl nmcli; do
+    check_command "$program"
+done
+
+printf '\nOturum süreçleri:\n'
+for process in labwc waybar swaybg; do
+    check_process "$process"
+done
+
+printf '\nMasaüstü servisleri:\n'
+for unit in \
+    trlde-session.target \
+    xdg-desktop-portal.service \
+    xdg-desktop-portal-gtk.service \
+    xdg-desktop-portal-wlr.service \
+    trlde-update.timer; do
+    check_user_unit "$unit"
+done
+
+printf '\nKullanıcı klasörleri:\n'
+for kind in DOWNLOAD DOCUMENTS PICTURES; do
+    directory=$(xdg-user-dir "$kind" 2>/dev/null || true)
+    if [ -n "$directory" ] && [ -d "$directory" ]; then
+        printf '  [OK]    %s -> %s\n' "$kind" "$directory"
+    else
+        printf '  [EKSİK] %s\n' "$kind"
+        status=1
+    fi
+done
+
+printf '\nDisk kullanımı:\n'
+df -h / | awk 'NR <= 2 { print "  " $0 }'
+printf '\nBellek:\n'
+free -h 2>/dev/null | awk 'NR <= 2 { print "  " $0 }' || true
+
+if [ "$status" -eq 0 ]; then
+    printf '\nSonuç: TRLDE hazır görünüyor.\n'
+else
+    printf '\nSonuç: Yukarıdaki eksik veya durmuş bileşenler incelenmeli.\n'
+fi
+
+exit "$status"

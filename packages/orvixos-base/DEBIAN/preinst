@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+divert() {
+    dpkg-divert --package orvixos-base --add --rename \
+        --divert "$1.debian" "$1" >/dev/null
+}
+
+case "$1" in
+    install|upgrade)
+        divert /usr/lib/os-release
+        divert /etc/issue
+        divert /etc/issue.net
+        ;;
+esac
+exit 0

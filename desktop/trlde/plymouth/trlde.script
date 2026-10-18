@@ -1,0 +1,23 @@
+Window.SetBackgroundTopColor(0.04, 0.07, 0.10);
+Window.SetBackgroundBottomColor(0.07, 0.12, 0.16);
+
+title_image = Image.Text("TRLDE", 1.0, 1.0, 1.0, 1.0, "Sans Bold 46");
+title_sprite = Sprite(title_image);
+title_sprite.SetX(Window.GetWidth() / 2 - title_image.GetWidth() / 2);
+title_sprite.SetY(Window.GetHeight() / 2 - title_image.GetHeight());
+
+subtitle_image = Image.Text("TURKISH LINUX DESKTOP ENVIRONMENT", 0.22, 0.84, 0.77, 1.0, "Sans 13");
+subtitle_sprite = Sprite(subtitle_image);
+subtitle_sprite.SetX(Window.GetWidth() / 2 - subtitle_image.GetWidth() / 2);
+subtitle_sprite.SetY(Window.GetHeight() / 2 + 18);
+
+fun message_callback(text) {
+    message_image = Image.Text(text, 0.72, 0.78, 0.82, 1.0, "Sans 12");
+    message_sprite.SetImage(message_image);
+    message_sprite.SetX(Window.GetWidth() / 2 - message_image.GetWidth() / 2);
+    message_sprite.SetY(Window.GetHeight() * 0.78);
+}
+
+message_sprite = Sprite();
+Plymouth.SetMessageFunction(message_callback);
+

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TRLDE'ye Hoş Geldin
+Comment=TRLDE masaüstünü ve kısayollarını keşfet
+Exec=trlde-welcome
+Icon=trlde-logo
+Type=Application
+Categories=Utility;System;
+Keywords=hoş;geldin;yardım;kısayol;başlangıç;
+

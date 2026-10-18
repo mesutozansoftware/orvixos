@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=OrvixOS
+Description=OrvixOS açılış ekranı
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/orvixos
+ScriptFile=/usr/share/plymouth/themes/orvixos/orvixos.script

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Ekran Kaydı
+Comment=Ekranın tamamını veya seçilen alanı videoya kaydet
+Exec=trlde-recorder
+Icon=media-record
+Type=Application
+Categories=Utility;AudioVideo;Recorder;
+Keywords=ekran;kayıt;video;record;

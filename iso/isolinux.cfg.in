@@ -1,0 +1,40 @@
+# OrvixOS @ORVIXOS_VERSION@ BIOS önyükleme menüsü
+default vesamenu.c32
+prompt 0
+timeout 150
+menu title OrvixOS @ORVIXOS_VERSION@
+menu background splash.png
+menu vshift 17
+menu rows 6
+menu margin 10
+menu tabmsg
+menu color title  1;36;40 #00000000 #00000000 none
+menu color sel    7;37;40 #ff0b1220 #ff2ee6d6 none
+menu color unsel  37;40   #ffffffff #00000000 none
+menu color border 30;44   #00000000 #00000000 none
+
+label tr-gui
+    menu label OrvixOS kur - grafik (Turkce)
+    menu default
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=tr_TR.UTF-8 keymap=tr --- quiet
+label tr-text
+    menu label OrvixOS kur - metin (Turkce)
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/initrd.gz locale=tr_TR.UTF-8 keymap=tr --- quiet
+label en-gui
+    menu label Install OrvixOS - graphical (English)
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=en_US.UTF-8 keymap=us --- quiet
+label en-text
+    menu label Install OrvixOS - text (English)
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/initrd.gz locale=en_US.UTF-8 keymap=us --- quiet
+label expert
+    menu label Uzman kurulum / Expert install
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/gtk/initrd.gz priority=low ---
+label rescue
+    menu label Kurtarma kipi / Rescue mode
+    kernel /install.amd/vmlinuz
+    append vga=788 initrd=/install.amd/gtk/initrd.gz rescue/enable=true --- quiet

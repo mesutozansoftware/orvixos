@@ -1,0 +1,161 @@
+#!/bin/sh
+# vpx — OrvixOS paket yöneticisi.
+#
+# vpx, Debian'ın APT altyapısını kullanır: paketler doğrudan Debian
+# sunucularından (deb.debian.org) indirilir ve dpkg veritabanına kurulur.
+# "apt install" yerine "vpx install" yazılır; bilinmeyen alt komutlar olduğu
+# gibi apt'ye aktarılır.
+
+set -eu
+
+VPX_VERSION="@VPX_VERSION@"
+VPX_APT=${VPX_APT:-apt}
+VPX_APT_CACHE=${VPX_APT_CACHE:-apt-cache}
+program=$(basename -- "$0")
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    bold=$(printf '\033[1m'); accent=$(printf '\033[38;5;45m')
+    red=$(printf '\033[31m'); reset=$(printf '\033[0m')
+else
+    bold=; accent=; red=; reset=
+fi
+
+say() { printf '%s==>%s %s\n' "$accent$bold" "$reset" "$*"; }
+die() { printf '%svpx:%s %s\n' "$red$bold" "$reset" "$*" >&2; exit "${2:-1}"; }
+
+usage() {
+    cat <<EOF
+${bold}vpx${reset} ${VPX_VERSION} — OrvixOS paket yöneticisi (APT tabanlı, Debian depoları)
+
+Kullanım: $program <komut> [seçenekler] [paket...]
+
+Paket kurma ve kaldırma
+  install <paket...>      Paket kurar (yerel .deb dosyaları da olur: ./dosya.deb)
+  reinstall <paket...>    Paketi yeniden kurar
+  remove <paket...>       Paketi kaldırır (ayarları bırakır)
+  purge <paket...>        Paketi ayarlarıyla birlikte kaldırır
+  autoremove              Artık gerekmeyen bağımlılıkları kaldırır
+
+Güncelleme
+  update                  Debian depolarından paket listelerini yeniler
+  upgrade                 Kurulu paketleri günceller
+  full-upgrade            Bağımlılık değişiklikleriyle birlikte tam güncelleme
+  sync                    update + upgrade (tek adımda)
+
+Sorgulama
+  search <kelime>         Depolarda paket arar
+  show | info <paket>     Paket ayrıntılarını gösterir
+  list [--installed|--upgradable]
+                          Paketleri listeler
+  policy <paket>          Sürüm ve depo önceliklerini gösterir
+  depends <paket>         Bağımlılıkları gösterir
+  rdepends <paket>        Bu pakete bağımlı olanları gösterir
+  files <paket>           Kurulu paketin dosyalarını listeler
+  owner <dosya>           Dosyanın hangi pakete ait olduğunu bulur
+
+Bakım
+  clean | autoclean       İndirilen paket önbelleğini temizler
+  doctor                  Paket veritabanını denetler ve onarır
+  sources                 Etkin depo tanımlarını gösterir
+  version                 vpx ve APT sürümlerini gösterir
+  help                    Bu yardımı gösterir
+
+Diğer tüm komutlar ve seçenekler (-y, --no-install-recommends, ...)
+doğrudan apt'ye aktarılır. Ayrıntılar: man vpx
+EOF
+}
+
+# Yönetici yetkisi gereken komutları sudo ile yeniden çalıştırır.
+need_root() {
+    [ "$(id -u)" -eq 0 ] && return 0
+    command -v sudo >/dev/null 2>&1 || die "Bu komut yönetici yetkisi ister; sudo bulunamadı." 77
+    exec sudo -- "$0" "$@"
+}
+
+require_args() {
+    command_name=$1
+    shift
+    [ "$#" -gt 0 ] || die "'$command_name' en az bir paket adı ister. Örnek: $program $command_name htop" 2
+}
+
+[ "$#" -gt 0 ] || { usage; exit 0; }
+
+command_name=$1
+shift
+
+case "$command_name" in
+    help|-h|--help)
+        usage
+        ;;
+    version|-v|--version)
+        printf 'vpx %s (OrvixOS)\n' "$VPX_VERSION"
+        "$VPX_APT" --version 2>/dev/null | head -n 1
+        ;;
+    install|reinstall)
+        need_root "$command_name" "$@"
+        require_args "$command_name" "$@"
+        exec "$VPX_APT" "$command_name" "$@"
+        ;;
+    remove|purge)
+        need_root "$command_name" "$@"
+        require_args "$command_name" "$@"
+        exec "$VPX_APT" "$command_name" "$@"
+        ;;
+    autoremove|autopurge|update|upgrade|full-upgrade|dist-upgrade|clean|autoclean|satisfy|build-dep|edit-sources)
+        need_root "$command_name" "$@"
+        exec "$VPX_APT" "$command_name" "$@"
+        ;;
+    sync)
+        need_root sync "$@"
+        say "Paket listeleri Debian depolarından yenileniyor"
+        "$VPX_APT" update
+        say "Kurulu paketler güncelleniyor"
+        exec "$VPX_APT" upgrade "$@"
+        ;;
+    search|find)
+        [ "$#" -gt 0 ] || die "Aranacak bir kelime yaz. Örnek: $program search tarayıcı" 2
+        exec "$VPX_APT" search "$@"
+        ;;
+    show|info)
+        require_args "$command_name" "$@"
+        exec "$VPX_APT" show "$@"
+        ;;
+    list)
+        exec "$VPX_APT" list "$@"
+        ;;
+    policy|depends|rdepends|showsrc|madison)
+        exec "$VPX_APT_CACHE" "$command_name" "$@"
+        ;;
+    files)
+        require_args files "$@"
+        exec dpkg-query -L "$@"
+        ;;
+    owner|provides)
+        [ "$#" -gt 0 ] || die "Bir dosya yolu yaz. Örnek: $program owner /usr/bin/ls" 2
+        exec dpkg-query -S "$@"
+        ;;
+    sources)
+        for source_file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+            [ -r "$source_file" ] || continue
+            if grep -qvE '^[[:space:]]*(#|$)' "$source_file"; then
+                say "$source_file"
+                grep -vE '^[[:space:]]*(#|$)' "$source_file"
+            fi
+        done
+        ;;
+    doctor)
+        need_root doctor "$@"
+        say "dpkg veritabanı denetleniyor"
+        dpkg --configure -a
+        dpkg --audit || true
+        say "Bozuk bağımlılıklar onarılıyor"
+        "$VPX_APT" --fix-broken install -y
+        say "Bağımlılık ağacı denetleniyor"
+        apt-get check
+        say "Paket sistemi sağlıklı."
+        ;;
+    *)
+        # Diğer apt komutları ve "vpx -y install ..." gibi genel seçenekler.
+        exec "$VPX_APT" "$command_name" "$@"
+        ;;
+esac

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1118"/>
+      <stop offset="0.55" stop-color="#142330"/>
+      <stop offset="1" stop-color="#081015"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#39d6c5" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#39d6c5" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <circle cx="1380" cy="300" r="480" fill="url(#glow)"/>
+  <circle cx="420" cy="900" r="360" fill="#d62e4f" opacity="0.08" filter="url(#shadow)"/>
+
+  <g transform="translate(960 515)">
+    <path d="M-230-150H230V-80H35V190H-35V-80H-230Z" fill="#f4f7fa"/>
+    <path d="M-230-150H-65L-110-80H-230Z" fill="#d62e4f"/>
+    <path d="M230-150H65L110-80H230Z" fill="#39d6c5"/>
+    <text x="0" y="285" text-anchor="middle" fill="#f4f7fa"
+          font-family="sans-serif" font-size="74" font-weight="700" letter-spacing="18">TRLDE</text>
+    <text x="0" y="340" text-anchor="middle" fill="#91a0ad"
+          font-family="sans-serif" font-size="24" letter-spacing="5">TURKISH LINUX DESKTOP ENVIRONMENT</text>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+if command -v trlde-drawer >/dev/null 2>&1; then
+    exec trlde-drawer
+fi
+
+if pgrep -x wofi >/dev/null 2>&1; then
+    pkill -x wofi
+    exit 0
+fi
+
+exec wofi \
+    --show drun \
+    --normal-window \
+    --allow-images \
+    --insensitive \
+    --prompt "Uygulama ara" \
+    --width 640 \
+    --height 480 \
+    --style /usr/share/trlde/wofi/style.css

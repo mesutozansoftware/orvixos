@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TRLDE Hakkında
+Comment=TRLDE sürüm ve proje bilgisi
+Exec=trlde-about
+Icon=trlde-logo
+Type=Application
+Categories=System;
+Keywords=trlde;hakkında;sürüm;
+

@@ -1,0 +1,8 @@
+# OrvixOS otomatik test kurulumu (@ARCH@) — yalnızca test ISO'su
+set default=0
+set timeout=1
+insmod gzio
+menuentry "OrvixOS otomatik test kurulumu" {
+    linux  /@INSTALL_DIR@/vmlinuz priority=critical language=en country=TR locale=en_US.UTF-8 keymap=tr console=@SERIAL@ ---
+    initrd /@INSTALL_DIR@/initrd.gz
+}

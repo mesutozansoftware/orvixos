@@ -1,0 +1,55 @@
+#!/bin/sh
+
+set -u
+
+state_home=${XDG_STATE_HOME:-$HOME/.local/state}
+state_dir=$state_home/trlde
+marker=$state_dir/updates-available
+install -d -m 0700 "$state_dir"
+
+notify_updates() {
+    count=$1
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send -a TRLDE -i software-update-available \
+            "Sistem güncellemeleri hazır" \
+            "$count paket güncellenebilir. Ayarlar > Sistem bölümünden kurulabilir."
+    fi
+}
+
+case "${1:-open}" in
+    --check|check)
+        command -v apt >/dev/null 2>&1 || exit 0
+        # Paket listeleri sistemin apt-daily zamanlayıcısıyla yenilenir;
+        # burada yalnızca yerel önbellek okunur, yönetici yetkisi gerekmez.
+        count=$(LC_ALL=C apt list --upgradable 2>/dev/null | grep -c '\[upgradable from' || true)
+        case "${count:-0}" in
+            0)
+                rm -f "$marker"
+                ;;
+            *)
+                previous=0
+                [ -r "$marker" ] && read -r previous < "$marker"
+                printf '%s\n' "$count" > "$marker"
+                [ "$previous" = "$count" ] || notify_updates "$count"
+                ;;
+        esac
+        ;;
+    status)
+        if [ -r "$marker" ]; then
+            read -r count < "$marker"
+            printf 'Güncelleme %s\n' "${count:-}"
+        fi
+        ;;
+    open|"")
+        if command -v foot >/dev/null 2>&1; then
+            exec foot -T "TRLDE Sistem Güncellemeleri" -e sh -lc \
+                'printf "TRLDE sistem güncellemeleri\\n\\n"; vpx sync; code=$?; printf "\\nKapatmak için Enter..."; read answer; exit "$code"'
+        fi
+        printf '%s\n' "TRLDE güncellemeleri için bir terminal gerekli." >&2
+        exit 127
+        ;;
+    *)
+        printf 'Kullanım: %s [open|--check|status]\n' "$0" >&2
+        exit 2
+        ;;
+esac

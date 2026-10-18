@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Klavye ve Dokunmatik Yüzey
+Comment=Klavye düzenini ve dokunmatik yüzeyi yapılandır
+Exec=trlde-input
+Icon=input-touchpad
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=klavye;dokunmatik;yüzey;touchpad;libinput;

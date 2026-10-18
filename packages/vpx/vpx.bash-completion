@@ -1,0 +1,38 @@
+# vpx için bash tamamlama
+_vpx() {
+    local cur prev words cword
+    _init_completion 2>/dev/null || {
+        cur=${COMP_WORDS[COMP_CWORD]}
+        cword=$COMP_CWORD
+        words=("${COMP_WORDS[@]}")
+    }
+
+    local commands="install reinstall remove purge autoremove update upgrade
+        full-upgrade sync search show info list policy depends rdepends files
+        owner clean autoclean doctor sources version help"
+
+    if [ "$cword" -eq 1 ]; then
+        COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+        return
+    fi
+
+    case ${words[1]} in
+        install|show|info|policy|depends|rdepends)
+            if [[ $cur == ./* || $cur == /* ]]; then
+                COMPREPLY=($(compgen -f -X '!*.deb' -- "$cur") $(compgen -d -- "$cur"))
+            else
+                COMPREPLY=($(apt-cache --no-generate pkgnames "$cur" 2>/dev/null))
+            fi
+            ;;
+        remove|purge|reinstall|files)
+            COMPREPLY=($(dpkg-query -W -f '${Package}\n' "$cur*" 2>/dev/null))
+            ;;
+        owner)
+            COMPREPLY=($(compgen -f -- "$cur"))
+            ;;
+        list)
+            COMPREPLY=($(compgen -W "--installed --upgradable --all-versions" -- "$cur"))
+            ;;
+    esac
+}
+complete -F _vpx vpx

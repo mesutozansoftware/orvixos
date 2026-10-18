@@ -1,0 +1,4 @@
+[org/gnome/login-screen]
+logo='/usr/share/pixmaps/orvixos-logo.png'
+banner-message-enable=true
+banner-message-text='OrvixOS • TRLDE masaüstü • Debian tabanlı'

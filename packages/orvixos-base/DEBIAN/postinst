@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        if command -v dconf >/dev/null 2>&1; then
+            dconf update || true
+        fi
+        if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+            plymouth-set-default-theme orvixos || true
+            if command -v update-initramfs >/dev/null 2>&1 && ls /boot/initrd.img-* >/dev/null 2>&1; then
+                update-initramfs -u -k all || true
+            fi
+        fi
+        if command -v update-grub >/dev/null 2>&1 && [ -e /boot/grub/grub.cfg ]; then
+            update-grub || true
+        fi
+        ;;
+esac
+exit 0

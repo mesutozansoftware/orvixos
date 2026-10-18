@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+case "${1:-status}" in
+    status)
+        if command -v brightnessctl >/dev/null 2>&1; then
+            value=$(brightnessctl -c backlight -m 2>/dev/null | awk -F, 'NR == 1 { print $4 }')
+        else
+            value=
+        fi
+        if [ -n "$value" ]; then
+            printf 'Parlaklık %s\n' "$value"
+        fi
+        ;;
+    up)
+        command -v brightnessctl >/dev/null 2>&1 && brightnessctl -c backlight -q set 5%+
+        ;;
+    down)
+        command -v brightnessctl >/dev/null 2>&1 && brightnessctl -c backlight -q set 5%-
+        ;;
+esac

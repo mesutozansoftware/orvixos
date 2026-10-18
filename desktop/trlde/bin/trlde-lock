@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -eu
+
+if ! command -v swaylock >/dev/null 2>&1; then
+    command -v notify-send >/dev/null 2>&1 && \
+        notify-send "TRLDE" "Ekran kilidi kullanılamıyor."
+    exit 1
+fi
+
+exec swaylock --daemonize \
+    --color 111820 \
+    --font "Noto Sans" \
+    --font-size 22 \
+    --indicator-idle-visible \
+    --indicator-radius 86 \
+    --indicator-thickness 9 \
+    --inside-color 18222ddd \
+    --ring-color 39d6c5ff \
+    --key-hl-color d62e4fff \
+    --bs-hl-color ffc857ff \
+    --text-color ffffffff \
+    --ring-wrong-color d62e4fff \
+    --inside-wrong-color 3a1520ee \
+    --show-failed-attempts \
+    --show-keyboard-layout

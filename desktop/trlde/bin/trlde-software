@@ -1,0 +1,201 @@
+#!/usr/bin/python3
+
+"""TRLDE yazılım ve Flatpak yönetim merkezi."""
+
+import os
+import subprocess
+import sys
+import threading
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, GLib, Gtk
+
+
+def available(program):
+    return bool(GLib.find_program_in_path(program))
+
+
+def spawn(argv):
+    try:
+        subprocess.Popen(argv, start_new_session=True)
+        return True
+    except OSError:
+        return False
+
+
+class SoftwareCenter(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Software")
+        self.window = None
+        self.status = None
+        self.flathub_button = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            .hero { font-size: 26px; font-weight: 800; color: #fff; }
+            .accent { color: #39d6c5; font-weight: 700; }
+            .muted { color: #91a0ad; }
+            button { min-height: 48px; border-radius: 10px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            button.suggested-action { background: #d62e4f; color: #fff; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Yazılım Merkezi")
+        self.window.set_default_size(650, 500)
+        header = Gtk.HeaderBar(title="TRLDE Yazılım Merkezi")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        outer.set_border_width(24)
+        self.window.add(outer)
+
+        hero = Gtk.Label(label="Uygulamalarını keşfet ve güncel tut", xalign=0)
+        hero.get_style_context().add_class("hero")
+        outer.pack_start(hero, False, False, 0)
+        subtitle = Gtk.Label(
+            label="Debian paketleri (vpx) ile Flatpak uygulamalarını tek yerden yönet.",
+            xalign=0,
+            wrap=True,
+        )
+        subtitle.get_style_context().add_class("muted")
+        outer.pack_start(subtitle, False, False, 0)
+
+        grid = Gtk.Grid(column_spacing=12, row_spacing=12)
+        grid.set_column_homogeneous(True)
+        outer.pack_start(grid, False, False, 8)
+        actions = [
+            ("Uygulamaları Keşfet", self.open_catalog),
+            ("Debian Paketlerini Yönet", self.open_synaptic),
+            ("Flatpak Uygulamaları", self.open_flatpak_catalog),
+            ("Sistem Güncellemeleri", lambda: spawn(["trlde-update"])),
+        ]
+        for index, (label, callback) in enumerate(actions):
+            button = Gtk.Button(label=label)
+            if index == 0:
+                button.get_style_context().add_class("suggested-action")
+            button.connect("clicked", lambda _button, action=callback: action())
+            grid.attach(button, index % 2, index // 2, 1, 1)
+
+        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        outer.pack_start(separator, False, False, 4)
+        heading = Gtk.Label(label="Flatpak ve Flathub", xalign=0)
+        heading.get_style_context().add_class("accent")
+        outer.pack_start(heading, False, False, 0)
+        note = Gtk.Label(
+            label=(
+                "Flatpak desteği hazırdır. Flathub üçüncü taraf bir uygulama deposudur; "
+                "yalnızca aşağıdaki düğmeye bastığında kullanıcı hesabına eklenir."
+            ),
+            xalign=0,
+            wrap=True,
+        )
+        note.get_style_context().add_class("muted")
+        outer.pack_start(note, False, False, 0)
+        self.flathub_button = Gtk.Button()
+        self.flathub_button.connect("clicked", self.enable_flathub)
+        outer.pack_start(self.flathub_button, False, False, 0)
+
+        self.status = Gtk.Label(xalign=0, wrap=True)
+        self.status.get_style_context().add_class("muted")
+        outer.pack_start(self.status, False, False, 0)
+        self.refresh()
+        self.window.show_all()
+
+    def run_first(self, commands, missing):
+        for command in commands:
+            if available(command[0]):
+                spawn(command)
+                return
+        self.status.set_text(missing)
+
+    def open_catalog(self):
+        self.run_first(
+            [["gnome-software", "--mode=overview"], ["synaptic-pkexec"]],
+            "Yazılım kataloğu bu sistemde bulunamadı.",
+        )
+
+    def open_synaptic(self):
+        self.run_first(
+            [["synaptic-pkexec"], ["foot", "-e", "sh", "-c", "vpx help; exec $SHELL"]],
+            "Synaptic bu sistemde bulunamadı.",
+        )
+
+    def open_flatpak_catalog(self):
+        self.run_first(
+            [["gnome-software", "--mode=overview"]],
+            "Flatpak kataloğu için GNOME Software bulunamadı.",
+        )
+
+    def flathub_enabled(self):
+        if not available("flatpak"):
+            return False
+        result = subprocess.run(
+            ["flatpak", "remotes", "--user", "--columns=name"],
+            check=False,
+            capture_output=True,
+            text=True,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        return "flathub" in result.stdout.split()
+
+    def refresh(self):
+        flatpak_ready = available("flatpak")
+        enabled = self.flathub_enabled()
+        self.flathub_button.set_sensitive(flatpak_ready and not enabled)
+        self.flathub_button.set_label(
+            "Flathub etkin" if enabled else "Flathub'u Etkinleştir"
+        )
+        components = []
+        components.append("GNOME Software hazır" if available("gnome-software") else "GNOME Software yok")
+        components.append("vpx hazır" if available("vpx") else "vpx yok")
+        components.append("Flatpak hazır" if flatpak_ready else "Flatpak yok")
+        self.status.set_text(" • ".join(components))
+
+    def enable_flathub(self, _button):
+        self.flathub_button.set_sensitive(False)
+        self.status.set_text("Flathub etkinleştiriliyor…")
+
+        def worker():
+            result = subprocess.run(
+                [
+                    "flatpak", "remote-add", "--user", "--if-not-exists", "flathub",
+                    "https://dl.flathub.org/repo/flathub.flatpakrepo",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            GLib.idle_add(self.finish_flathub, result.returncode, result.stderr.strip())
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def finish_flathub(self, returncode, error):
+        self.refresh()
+        if returncode:
+            self.status.set_text("Flathub eklenemedi: " + (error or "bilinmeyen hata"))
+            self.flathub_button.set_sensitive(True)
+        else:
+            self.status.set_text("Flathub kullanıcı hesabın için etkinleştirildi.")
+        return False
+
+
+SoftwareCenter().run(sys.argv)

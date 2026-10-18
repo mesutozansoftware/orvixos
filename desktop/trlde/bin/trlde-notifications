@@ -1,0 +1,182 @@
+#!/usr/bin/python3
+
+import json
+import re
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, GLib, Gtk
+
+
+def run(argv):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=3).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def unpack(value):
+    if isinstance(value, dict) and "data" in value:
+        return unpack(value["data"])
+    return value
+
+
+def collect_notifications(value, result):
+    if isinstance(value, dict):
+        if "summary" in value or "body" in value:
+            summary = str(unpack(value.get("summary", "Bildirim")))
+            body = str(unpack(value.get("body", "")))
+            app = str(unpack(value.get("app-name", value.get("app_name", ""))))
+            item = (app, summary, body)
+            if item not in result:
+                result.append(item)
+        for nested in value.values():
+            collect_notifications(nested, result)
+
+
+def collect_text_notifications(value, result):
+    """Mako 1.10'un insan tarafından okunabilir list/history çıktısını ayrıştır."""
+    current = None
+    for line in value.splitlines():
+        match = re.match(r"Notification\s+\d+:\s*(.*)", line)
+        if match:
+            if current and current not in result:
+                result.append(current)
+            current = ("", match.group(1).strip() or "Bildirim", "")
+            continue
+        if current:
+            app = re.match(r"\s*App name:\s*(.*)", line)
+            if app:
+                current = (app.group(1).strip(), current[1], current[2])
+    if current and current not in result:
+        result.append(current)
+    elif isinstance(value, list):
+        for nested in value:
+            collect_notifications(nested, result)
+
+
+class Notifications(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Notifications")
+        self.window = None
+        self.list_box = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
+            list, row { background: #111820; color: #e7edf2; }
+            row { padding: 12px; border-bottom: 1px solid #273442; }
+            button { min-height: 40px; border-radius: 9px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            .summary { font-weight: 800; color: #ffffff; }
+            .app { color: #39d6c5; font-size: 11px; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Bildirimler")
+        self.window.set_default_size(480, 520)
+
+        header = Gtk.HeaderBar(title="Bildirim Merkezi")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        outer.set_border_width(12)
+        self.window.add(outer)
+
+        controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        restore = Gtk.Button(label="Son Bildirimi Göster")
+        restore.connect("clicked", lambda *_: run(["makoctl", "restore"]))
+        refresh = Gtk.Button(label="Yenile")
+        refresh.connect("clicked", lambda *_: self.load_history())
+        clear = Gtk.Button(label="Geçmişi Temizle")
+        clear.connect("clicked", self.clear_history)
+        controls.pack_start(restore, True, True, 0)
+        controls.pack_start(refresh, True, True, 0)
+        controls.pack_start(clear, True, True, 0)
+        outer.pack_start(controls, False, False, 0)
+
+        scroll = Gtk.ScrolledWindow()
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        scroll.add(self.list_box)
+        outer.pack_start(scroll, True, True, 0)
+
+        self.load_history()
+        GLib.timeout_add_seconds(5, self.refresh_history)
+        self.window.show_all()
+
+    def refresh_history(self):
+        if self.window and self.window.get_visible():
+            self.load_history()
+            self.list_box.show_all()
+        return True
+
+    def load_history(self):
+        for child in self.list_box.get_children():
+            self.list_box.remove(child)
+
+        raw = run(["makoctl", "list", "-j"]) + "\n" + run(["makoctl", "history", "-j"])
+        notifications = []
+        try:
+            collect_notifications(json.loads(raw), notifications)
+        except (json.JSONDecodeError, TypeError):
+            collect_text_notifications(raw, notifications)
+
+        if not notifications:
+            row = Gtk.ListBoxRow()
+            row.add(Gtk.Label(label="Bildirim geçmişi boş", margin=24))
+            self.list_box.add(row)
+            return
+
+        for app, summary, body in notifications:
+            row = Gtk.ListBoxRow()
+            content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            if app:
+                app_label = Gtk.Label(label=app, xalign=0)
+                app_label.get_style_context().add_class("app")
+                content.pack_start(app_label, False, False, 0)
+            summary_label = Gtk.Label(label=summary, xalign=0)
+            summary_label.get_style_context().add_class("summary")
+            content.pack_start(summary_label, False, False, 0)
+            if body:
+                body_label = Gtk.Label(label=body, xalign=0, wrap=True)
+                content.pack_start(body_label, False, False, 0)
+            row.add(content)
+            self.list_box.add(row)
+
+    def clear_history(self, _button):
+        run(["makoctl", "dismiss", "--all", "--no-history"])
+        restarted = subprocess.run(
+            ["systemctl", "--user", "restart", "mako.service"], check=False
+        ).returncode == 0
+        if not restarted:
+            subprocess.Popen(
+                ["mako", "-c", "/usr/share/trlde/mako/config"], start_new_session=True
+            )
+        GLib.timeout_add(350, self.reload_after_clear)
+
+    def reload_after_clear(self):
+        self.load_history()
+        self.list_box.show_all()
+        return False
+
+
+Notifications().run(sys.argv)

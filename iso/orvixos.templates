@@ -1,0 +1,14 @@
+Template: orvixos/browser
+Type: select
+Choices-C: vira, firefox, chromium
+Choices: Vira Browser (recommended), Firefox ESR, Chromium
+Choices-tr.UTF-8: Vira Browser (önerilen), Firefox ESR, Chromium
+Default: vira
+Description: Web browser:
+ Choose the web browser to install. It will be set as the default browser.
+ Vira Browser is OrvixOS's recommended browser. Firefox ESR and Chromium
+ receive security updates from Debian through "vpx sync".
+Description-tr.UTF-8: Web tarayıcısı:
+ Kurulacak web tarayıcısını seç. Seçilen tarayıcı varsayılan tarayıcı olur.
+ Vira Browser, OrvixOS'un önerdiği tarayıcıdır. Firefox ESR ve Chromium
+ güvenlik güncellemelerini Debian'dan "vpx sync" ile alır.

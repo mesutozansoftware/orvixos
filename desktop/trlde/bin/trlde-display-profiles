@@ -1,0 +1,242 @@
+#!/usr/bin/python3
+
+"""TRLDE çoklu monitör profilleri."""
+
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+
+PROFILE_DIR = Path.home() / ".config" / "trlde" / "display-profiles"
+LAST_PROFILE = PROFILE_DIR / ".last-profile"
+
+
+def current_outputs():
+    result = subprocess.run(
+        ["wlr-randr", "--json"], check=False, capture_output=True, text=True
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or "Ekran bilgileri okunamadı.")
+    return json.loads(result.stdout)
+
+
+def current_mode(output):
+    for mode in output.get("modes", []):
+        if mode.get("current"):
+            return mode
+    return None
+
+
+def apply_data(outputs):
+    argv = ["wlr-randr"]
+    for output in outputs:
+        name = output.get("name")
+        if not name:
+            continue
+        argv.extend(["--output", name])
+        if not output.get("enabled", True):
+            argv.append("--off")
+            continue
+        argv.append("--on")
+        mode = current_mode(output)
+        if mode:
+            refresh = mode.get("refresh", 0)
+            if refresh and refresh > 1000:
+                refresh /= 1000
+            value = f"{mode['width']}x{mode['height']}"
+            if refresh:
+                value += f"@{refresh:.3f}Hz"
+            argv.extend(["--mode", value])
+        position = output.get("position", {})
+        if isinstance(position, dict):
+            argv.extend(["--pos", f"{position.get('x', 0)},{position.get('y', 0)}"])
+        transform = output.get("transform")
+        if isinstance(transform, str):
+            argv.extend(["--transform", transform])
+        if output.get("scale"):
+            argv.extend(["--scale", str(output["scale"])])
+    return subprocess.run(argv, check=False, capture_output=True, text=True)
+
+
+def apply_profile(path):
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        result = apply_data(data["outputs"])
+        return result.returncode, result.stderr.strip()
+    except (OSError, KeyError, ValueError, json.JSONDecodeError) as error:
+        return 1, str(error)
+
+
+if "--apply-last" in sys.argv:
+    try:
+        profile = LAST_PROFILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        raise SystemExit(0)
+    code, message = apply_profile(PROFILE_DIR / profile)
+    if message:
+        print(message, file=sys.stderr)
+    raise SystemExit(code)
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk
+
+
+class DisplayProfiles(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.DisplayProfiles")
+        self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            .hero { font-size: 23px; font-weight: 800; color: #fff; }
+            .muted { color: #91a0ad; }
+            list { background: #111820; }
+            row { padding: 12px; border-bottom: 1px solid #273442; }
+            row:selected { background: #273442; color: #39d6c5; }
+            button { min-height: 42px; border-radius: 10px; background: #202c38; color: #e7edf2; }
+            button.suggested-action { background: #d62e4f; color: #fff; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+        PROFILE_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Ekran Profilleri")
+        self.window.set_default_size(620, 500)
+        header = Gtk.HeaderBar(title="TRLDE Ekran Profilleri")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        outer.set_border_width(20)
+        self.window.add(outer)
+        title = Gtk.Label(label="Çoklu ekran düzenlerini kaydet", xalign=0)
+        title.get_style_context().add_class("hero")
+        outer.pack_start(title, False, False, 0)
+        note = Gtk.Label(
+            label="Ev, ofis veya sunum düzenini kaydet; sonraki girişte son profil otomatik uygulanır.",
+            xalign=0,
+            wrap=True,
+        )
+        note.get_style_context().add_class("muted")
+        outer.pack_start(note, False, False, 0)
+        scroller = Gtk.ScrolledWindow()
+        self.listbox = Gtk.ListBox()
+        self.listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.listbox.connect("row-activated", lambda *_: self.apply_selected())
+        scroller.add(self.listbox)
+        outer.pack_start(scroller, True, True, 0)
+        grid = Gtk.Grid(column_spacing=10, row_spacing=10)
+        grid.set_column_homogeneous(True)
+        actions = [
+            ("Geçerli Düzeni Kaydet", self.save_current),
+            ("Seçileni Uygula", self.apply_selected),
+            ("Seçileni Sil", self.delete_selected),
+            ("Ekranları Yapılandır", self.open_wdisplays),
+        ]
+        for index, (label, callback) in enumerate(actions):
+            button = Gtk.Button(label=label)
+            if index == 0:
+                button.get_style_context().add_class("suggested-action")
+            button.connect("clicked", lambda _button, action=callback: action())
+            grid.attach(button, index % 2, index // 2, 1, 1)
+        outer.pack_start(grid, False, False, 0)
+        self.status = Gtk.Label(xalign=0, wrap=True)
+        self.status.get_style_context().add_class("muted")
+        outer.pack_start(self.status, False, False, 0)
+        self.refresh()
+        self.window.show_all()
+
+    def refresh(self):
+        for child in self.listbox.get_children():
+            self.listbox.remove(child)
+        for path in sorted(PROFILE_DIR.glob("*.json")):
+            row = Gtk.ListBoxRow()
+            row.profile_path = path
+            row.add(Gtk.Label(label=path.stem, xalign=0))
+            self.listbox.add(row)
+        self.listbox.show_all()
+        self.status.set_text(f"{len(self.listbox.get_children())} ekran profili")
+
+    def selected(self):
+        row = self.listbox.get_selected_row()
+        return getattr(row, "profile_path", None) if row else None
+
+    def ask_name(self):
+        dialog = Gtk.Dialog(title="Profil adı", transient_for=self.window, modal=True)
+        dialog.add_button("İptal", Gtk.ResponseType.CANCEL)
+        dialog.add_button("Kaydet", Gtk.ResponseType.OK)
+        entry = Gtk.Entry(placeholder_text="Örneğin: Ofis")
+        entry.set_margin_top(16)
+        entry.set_margin_bottom(16)
+        entry.set_margin_start(16)
+        entry.set_margin_end(16)
+        dialog.get_content_area().add(entry)
+        dialog.show_all()
+        response = dialog.run()
+        name = entry.get_text().strip()
+        dialog.destroy()
+        return name if response == Gtk.ResponseType.OK else ""
+
+    def save_current(self):
+        name = self.ask_name()
+        safe = re.sub(r"[^0-9A-Za-zçğıöşüÇĞİÖŞÜ_-]+", "-", name).strip("-")
+        if not safe:
+            return
+        try:
+            outputs = current_outputs()
+            path = PROFILE_DIR / f"{safe}.json"
+            path.write_text(
+                json.dumps({"name": name, "outputs": outputs}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            self.status.set_text("Profil kaydedildi: " + name)
+            self.refresh()
+        except (OSError, RuntimeError, json.JSONDecodeError) as error:
+            self.status.set_text("Profil kaydedilemedi: " + str(error))
+
+    def apply_selected(self):
+        path = self.selected()
+        if not path:
+            return
+        code, error = apply_profile(path)
+        if code:
+            self.status.set_text("Profil uygulanamadı: " + error)
+        else:
+            LAST_PROFILE.write_text(path.name, encoding="utf-8")
+            self.status.set_text("Profil uygulandı: " + path.stem)
+
+    def delete_selected(self):
+        path = self.selected()
+        if path:
+            try:
+                path.unlink()
+                if LAST_PROFILE.exists() and LAST_PROFILE.read_text(encoding="utf-8").strip() == path.name:
+                    LAST_PROFILE.unlink()
+            except OSError as error:
+                self.status.set_text(str(error))
+            self.refresh()
+
+    def open_wdisplays(self):
+        try:
+            subprocess.Popen(["wdisplays"], start_new_session=True)
+        except OSError as error:
+            self.status.set_text(str(error))
+
+
+DisplayProfiles().run(sys.argv)

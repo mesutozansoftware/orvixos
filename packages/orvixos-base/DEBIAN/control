@@ -1,0 +1,12 @@
+Package: orvixos-base
+Version: @ORVIXOS_VERSION@
+Architecture: all
+Maintainer: OrvixOS Project <noreply@orvixos.invalid>
+Section: admin
+Priority: optional
+Depends: base-files (>= 13), vpx, plymouth, plymouth-label, dconf-cli
+Description: OrvixOS temel sistem kimliği ve markalaması
+ OrvixOS'un Debian tabanlı sistem kimliğini sağlar: os-release, açılış
+ (GRUB ve Plymouth) markalaması, giriş ekranı logosu ve terminal karşılama
+ iletisi. Debian'ın kendi dosyaları dpkg-divert ile saklanır ve paket
+ kaldırıldığında geri yüklenir.

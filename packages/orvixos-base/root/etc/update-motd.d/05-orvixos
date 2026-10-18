@@ -1,0 +1,4 @@
+#!/bin/sh
+. /usr/lib/os-release
+printf '\n  \033[1;38;2;46;230;214m%s\033[0m\n' "$PRETTY_NAME"
+printf '  Paket kurmak için:  vpx install <paket>   •   Güncellemek için:  vpx sync\n\n'

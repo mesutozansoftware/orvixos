@@ -1,0 +1,119 @@
+#!/usr/bin/python3
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk
+
+
+config_dir = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "trlde"
+sentinel = config_dir / "welcome-shown"
+first_run = "--first-run" in sys.argv
+if first_run and sentinel.exists():
+    raise SystemExit(0)
+
+
+def spawn(argv):
+    try:
+        subprocess.Popen(argv, start_new_session=True)
+    except OSError:
+        pass
+
+
+class Welcome(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Welcome")
+        self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
+            .hero { font-size: 32px; font-weight: 900; color: #ffffff; }
+            .accent { color: #39d6c5; font-size: 17px; font-weight: 700; }
+            .muted { color: #a8b5bf; }
+            button { min-height: 46px; border-radius: 10px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            button.suggested-action { background: #d62e4f; color: #ffffff; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+
+        config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        sentinel.write_text("TRLDE 0.4.0\n", encoding="utf-8")
+
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE'ye Hoş Geldin")
+        self.window.set_default_size(720, 520)
+        self.window.set_resizable(False)
+        header = Gtk.HeaderBar(title="TRLDE'ye Hoş Geldin")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        box.set_border_width(30)
+        self.window.add(box)
+        hero = Gtk.Label(label="TRLDE hazır.", xalign=0)
+        hero.get_style_context().add_class("hero")
+        box.pack_start(hero, False, False, 0)
+        accent = Gtk.Label(label="Hafif, hızlı ve Türkçe odaklı Wayland masaüstü", xalign=0)
+        accent.get_style_context().add_class("accent")
+        box.pack_start(accent, False, False, 0)
+
+        intro = Gtk.Label(
+            label="Uygulama menüsü sol üstte, bağlantılar ve hızlı ayarlar sağ üstte. "
+            "Aşağıdaki kısayollar günlük kullanımın çoğunu hızlandırır.",
+            xalign=0,
+            wrap=True,
+        )
+        intro.get_style_context().add_class("muted")
+        box.pack_start(intro, False, False, 0)
+
+        grid = Gtk.Grid(column_spacing=18, row_spacing=12)
+        shortcuts = [
+            ("Super + Space", "Uygulama menüsü"),
+            ("Super + A", "Hızlı ayarlar"),
+            ("Super + R", "Komut çalıştır"),
+            ("Super + Sol / Sağ", "Pencere döşeme"),
+            ("Super + Shift + S", "Ekran görüntüsü"),
+            ("Super + L", "Ekranı kilitle"),
+        ]
+        for row, (keys, action) in enumerate(shortcuts):
+            key = Gtk.Label(label=keys, xalign=0)
+            key.get_style_context().add_class("accent")
+            grid.attach(key, 0, row, 1, 1)
+            grid.attach(Gtk.Label(label=action, xalign=0), 1, row, 1, 1)
+        box.pack_start(grid, True, True, 4)
+
+        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        settings = Gtk.Button(label="Ayarları Aç")
+        settings.connect("clicked", lambda *_: spawn(["trlde-settings"]))
+        menu = Gtk.Button(label="Uygulamaları Keşfet")
+        menu.connect("clicked", lambda *_: spawn(["trlde-launcher"]))
+        finish = Gtk.Button(label="Başlayalım")
+        finish.get_style_context().add_class("suggested-action")
+        finish.connect("clicked", lambda *_: self.window.close())
+        actions.pack_start(settings, True, True, 0)
+        actions.pack_start(menu, True, True, 0)
+        actions.pack_start(finish, True, True, 0)
+        box.pack_end(actions, False, False, 0)
+        self.window.show_all()
+
+
+Welcome().run([sys.argv[0]])

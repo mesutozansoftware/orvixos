@@ -1,0 +1,36 @@
+# OrvixOS @ORVIXOS_VERSION@ kurulum menüsü (@ARCH@)
+set default=0
+set timeout=15
+set menu_color_normal=white/black
+set menu_color_highlight=black/cyan
+insmod gzio
+insmod all_video
+loadfont $prefix/font.pf2
+set gfxpayload=keep
+
+menuentry "OrvixOS @ORVIXOS_VERSION@ kur — grafik (Türkçe)" --class orvixos {
+    linux  /@INSTALL_DIR@/vmlinuz locale=tr_TR.UTF-8 keymap=tr --- quiet
+    initrd /@INSTALL_DIR@/gtk/initrd.gz
+}
+menuentry "OrvixOS @ORVIXOS_VERSION@ kur — metin (Türkçe)" --class orvixos {
+    linux  /@INSTALL_DIR@/vmlinuz locale=tr_TR.UTF-8 keymap=tr --- quiet
+    initrd /@INSTALL_DIR@/initrd.gz
+}
+menuentry "Install OrvixOS @ORVIXOS_VERSION@ — graphical (English)" --class orvixos {
+    linux  /@INSTALL_DIR@/vmlinuz locale=en_US.UTF-8 keymap=us --- quiet
+    initrd /@INSTALL_DIR@/gtk/initrd.gz
+}
+menuentry "Install OrvixOS @ORVIXOS_VERSION@ — text (English)" --class orvixos {
+    linux  /@INSTALL_DIR@/vmlinuz locale=en_US.UTF-8 keymap=us --- quiet
+    initrd /@INSTALL_DIR@/initrd.gz
+}
+submenu "Gelişmiş seçenekler / Advanced options ..." {
+    menuentry "Uzman kurulum / Expert install" {
+        linux  /@INSTALL_DIR@/vmlinuz priority=low ---
+        initrd /@INSTALL_DIR@/gtk/initrd.gz
+    }
+    menuentry "Kurtarma kipi / Rescue mode" {
+        linux  /@INSTALL_DIR@/vmlinuz rescue/enable=true --- quiet
+        initrd /@INSTALL_DIR@/gtk/initrd.gz
+    }
+}

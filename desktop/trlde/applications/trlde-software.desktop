@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Yazılım Merkezi
+Comment=Debian ve Flatpak uygulamalarını keşfet ve yönet
+Exec=trlde-software
+Icon=system-software-install
+Type=Application
+Categories=System;PackageManager;
+Keywords=yazılım;uygulama;paket;flatpak;apt;vpx;

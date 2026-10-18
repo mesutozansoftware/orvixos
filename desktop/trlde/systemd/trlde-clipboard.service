@@ -1,0 +1,13 @@
+[Unit]
+Description=TRLDE Wayland clipboard history
+PartOf=trlde-session.target
+After=trlde-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/trlde/trlde-clipboard-watch
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=trlde-session.target

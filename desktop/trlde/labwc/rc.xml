@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<labwc_config>
+  <core>
+    <gap>8</gap>
+    <decoration>server</decoration>
+    <adaptiveSync>no</adaptiveSync>
+    <allowTearing>no</allowTearing>
+  </core>
+
+  <theme>
+    <name>TRLDE</name>
+    <cornerRadius>8</cornerRadius>
+    <font place="ActiveWindow">
+      <name>Sans</name>
+      <size>10</size>
+      <weight>Bold</weight>
+    </font>
+  </theme>
+
+  <desktops>
+    <popupTime>1000</popupTime>
+    <names>
+      <name>1</name>
+      <name>2</name>
+      <name>3</name>
+      <name>4</name>
+    </names>
+  </desktops>
+
+  <regions>
+    <region name="top-left" x="0%" y="0%" height="50%" width="50%" />
+    <region name="top-right" x="50%" y="0%" height="50%" width="50%" />
+    <region name="left" x="0%" y="0%" height="100%" width="50%" />
+    <region name="right" x="50%" y="0%" height="100%" width="50%" />
+    <region name="bottom-left" x="0%" y="50%" height="50%" width="50%" />
+    <region name="bottom-right" x="50%" y="50%" height="50%" width="50%" />
+  </regions>
+
+  <keyboard>
+    <default />
+
+    <keybind key="W-space">
+      <action name="Execute" command="trlde-launcher" />
+    </keybind>
+    <keybind key="W-a">
+      <action name="Execute" command="trlde-quick-settings" />
+    </keybind>
+    <keybind key="W-r">
+      <action name="Execute" command="trlde-run" />
+    </keybind>
+    <keybind key="W-b">
+      <action name="Execute" command="x-www-browser" />
+    </keybind>
+    <keybind key="W-e">
+      <action name="Execute" command="thunar" />
+    </keybind>
+    <keybind key="W-l">
+      <action name="Execute" command="trlde-lock" />
+    </keybind>
+    <keybind key="W-p">
+      <action name="Execute" command="trlde-power" />
+    </keybind>
+    <keybind key="W-Tab">
+      <action name="ShowMenu" menu="client-list-combined-menu" />
+    </keybind>
+    <keybind key="W-Return">
+      <action name="Execute" command="foot" />
+    </keybind>
+    <keybind key="W-q">
+      <action name="Close" />
+    </keybind>
+    <keybind key="W-f">
+      <action name="ToggleFullscreen" />
+    </keybind>
+    <keybind key="W-Up">
+      <action name="ToggleMaximize" />
+    </keybind>
+    <keybind key="A-F4">
+      <action name="Close" />
+    </keybind>
+    <keybind key="C-A-t">
+      <action name="Execute" command="foot" />
+    </keybind>
+    <keybind key="Print">
+      <action name="Execute" command="trlde-screenshot full" />
+    </keybind>
+    <keybind key="W-S-s">
+      <action name="Execute" command="trlde-screenshot area" />
+    </keybind>
+    <keybind key="W-v">
+      <action name="Execute" command="trlde-clipboard" />
+    </keybind>
+    <keybind key="W-S-r">
+      <action name="Execute" command="trlde-recorder" />
+    </keybind>
+    <keybind key="W-S-b">
+      <action name="Execute" command="trlde-backup" />
+    </keybind>
+    <keybind key="W-Left">
+      <action name="SnapToRegion" region="left" />
+    </keybind>
+    <keybind key="W-Right">
+      <action name="SnapToRegion" region="right" />
+    </keybind>
+    <keybind key="W-S-Left">
+      <action name="SnapToRegion" region="top-left" />
+    </keybind>
+    <keybind key="W-S-Right">
+      <action name="SnapToRegion" region="top-right" />
+    </keybind>
+    <keybind key="W-C-Left">
+      <action name="SnapToRegion" region="bottom-left" />
+    </keybind>
+    <keybind key="W-C-Right">
+      <action name="SnapToRegion" region="bottom-right" />
+    </keybind>
+    <keybind key="A-Tab">
+      <action name="NextWindow" />
+    </keybind>
+    <keybind key="W-S-e">
+      <action name="Execute" command="trlde-power logout" />
+    </keybind>
+    <keybind key="W-1">
+      <action name="GoToDesktop" to="1" />
+    </keybind>
+    <keybind key="W-2">
+      <action name="GoToDesktop" to="2" />
+    </keybind>
+    <keybind key="W-3">
+      <action name="GoToDesktop" to="3" />
+    </keybind>
+    <keybind key="W-4">
+      <action name="GoToDesktop" to="4" />
+    </keybind>
+    <keybind key="W-S-1">
+      <action name="SendToDesktop" to="1" />
+    </keybind>
+    <keybind key="W-S-2">
+      <action name="SendToDesktop" to="2" />
+    </keybind>
+    <keybind key="W-S-3">
+      <action name="SendToDesktop" to="3" />
+    </keybind>
+    <keybind key="W-S-4">
+      <action name="SendToDesktop" to="4" />
+    </keybind>
+
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute" command="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0" />
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute" command="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" />
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute" command="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" />
+    </keybind>
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute" command="trlde-brightness up" />
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute" command="trlde-brightness down" />
+    </keybind>
+  </keyboard>
+
+  <mouse>
+    <default />
+    <context name="Root">
+      <mousebind button="Left" action="Press">
+        <action name="None" />
+      </mousebind>
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu" menu="root-menu" />
+      </mousebind>
+    </context>
+  </mouse>
+
+  <libinput>
+    <device category="touchpad">
+      <naturalScroll>yes</naturalScroll>
+      <tap>yes</tap>
+      <tapAndDrag>yes</tapAndDrag>
+      <disableWhileTyping>yes</disableWhileTyping>
+    </device>
+  </libinput>
+</labwc_config>

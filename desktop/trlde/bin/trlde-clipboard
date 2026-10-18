@@ -1,0 +1,153 @@
+#!/usr/bin/python3
+
+"""TRLDE pano geçmişi arayüzü."""
+
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, GLib, Gtk
+
+
+def notify(message):
+    if GLib.find_program_in_path("notify-send"):
+        subprocess.Popen(["notify-send", "TRLDE Pano", message], start_new_session=True)
+
+
+class Clipboard(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.trlde.Clipboard")
+        self.window = None
+        self.entries = []
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        provider = Gtk.CssProvider()
+        provider.load_from_data(
+            b"""
+            window { background: #111820; color: #e7edf2; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            entry { min-height: 38px; border-radius: 9px; background: #202c38; color: #fff; }
+            list { background: #111820; }
+            row { padding: 11px; border-bottom: 1px solid #273442; }
+            row:selected { background: #273442; color: #39d6c5; }
+            button { min-height: 38px; border-radius: 9px; background: #202c38; color: #e7edf2; }
+            button:hover { background: #314253; color: #39d6c5; }
+            """
+        )
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def do_activate(self):
+        if self.window:
+            self.window.present()
+            return
+        self.window = Gtk.ApplicationWindow(application=self)
+        self.window.set_title("TRLDE Pano Geçmişi")
+        self.window.set_default_size(620, 520)
+        header = Gtk.HeaderBar(title="TRLDE Pano Geçmişi")
+        header.set_show_close_button(True)
+        self.window.set_titlebar(header)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        outer.set_border_width(14)
+        self.window.add(outer)
+
+        self.search = Gtk.SearchEntry(placeholder_text="Panoda ara…")
+        self.search.connect("search-changed", lambda *_: self.populate())
+        outer.pack_start(self.search, False, False, 0)
+        scroller = Gtk.ScrolledWindow()
+        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.listbox = Gtk.ListBox()
+        self.listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.listbox.connect("row-activated", lambda *_: self.copy_selected())
+        scroller.add(self.listbox)
+        outer.pack_start(scroller, True, True, 0)
+
+        buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        for label, callback in (
+            ("Kopyala", self.copy_selected),
+            ("Sil", self.delete_selected),
+            ("Tümünü Temizle", self.clear_all),
+            ("Yenile", self.refresh),
+        ):
+            button = Gtk.Button(label=label)
+            button.connect("clicked", lambda _button, action=callback: action())
+            buttons.pack_start(button, True, True, 0)
+        outer.pack_start(buttons, False, False, 0)
+        self.status = Gtk.Label(xalign=0)
+        outer.pack_start(self.status, False, False, 0)
+        self.refresh()
+        GLib.timeout_add_seconds(5, self.refresh)
+        self.window.show_all()
+
+    def refresh(self):
+        if not GLib.find_program_in_path("cliphist"):
+            self.entries = []
+            self.status.set_text("cliphist bulunamadı.")
+            self.populate()
+            return True
+        result = subprocess.run(
+            ["cliphist", "list"], check=False, capture_output=True, text=True
+        )
+        self.entries = [line for line in result.stdout.splitlines() if line.strip()]
+        self.status.set_text(f"{len(self.entries)} pano öğesi")
+        self.populate()
+        return True
+
+    def populate(self):
+        for child in self.listbox.get_children():
+            self.listbox.remove(child)
+        query = self.search.get_text().casefold() if hasattr(self, "search") else ""
+        for entry in self.entries:
+            shown = entry.split("\t", 1)[-1].replace("\n", " ").strip()
+            if query and query not in shown.casefold():
+                continue
+            row = Gtk.ListBoxRow()
+            row.clip_entry = entry
+            row.add(Gtk.Label(label=shown[:300], xalign=0, ellipsize=3))
+            self.listbox.add(row)
+        self.listbox.show_all()
+
+    def selected_entry(self):
+        row = self.listbox.get_selected_row()
+        return getattr(row, "clip_entry", None) if row else None
+
+    def copy_selected(self):
+        entry = self.selected_entry()
+        if not entry:
+            return
+        decoded = subprocess.run(
+            ["cliphist", "decode"], input=entry.encode(), check=False, capture_output=True
+        )
+        if decoded.returncode == 0:
+            subprocess.run(["wl-copy"], input=decoded.stdout, check=False)
+            notify("Seçilen öğe yeniden panoya kopyalandı.")
+            self.window.hide()
+
+    def delete_selected(self):
+        entry = self.selected_entry()
+        if entry:
+            subprocess.run(["cliphist", "delete"], input=entry.encode(), check=False)
+            self.refresh()
+
+    def clear_all(self):
+        dialog = Gtk.MessageDialog(
+            transient_for=self.window,
+            modal=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.CANCEL,
+            text="Pano geçmişi temizlensin mi?",
+        )
+        dialog.add_button("Temizle", Gtk.ResponseType.OK)
+        response = dialog.run()
+        dialog.destroy()
+        if response == Gtk.ResponseType.OK:
+            subprocess.run(["cliphist", "wipe"], check=False)
+            self.refresh()
+
+
+Clipboard().run(sys.argv)

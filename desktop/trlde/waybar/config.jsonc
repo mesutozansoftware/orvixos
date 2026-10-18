@@ -1,0 +1,140 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 38,
+  "spacing": 8,
+  "margin-top": 6,
+  "margin-left": 8,
+  "margin-right": 8,
+
+  "modules-left": ["custom/launcher", "ext/workspaces", "wlr/taskbar"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "network", "pulseaudio", "custom/bluetooth", "custom/brightness", "custom/recorder", "custom/notifications", "custom/quicksettings", "battery", "custom/power"],
+
+  "custom/launcher": {
+    "format": "TRLDE",
+    "tooltip": false,
+    "on-click": "trlde-launcher",
+    "on-click-right": "pkill -x wofi"
+  },
+
+  "wlr/taskbar": {
+    "format": "{icon} {title:.12}",
+    "icon-size": 20,
+    "tooltip-format": "{title}",
+    "on-click": "activate",
+    "on-click-middle": "close"
+  },
+
+  "ext/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "sort-by-id": true
+  },
+
+  "clock": {
+    "format": "{:%H:%M  %d.%m.%Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "weeks-pos": "right"
+    }
+  },
+
+  "network": {
+    "format-wifi": "Wi-Fi {signalStrength}%",
+    "format-ethernet": "Ağ",
+    "format-disconnected": "Ağ yok",
+    "tooltip-format": "{ifname}: {ipaddr}",
+    "on-click": "nm-connection-editor",
+    "on-click-right": "trlde-settings"
+  },
+
+  "custom/settings": {
+    "format": "Ayarlar",
+    "tooltip": false,
+    "on-click": "trlde-settings"
+  },
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 8
+  },
+
+  "custom/notifications": {
+    "format": "Bild.",
+    "tooltip": true,
+    "tooltip-format": "Bildirim Merkezi",
+    "on-click": "trlde-notifications"
+  },
+
+  "custom/recorder": {
+    "exec": "trlde-recorder --status",
+    "return-type": "json",
+    "interval": 2,
+    "on-click": "trlde-recorder",
+    "on-click-right": "trlde-recorder --stop",
+    "tooltip": true
+  },
+
+  "custom/quicksettings": {
+    "format": "Ayarlar",
+    "tooltip": true,
+    "tooltip-format": "Hızlı Ayarlar • Sağ tık: Ayarlar Merkezi",
+    "on-click": "trlde-quick-settings",
+    "on-click-right": "trlde-settings"
+  },
+
+  "custom/bluetooth": {
+    "exec": "trlde-bluetooth status",
+    "interval": 5,
+    "tooltip": true,
+    "tooltip-format": "Sol tık: ayarlar • Sağ tık: aç/kapat",
+    "on-click": "trlde-bluetooth settings",
+    "on-click-right": "trlde-bluetooth toggle"
+  },
+
+  "custom/brightness": {
+    "exec": "trlde-brightness status",
+    "interval": 3,
+    "tooltip": true,
+    "tooltip-format": "Fare tekerleğiyle parlaklığı değiştir",
+    "on-scroll-up": "trlde-brightness up",
+    "on-scroll-down": "trlde-brightness down"
+  },
+
+  "pulseaudio": {
+    "format": "Ses {volume}%",
+    "format-muted": "Ses kapalı",
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+  },
+
+  "cpu": {
+    "format": "CPU {usage}%",
+    "interval": 3
+  },
+
+  "memory": {
+    "format": "RAM {percentage}%",
+    "interval": 3
+  },
+
+  "battery": {
+    "format": "Pil {capacity}%",
+    "format-charging": "Şarj {capacity}%",
+    "format-full": "Pil dolu",
+    "states": {
+      "warning": 25,
+      "critical": 10
+    }
+  },
+
+  "custom/power": {
+    "format": "Güç",
+    "tooltip": false,
+    "on-click": "trlde-power"
+  }
+}

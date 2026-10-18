@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=TRLDE
+Comment=Turkish Linux Desktop Environment
+Exec=/usr/bin/trlde-session
+TryExec=/usr/bin/trlde-session
+Type=Application
+DesktopNames=TRLDE

@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# labwc bu betiği oturum başında çalıştırır. Eksik isteğe bağlı bir bileşen,
+# tüm masaüstü oturumunun kapanmasına neden olmamalıdır.
+
+log() {
+    printf '%s\n' "trlde-autostart: $*" >&2
+}
+
+state_home=${XDG_STATE_HOME:-$HOME/.local/state}
+install -d -m 0700 "$state_home/trlde"
+log_file=$state_home/trlde/session.log
+if [ -r "$log_file" ] && [ "$(wc -c < "$log_file")" -gt 1048576 ]; then
+    mv -f "$log_file" "$log_file.old"
+fi
+exec >>"$log_file" 2>&1
+
+log "oturum bileşenleri başlatılıyor"
+
+start_if_available() {
+    program=$1
+    shift
+
+    if command -v "$program" >/dev/null 2>&1; then
+        "$program" "$@" &
+    else
+        log "$program bulunamadı; bu bileşen atlandı."
+    fi
+}
+
+share_dir=${TRLDE_SHARE_DIR:-/usr/share/trlde}
+config_home=${XDG_CONFIG_HOME:-$HOME/.config}
+wallpaper=${TRLDE_WALLPAPER:-/usr/share/backgrounds/trlde/trlde.svg}
+
+# Sistem varsayılanı (/etc/xdg/mimeapps.list) varsa önce o tarayıcı denenir.
+trlde_browsers() {
+    xdg-mime query default x-scheme-handler/https 2>/dev/null || true
+    printf '%s\n' vira-browser.desktop firefox-esr.desktop chromium.desktop firefox.desktop
+}
+
+first_run_marker=$config_home/trlde/defaults-applied
+if [ ! -e "$first_run_marker" ]; then
+    install -d -m 0700 "$config_home/trlde"
+    if command -v xdg-user-dirs-update >/dev/null 2>&1; then
+        while IFS=: read -r directory folder; do
+            install -d -m 0700 "$HOME/$folder"
+            xdg-user-dirs-update --set "$directory" "$HOME/$folder" || true
+        done <<'EOF'
+DESKTOP:Masaüstü
+DOWNLOAD:İndirilenler
+TEMPLATES:Şablonlar
+PUBLICSHARE:Genel
+DOCUMENTS:Belgeler
+MUSIC:Müzik
+PICTURES:Resimler
+VIDEOS:Videolar
+EOF
+    fi
+    command -v gsettings >/dev/null 2>&1 && {
+        gsettings set org.gnome.desktop.interface color-scheme prefer-dark || true
+        gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark || true
+        gsettings set org.gnome.desktop.interface icon-theme Adwaita || true
+    }
+    command -v xdg-mime >/dev/null 2>&1 && {
+        for browser in $(trlde_browsers); do
+            if [ -r "/usr/share/applications/$browser" ]; then
+                xdg-mime default "$browser" x-scheme-handler/http || true
+                xdg-mime default "$browser" x-scheme-handler/https || true
+                break
+            fi
+        done
+        xdg-mime default thunar.desktop inode/directory || true
+        for editor in org.xfce.mousepad.desktop mousepad.desktop; do
+            if [ -r "/usr/share/applications/$editor" ]; then
+                xdg-mime default "$editor" text/plain || true
+                break
+            fi
+        done
+    }
+    : > "$first_run_marker"
+fi
+
+if [ -r "$config_home/trlde/wallpaper" ]; then
+    IFS= read -r saved_wallpaper < "$config_home/trlde/wallpaper" || true
+    if [ -n "${saved_wallpaper:-}" ] && [ -r "$saved_wallpaper" ]; then
+        wallpaper=$saved_wallpaper
+    fi
+fi
+
+if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+    dbus-update-activation-environment --systemd \
+        WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
+        XDG_SESSION_TYPE XDG_RUNTIME_DIR >/dev/null 2>&1 || true
+fi
+
+# Kullanıcı yöneticisi bir TTY yüzünden oturumlar arasında yaşayabilir. Portalı
+# yeni Wayland ortamını okuyacak biçimde yenilemek, ekran paylaşımını her girişte
+# güvenilir şekilde ayağa kaldırır.
+systemctl --user restart xdg-desktop-portal.service >/dev/null 2>&1 || true
+systemctl --user enable --now trlde-update.timer >/dev/null 2>&1 || true
+systemctl --user restart trlde-clipboard.service >/dev/null 2>&1 || true
+
+if command -v wlr-randr >/dev/null 2>&1; then
+    trlde-display-profiles --apply-last >/dev/null 2>&1 || true
+fi
+
+start_if_available swaybg -i "$wallpaper" -m fill
+
+if ! systemctl --user start mako.service >/dev/null 2>&1; then
+    start_if_available mako -c "$share_dir/mako/config"
+fi
+
+start_if_available waybar -c "$share_dir/waybar/config.jsonc" -s "$share_dir/waybar/style.css"
+start_if_available nm-applet --indicator
+start_if_available blueman-applet
+start_if_available swayidle -w timeout 600 "trlde-lock" before-sleep "trlde-lock"
+start_if_available trlde-welcome --first-run
+
+polkit_agent=
+for candidate in \
+    /usr/libexec/polkit-mate-authentication-agent-1 \
+    /usr/lib/mate-polkit/polkit-mate-authentication-agent-1; do
+    if [ -x "$candidate" ]; then
+        polkit_agent=$candidate
+        break
+    fi
+done
+if [ -n "$polkit_agent" ]; then
+    "$polkit_agent" &
+else
+    log "Polkit kimlik doğrulama aracısı bulunamadı."
+fi
+
+log "oturum bileşenleri başlatıldı"

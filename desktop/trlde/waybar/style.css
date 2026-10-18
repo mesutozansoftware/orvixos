@@ -1,0 +1,140 @@
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-size: 13px;
+  min-height: 0;
+}
+
+window#waybar {
+  background: rgba(17, 24, 32, 0.96);
+  color: #e7edf2;
+  border: 1px solid rgba(57, 214, 197, 0.35);
+  border-radius: 12px;
+}
+
+#custom-launcher {
+  background: #d62e4f;
+  color: #ffffff;
+  font-weight: 800;
+  padding: 0 17px;
+  border-radius: 10px;
+  margin: 4px;
+}
+
+#taskbar button {
+  padding: 0 8px;
+  margin: 4px 1px;
+  border-radius: 8px;
+  color: #91a0ad;
+}
+
+#taskbar button.active,
+#taskbar button:hover {
+  background: #273442;
+  color: #39d6c5;
+}
+
+#workspaces {
+  background: #18222d;
+  border-radius: 9px;
+  margin: 4px 2px;
+}
+
+#workspaces button {
+  min-width: 28px;
+  padding: 0 6px;
+  color: #91a0ad;
+  border-radius: 7px;
+}
+
+#workspaces button.active,
+#workspaces button:hover {
+  background: #314253;
+  color: #39d6c5;
+}
+
+#clock {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+#network,
+#custom-settings,
+#custom-bluetooth,
+#custom-brightness,
+#pulseaudio,
+#cpu,
+#memory,
+#battery,
+#custom-power {
+  padding: 0 8px;
+  color: #b9c6cf;
+}
+
+#custom-recorder.recording {
+  background: #d62e4f;
+  color: #ffffff;
+  font-weight: 800;
+  border-radius: 8px;
+  margin: 4px 1px;
+  padding: 0 9px;
+}
+
+#tray,
+#custom-notifications,
+#custom-quicksettings {
+  padding: 0 9px;
+  background: #202c38;
+  border-radius: 8px;
+  margin: 4px 1px;
+  color: #b9c6cf;
+}
+
+#custom-notifications:hover,
+#custom-quicksettings:hover {
+  background: #314253;
+  color: #39d6c5;
+}
+
+#custom-settings,
+#network,
+#custom-bluetooth,
+#custom-brightness,
+#pulseaudio {
+  background: #202c38;
+  border-radius: 8px;
+  margin: 4px 1px;
+}
+
+#custom-settings:hover,
+#network:hover,
+#custom-bluetooth:hover,
+#custom-brightness:hover,
+#pulseaudio:hover {
+  background: #314253;
+  color: #39d6c5;
+}
+
+#battery.warning {
+  color: #ffc857;
+}
+
+#battery.critical {
+  color: #ff5577;
+}
+
+#custom-power {
+  background: #273442;
+  color: #ffffff;
+  border-radius: 8px;
+  margin: 4px;
+  padding: 0 12px;
+}
+
+tooltip {
+  background: #111820;
+  color: #e7edf2;
+  border: 1px solid #39d6c5;
+  border-radius: 8px;
+}

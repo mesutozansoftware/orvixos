@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+cleanup() {
+    [ -z "${text_pid:-}" ] || kill "$text_pid" 2>/dev/null || true
+    [ -z "${image_pid:-}" ] || kill "$image_pid" 2>/dev/null || true
+}
+
+trap cleanup EXIT HUP INT TERM
+
+wl-paste --type text --watch cliphist store &
+text_pid=$!
+wl-paste --type image --watch cliphist store &
+image_pid=$!
+wait -n "$text_pid" "$image_pid"

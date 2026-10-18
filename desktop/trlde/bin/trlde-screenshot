@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -eu
+
+mode=${1:-area}
+if ! command -v grim >/dev/null 2>&1; then
+    command -v notify-send >/dev/null 2>&1 && notify-send "TRLDE" "Ekran görüntüsü aracı bulunamadı."
+    exit 127
+fi
+
+pictures=${XDG_PICTURES_DIR:-}
+if [ -z "$pictures" ] && command -v xdg-user-dir >/dev/null 2>&1; then
+    pictures=$(xdg-user-dir PICTURES 2>/dev/null || true)
+fi
+if [ -z "$pictures" ] || [ "$pictures" = "$HOME" ] || [ "$pictures" = "$HOME/" ]; then
+    pictures=$HOME/Resimler
+fi
+target_dir=$pictures/TRLDE
+install -d -m 0700 "$target_dir"
+target=$target_dir/TRLDE-$(date +%Y%m%d-%H%M%S).png
+
+case "$mode" in
+    full)
+        grim "$target"
+        ;;
+    area)
+        if ! command -v slurp >/dev/null 2>&1; then
+            command -v notify-send >/dev/null 2>&1 && notify-send "TRLDE" "Alan seçme aracı bulunamadı."
+            exit 127
+        fi
+        geometry=$(slurp) || exit 0
+        [ -n "$geometry" ] || exit 0
+        grim -g "$geometry" "$target"
+        ;;
+    *)
+        printf 'Kullanım: %s [full|area]\n' "$0" >&2
+        exit 2
+        ;;
+esac
+
+if command -v wl-copy >/dev/null 2>&1; then
+    wl-copy --type image/png < "$target"
+fi
+command -v notify-send >/dev/null 2>&1 && \
+    notify-send "Ekran görüntüsü kaydedildi" "$target"

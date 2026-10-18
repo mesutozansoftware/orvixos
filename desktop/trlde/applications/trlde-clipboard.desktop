@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TRLDE Pano Geçmişi
+Comment=Daha önce kopyalanan öğeleri bul ve yeniden kullan
+Exec=trlde-clipboard
+Icon=edit-paste
+Type=Application
+Categories=Utility;
+Keywords=pano;kopyala;clipboard;geçmiş;

@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -eu
+
+status() {
+    if ! command -v bluetoothctl >/dev/null 2>&1; then
+        return
+    fi
+
+    controller=$(timeout 2 bluetoothctl show 2>/dev/null || true)
+    if [ -z "$controller" ]; then
+        return
+    elif printf '%s\n' "$controller" | grep -q 'Powered: yes'; then
+        printf '%s\n' "BT açık"
+    else
+        printf '%s\n' "BT kapalı"
+    fi
+}
+
+case "${1:-status}" in
+    status)
+        status
+        ;;
+    settings)
+        if command -v blueman-manager >/dev/null 2>&1; then
+            exec blueman-manager
+        elif command -v bluetoothctl >/dev/null 2>&1; then
+            exec foot -e bluetoothctl
+        fi
+        ;;
+    toggle)
+        if command -v bluetoothctl >/dev/null 2>&1; then
+            if timeout 2 bluetoothctl show 2>/dev/null | grep -q 'Powered: yes'; then
+                bluetoothctl power off >/dev/null
+            else
+                bluetoothctl power on >/dev/null
+            fi
+        fi
+        ;;
+esac

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07151b"/>
+      <stop offset="0.55" stop-color="#0d4650"/>
+      <stop offset="1" stop-color="#138b91"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#67f5dc" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#67f5dc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <ellipse cx="1510" cy="210" rx="720" ry="540" fill="url(#glow)"/>
+  <path d="M-120 880C310 580 625 1020 1080 650c330-270 630-250 980-90v600H-120z" fill="#0b202a" opacity=".72"/>
+  <path d="M-100 960C380 670 710 1100 1190 760c310-220 560-190 830-70" fill="none" stroke="#39d6c5" stroke-width="10" opacity=".4"/>
+  <text x="110" y="920" fill="#fff" font-family="Noto Sans, sans-serif" font-size="92" font-weight="800">TRLDE</text>
+  <text x="115" y="970" fill="#75eadc" font-family="Noto Sans, sans-serif" font-size="24" letter-spacing="7">TURKISH LINUX DESKTOP ENVIRONMENT</text>
+</svg>
+

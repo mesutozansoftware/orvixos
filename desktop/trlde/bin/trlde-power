@@ -1,0 +1,64 @@
+#!/bin/sh
+
+set -eu
+
+choose_action() {
+    printf '%s\n' \
+        "Ekranı Kilitle" \
+        "Uykuya Al" \
+        "Oturumu Kapat" \
+        "Yeniden Başlat" \
+        "Bilgisayarı Kapat" |
+        wofi --dmenu --normal-window --insensitive \
+            --prompt "Güç Menüsü" --width 430 --height 360 \
+            --style /usr/share/trlde/wofi/style.css
+}
+
+confirm_action() {
+    answer=$(
+        printf '%s\n' "Vazgeç" "Evet" |
+            wofi --dmenu --normal-window \
+                --prompt "$1" --width 390 --height 220 \
+                --style /usr/share/trlde/wofi/style.css
+    ) || return 1
+    [ "$answer" = "Evet" ]
+}
+
+action=${1:-}
+if [ -z "$action" ]; then
+    selection=$(choose_action) || exit 0
+    case "$selection" in
+        "Ekranı Kilitle") action=lock ;;
+        "Uykuya Al") action=suspend ;;
+        "Oturumu Kapat") action=logout ;;
+        "Yeniden Başlat") action=reboot ;;
+        "Bilgisayarı Kapat") action=poweroff ;;
+        *) exit 0 ;;
+    esac
+fi
+
+case "$action" in
+    lock)
+        exec trlde-lock
+        ;;
+    suspend)
+        confirm_action "Bilgisayar uykuya alınsın mı?" || exit 0
+        trlde-lock
+        systemctl suspend
+        ;;
+    logout)
+        confirm_action "TRLDE oturumu kapatılsın mı?" || exit 0
+        if [ -n "${LABWC_PID:-}" ]; then
+            exec labwc --exit
+        fi
+        pkill -TERM -x labwc
+        ;;
+    reboot)
+        confirm_action "Bilgisayar yeniden başlatılsın mı?" || exit 0
+        systemctl reboot
+        ;;
+    poweroff)
+        confirm_action "Bilgisayar kapatılsın mı?" || exit 0
+        systemctl poweroff
+        ;;
+esac

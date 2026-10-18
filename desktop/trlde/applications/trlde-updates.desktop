@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Sistem Güncellemeleri
+Name[en]=OrvixOS System Updates
 Comment=OrvixOS ve OrvixOS paketlerini güncelle
+Comment[en]=Update OrvixOS and its packages
 Exec=trlde-update
 Icon=software-update-available
 Type=Application

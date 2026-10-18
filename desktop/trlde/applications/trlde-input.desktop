@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Klavye ve Dokunmatik Yüzey
+Name[en]=OrvixOS Keyboard and Touchpad
 Comment=Klavye düzenini ve dokunmatik yüzeyi yapılandır
+Comment[en]=Configure the keyboard layout and touchpad
 Exec=trlde-input
 Icon=input-touchpad
 Type=Application

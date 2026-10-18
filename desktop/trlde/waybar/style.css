@@ -31,7 +31,7 @@ tooltip label {
   margin: 5px 4px 5px 8px;
   border-radius: 10px;
   background-image: url("/usr/share/trlde/waybar/start.svg");
-  background-size: 26px 26px;
+  background-size: 30px 30px;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -45,8 +45,9 @@ tooltip label {
 }
 
 #taskbar button {
-  min-width: 42px;
-  padding: 0 6px;
+  /* Sabit genişlik ikonu sola yaslıyordu; genişlik iç boşlukla verilir. */
+  min-width: 0;
+  padding: 0 9px;
   margin: 5px 2px;
   border-radius: 10px;
   border-bottom: 3px solid transparent;

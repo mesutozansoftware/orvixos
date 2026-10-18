@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Ekran Kaydı
+Name[en]=OrvixOS Screen Recorder
 Comment=Ekranın tamamını veya seçilen alanı videoya kaydet
+Comment[en]=Record the whole screen or a selected area to video
 Exec=trlde-recorder
 Icon=media-record
 Type=Application

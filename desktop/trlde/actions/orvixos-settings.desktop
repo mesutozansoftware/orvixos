@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Ayarlar
+Name[en]=Settings
 Icon=preferences-system
 Profiles=orvixos;
 TargetLocation=true
@@ -9,5 +10,6 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Ayarlar
+Name[en]=Settings
 Exec=trlde-settings
 SelectionCount=0

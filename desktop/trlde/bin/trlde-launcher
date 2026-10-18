@@ -2,6 +2,11 @@
 
 set -eu
 
+case "${LANGUAGE:-${LC_ALL:-${LC_MESSAGES:-${LANG:-tr}}}}" in
+    tr*|C|C.*|POSIX) T() { printf '%s' "$1"; } ;;
+    *) T() { printf '%s' "$2"; } ;;
+esac
+
 if command -v trlde-drawer >/dev/null 2>&1; then
     exec trlde-drawer
 fi
@@ -16,7 +21,7 @@ exec wofi \
     --normal-window \
     --allow-images \
     --insensitive \
-    --prompt "Uygulama ara" \
+    --prompt "$(T "Uygulama ara" "Search apps")" \
     --width 640 \
     --height 480 \
     --style /usr/share/trlde/wofi/style.css

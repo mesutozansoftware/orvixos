@@ -5,6 +5,7 @@ import calamares.slideshow 1.0;
 Presentation
 {
     id: presentation
+    property bool turkish: Qt.locale().name.indexOf("tr") === 0
 
     function onActivate() { }
     function onLeave() { }
@@ -33,7 +34,7 @@ Presentation
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             color: "white"; font.pixelSize: 20
-            text: "OrvixOS'a hoş geldin.<br/><span style='color:#9ba1b6;font-size:15px'>Kurulum birkaç dakika içinde tamamlanacak.</span>"
+            text: presentation.turkish ? "OrvixOS'a hoş geldin.<br/><span style='color:#9ba1b6;font-size:15px'>Kurulum birkaç dakika içinde tamamlanacak.</span>" : "Welcome to OrvixOS.<br/><span style='color:#9ba1b6;font-size:15px'>Installation will finish in a few minutes.</span>"
             textFormat: Text.RichText
         }
     }
@@ -45,7 +46,7 @@ Presentation
             wrapMode: Text.WordWrap
             color: "white"; font.pixelSize: 20
             textFormat: Text.RichText
-            text: "<b style='color:#2ee6d6'>vpx</b> ile uygulama kurmak çok kolay:<br/><br/><span style='font-family:monospace;color:#9ba1b6'>vpx install libreoffice<br/>vpx sync</span>"
+            text: (presentation.turkish ? "<b style='color:#2ee6d6'>vpx</b> ile uygulama kurmak çok kolay:" : "Installing apps is easy with <b style='color:#2ee6d6'>vpx</b>:") + "<br/><br/><span style='font-family:monospace;color:#9ba1b6'>vpx install libreoffice<br/>vpx sync</span>"
         }
     }
     Slide {
@@ -56,7 +57,7 @@ Presentation
             wrapMode: Text.WordWrap
             color: "white"; font.pixelSize: 20
             textFormat: Text.RichText
-            text: "<b style='color:#2ee6d6'>TRLDE</b> masaüstü kısayolları:<br/><br/><span style='color:#9ba1b6'>Super + Boşluk: uygulama menüsü<br/>Super + Enter: terminal<br/>Super + B: tarayıcı</span>"
+            text: presentation.turkish ? "<b style='color:#2ee6d6'>OrvixOS</b> masaüstü kısayolları:<br/><br/><span style='color:#9ba1b6'>Super + Boşluk: uygulama menüsü<br/>Super + Enter: terminal<br/>Super + B: tarayıcı</span>" : "<b style='color:#2ee6d6'>OrvixOS</b> desktop shortcuts:<br/><br/><span style='color:#9ba1b6'>Super + Space: app menu<br/>Super + Enter: terminal<br/>Super + B: browser</span>"
         }
     }
 }

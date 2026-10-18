@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Görev çubuğunu düzenle
+Name[en]=Edit taskbar
 Icon=view-grid
 Profiles=orvixos;
 TargetLocation=true
@@ -9,5 +10,6 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Görev çubuğunu düzenle
+Name[en]=Edit taskbar
 Exec=trlde-taskbar --manage
 SelectionCount=0

@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Yazılım Merkezi
+Name[en]=OrvixOS Software Center
 Comment=Debian ve Flatpak uygulamalarını keşfet ve yönet
+Comment[en]=Discover and manage Debian and Flatpak apps
 Exec=trlde-software
 Icon=system-software-install
 Type=Application

@@ -5,6 +5,8 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
+    property bool turkish: Qt.locale().name.indexOf("tr") === 0
+    function tr(t, e) { return turkish ? t : e }
     width: 1920
     height: 1080
     color: "#0b1220"
@@ -56,7 +58,7 @@ Rectangle {
     Connections {
         target: sddm
         function onLoginFailed() {
-            root.errorText = "Parola yanlış. Yeniden dene."
+            root.errorText = root.tr("Parola yanlış. Yeniden dene.", "Wrong password. Try again.")
             password.text = ""
             password.forceActiveFocus()
             shake.start()
@@ -117,13 +119,13 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             color: root.muted
             font.pixelSize: 20 * root.unit
-            text: new Date().toLocaleDateString(Qt.locale("tr_TR"), "d MMMM yyyy, dddd")
+            text: new Date().toLocaleDateString(Qt.locale(), "d MMMM yyyy, dddd")
         }
         Timer {
             interval: 1000; running: true; repeat: true
             onTriggered: {
                 clock.text = Qt.formatTime(new Date(), "HH:mm")
-                date.text = new Date().toLocaleDateString(Qt.locale("tr_TR"), "d MMMM yyyy, dddd")
+                date.text = new Date().toLocaleDateString(Qt.locale(), "d MMMM yyyy, dddd")
             }
         }
     }
@@ -207,7 +209,7 @@ Rectangle {
                 anchors.rightMargin: 10 * root.unit
                 height: parent.height
                 echoMode: TextInput.Password
-                placeholderText: "Parola"
+                placeholderText: root.tr("Parola", "Password")
                 placeholderTextColor: root.muted
                 color: "white"
                 font.pixelSize: 18 * root.unit
@@ -282,7 +284,7 @@ Rectangle {
             contentItem: Text {
                 leftPadding: 16 * root.unit
                 verticalAlignment: Text.AlignVCenter
-                text: "Oturum: " + sessionBox.displayText
+                text: root.tr("Oturum: ", "Session: ") + sessionBox.displayText
                 color: "white"
                 font: sessionBox.font
                 elide: Text.ElideRight
@@ -296,9 +298,9 @@ Rectangle {
 
         Repeater {
             model: [
-                { label: "Uyku", action: "suspend", enabled: sddm.canSuspend },
-                { label: "Yeniden başlat", action: "reboot", enabled: sddm.canReboot },
-                { label: "Kapat", action: "poweroff", enabled: sddm.canPowerOff }
+                { label: root.tr("Uyku", "Sleep"), action: "suspend", enabled: sddm.canSuspend },
+                { label: root.tr("Yeniden başlat", "Restart"), action: "reboot", enabled: sddm.canReboot },
+                { label: root.tr("Kapat", "Shut down"), action: "poweroff", enabled: sddm.canPowerOff }
             ]
             delegate: Rectangle {
                 required property var modelData

@@ -2,9 +2,14 @@
 
 set -eu
 
+case "${LANGUAGE:-${LC_ALL:-${LC_MESSAGES:-${LANG:-tr}}}}" in
+    tr*|C|C.*|POSIX) T() { printf '%s' "$1"; } ;;
+    *) T() { printf '%s' "$2"; } ;;
+esac
+
 mode=${1:-area}
 if ! command -v grim >/dev/null 2>&1; then
-    command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "Ekran görüntüsü aracı bulunamadı."
+    command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "$(T "Ekran görüntüsü aracı bulunamadı." "Screenshot tool not found.")"
     exit 127
 fi
 
@@ -25,7 +30,7 @@ case "$mode" in
         ;;
     area)
         if ! command -v slurp >/dev/null 2>&1; then
-            command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "Alan seçme aracı bulunamadı."
+            command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "$(T "Alan seçme aracı bulunamadı." "Area selection tool not found.")"
             exit 127
         fi
         geometry=$(slurp) || exit 0
@@ -42,4 +47,4 @@ if command -v wl-copy >/dev/null 2>&1; then
     wl-copy --type image/png < "$target"
 fi
 command -v notify-send >/dev/null 2>&1 && \
-    notify-send "Ekran görüntüsü kaydedildi" "$target"
+    notify-send "$(T "Ekran görüntüsü kaydedildi" "Screenshot saved")" "$target"

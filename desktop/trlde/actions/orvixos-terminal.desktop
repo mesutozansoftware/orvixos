@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Terminalde aç
+Name[en]=Open in Terminal
 Icon=utilities-terminal
 Profiles=orvixos;
 TargetLocation=true
@@ -9,5 +10,6 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Terminalde aç
-Exec=foot
+Name[en]=Open in Terminal
+Exec=xfce4-terminal
 SelectionCount=0

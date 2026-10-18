@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Ayarları
+Name[en]=OrvixOS Settings
 Comment=Masaüstü, ağ, ses ve cihaz ayarları
+Comment[en]=Desktop, network, sound and device settings
 Exec=trlde-settings
 Icon=preferences-system
 Type=Application

@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Pano Geçmişi
+Name[en]=OrvixOS Clipboard History
 Comment=Daha önce kopyalanan öğeleri bul ve yeniden kullan
+Comment[en]=Find and reuse previously copied items
 Exec=trlde-clipboard
 Icon=edit-paste
 Type=Application

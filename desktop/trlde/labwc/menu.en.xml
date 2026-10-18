@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OrvixOS desktop context menu (English) -->
+<openbox_menu>
+  <menu id="orvixos-new" label="New" icon="orvixos-new">
+    <item label="Folder (Desktop)" icon="orvixos-folder-new">
+      <action name="Execute" command="sh -c 'd=$(xdg-user-dir DESKTOP); n=&quot;$d/New Folder&quot;; i=2; while [ -e &quot;$n&quot; ]; do n=&quot;$d/New Folder ($i)&quot;; i=$((i+1)); done; mkdir -p &quot;$n&quot; &amp;&amp; thunar &quot;$d&quot;'" />
+    </item>
+    <item label="Text document" icon="orvixos-file-new">
+      <action name="Execute" command="sh -c 'd=$(xdg-user-dir DESKTOP); n=&quot;$d/New Text Document.txt&quot;; i=2; while [ -e &quot;$n&quot; ]; do n=&quot;$d/New Text Document ($i).txt&quot;; i=$((i+1)); done; : &gt; &quot;$n&quot; &amp;&amp; mousepad &quot;$n&quot;'" />
+    </item>
+  </menu>
+
+  <menu id="orvixos-power" label="Power" icon="orvixos-power">
+    <item label="Lock screen" icon="orvixos-lock">
+      <action name="Execute" command="trlde-power lock" />
+    </item>
+    <item label="Sleep" icon="orvixos-sleep">
+      <action name="Execute" command="trlde-power suspend" />
+    </item>
+    <item label="Log out" icon="orvixos-logout">
+      <action name="Execute" command="trlde-power logout" />
+    </item>
+    <item label="Restart" icon="orvixos-reboot">
+      <action name="Execute" command="trlde-power reboot" />
+    </item>
+    <item label="Shut down" icon="orvixos-power">
+      <action name="Execute" command="trlde-power poweroff" />
+    </item>
+  </menu>
+
+  <!-- Sabit simgeye sağ tık (dinamik) -->
+  <menu id="orvixos-pin-menu" label="" execute="trlde-taskbar --pipemenu pin" />
+
+  <!-- Görev çubuğunun boş alanına sağ tık -->
+  <menu id="orvixos-pin-running" label="Pin an open app" icon="orvixos-new" execute="trlde-taskbar --pipemenu running" />
+  <menu id="orvixos-taskbar-menu">
+    <item label="Task manager" icon="orvixos-taskmanager">
+      <action name="Execute" command="xfce4-terminal -T 'Task Manager' -x top" />
+    </item>
+    <separator />
+    <menu id="orvixos-pin-running" />
+    <item label="Edit taskbar" icon="orvixos-apps">
+      <action name="Execute" command="trlde-taskbar --manage" />
+    </item>
+    <item label="Restart taskbar" icon="orvixos-refresh">
+      <action name="Execute" command="trlde-taskbar --restart" />
+    </item>
+    <separator />
+    <item label="Settings" icon="orvixos-settings">
+      <action name="Execute" command="trlde-settings" />
+    </item>
+  </menu>
+
+  <menu id="root-menu">
+    <item label="Apps" icon="orvixos-apps">
+      <action name="Execute" command="trlde-launcher" />
+    </item>
+    <menu id="orvixos-new" />
+    <separator />
+    <item label="Open in Terminal" icon="orvixos-terminal">
+      <action name="Execute" command="xfce4-terminal" />
+    </item>
+    <item label="File Explorer" icon="orvixos-files">
+      <action name="Execute" command="thunar" />
+    </item>
+    <item label="Web browser" icon="orvixos-browser">
+      <action name="Execute" command="x-www-browser" />
+    </item>
+    <separator />
+    <item label="Display settings" icon="orvixos-display">
+      <action name="Execute" command="wdisplays" />
+    </item>
+    <item label="Personalize" icon="orvixos-personalize">
+      <action name="Execute" command="trlde-appearance" />
+    </item>
+    <item label="Take screenshot" icon="orvixos-screenshot">
+      <action name="Execute" command="trlde-screenshot" />
+    </item>
+    <item label="Task manager" icon="orvixos-taskmanager">
+      <action name="Execute" command="xfce4-terminal -T 'Task Manager' -x top" />
+    </item>
+    <item label="Edit taskbar" icon="orvixos-apps">
+      <action name="Execute" command="trlde-taskbar --manage" />
+    </item>
+    <item label="Settings" icon="orvixos-settings">
+      <action name="Execute" command="trlde-settings" />
+    </item>
+    <separator />
+    <item label="Refresh desktop" icon="orvixos-refresh">
+      <action name="Reconfigure" />
+    </item>
+    <menu id="orvixos-power" />
+  </menu>
+</openbox_menu>

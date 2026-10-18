@@ -52,7 +52,7 @@ lb config noauto \
     --memtest none \
     --firmware-chroot false \
     --firmware-binary false \
-    --chroot-squashfs-compression-type xz \
+    --chroot-squashfs-compression-type zstd \
     --iso-application "OrvixOS" \
     --iso-publisher "OrvixOS Project" \
     --iso-volume "OrvixOS $version $arch" \

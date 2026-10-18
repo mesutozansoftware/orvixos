@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Görünüm
+Name[en]=OrvixOS Appearance
 Comment=Duvar kağıdı ve uygulama temasını değiştir
+Comment[en]=Change the wallpaper and application theme
 Exec=trlde-appearance
 Icon=preferences-desktop-theme
 Type=Application

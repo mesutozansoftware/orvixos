@@ -11,9 +11,17 @@ if [ ! -e "$desktop_dir/orvixos-install.desktop" ]; then
 fi
 command -v zenity >/dev/null 2>&1 || exit 0
 sleep 3
+case "${LANG:-tr}" in
+    tr*)
+        title="<b>OrvixOS'a hoş geldin!</b>\n\nOrvixOS şu an USB'den/DVD'den canlı olarak çalışıyor; bilgisayarındaki hiçbir şey değişmedi.\n\nŞimdi kurabilir ya da önce deneyebilirsin. Kurulum programına daha sonra uygulama menüsündeki <b>OrvixOS'u Kur</b> ile de ulaşabilirsin."
+        install_label="OrvixOS'u Kur"; try_label="Önce Dene" ;;
+    *)
+        title="<b>Welcome to OrvixOS!</b>\n\nOrvixOS is running live from USB/DVD; nothing on your computer has changed.\n\nYou can install it now or try it first. You can also start the installer later with <b>Install OrvixOS</b> in the app menu."
+        install_label="Install OrvixOS"; try_label="Try first" ;;
+esac
 if zenity --question --width=420 --title="OrvixOS" \
     --icon=/usr/share/pixmaps/orvixos-logo.png \
-    --text="<b>OrvixOS'a hoş geldin!</b>\n\nOrvixOS şu an USB'den/DVD'den canlı olarak çalışıyor; bilgisayarındaki hiçbir şey değişmedi.\n\nŞimdi kurabilir ya da önce deneyebilirsin. Kurulum programına daha sonra uygulama menüsündeki <b>OrvixOS'u Kur</b> ile de ulaşabilirsin." \
-    --ok-label="OrvixOS'u Kur" --cancel-label="Önce Dene"; then
+    --text="$title" \
+    --ok-label="$install_label" --cancel-label="$try_label"; then
     exec orvixos-install
 fi

@@ -86,7 +86,7 @@
       <action name="ShowMenu" menu="client-list-combined-menu" />
     </keybind>
     <keybind key="W-Return">
-      <action name="Execute" command="foot" />
+      <action name="Execute" command="xfce4-terminal" />
     </keybind>
     <keybind key="W-q">
       <action name="Close" />
@@ -101,7 +101,7 @@
       <action name="Close" />
     </keybind>
     <keybind key="C-A-t">
-      <action name="Execute" command="foot" />
+      <action name="Execute" command="xfce4-terminal" />
     </keybind>
     <keybind key="Print">
       <action name="Execute" command="trlde-screenshot full" />

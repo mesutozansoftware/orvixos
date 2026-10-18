@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Ekran ayarları
+Name[en]=Display settings
 Icon=preferences-desktop-display
 Profiles=orvixos;
 TargetLocation=true
@@ -9,5 +10,6 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Ekran ayarları
+Name[en]=Display settings
 Exec=wdisplays
 SelectionCount=0

@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Hakkında
+Name[en]=About OrvixOS
 Comment=OrvixOS sürüm ve proje bilgisi
+Comment[en]=OrvixOS version and project information
 Exec=trlde-about
 Icon=trlde-logo
 Type=Application

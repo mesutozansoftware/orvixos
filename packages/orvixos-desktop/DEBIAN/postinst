@@ -18,6 +18,10 @@ case "$1" in
         for candidate in $choice vira firefox chromium; do
             /usr/lib/orvixos/set-browser "$candidate" >/dev/null 2>&1 && break
         done
+        # Varsayılan terminal: sağ tık menüsü olan Xfce Terminal.
+        if [ -x /usr/bin/xfce4-terminal.wrapper ]; then
+            update-alternatives --set x-terminal-emulator /usr/bin/xfce4-terminal.wrapper >/dev/null 2>&1 || true
+        fi
         # Masaüstü ortamı olarak TRLDE.
         update-alternatives --set x-session-manager /usr/bin/trlde-session >/dev/null 2>&1 || true
         systemctl set-default graphical.target >/dev/null 2>&1 || true

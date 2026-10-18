@@ -2,9 +2,14 @@
 
 set -eu
 
+case "${LANGUAGE:-${LC_ALL:-${LC_MESSAGES:-${LANG:-tr}}}}" in
+    tr*|C|C.*|POSIX) T() { printf '%s' "$1"; } ;;
+    *) T() { printf '%s' "$2"; } ;;
+esac
+
 if ! command -v swaylock >/dev/null 2>&1; then
     command -v notify-send >/dev/null 2>&1 && \
-        notify-send "OrvixOS" "Ekran kilidi kullanılamıyor."
+        notify-send "OrvixOS" "$(T "Ekran kilidi kullanılamıyor." "Screen lock is unavailable.")"
     exit 1
 fi
 

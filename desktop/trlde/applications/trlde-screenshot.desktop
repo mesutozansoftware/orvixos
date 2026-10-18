@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Ekran Görüntüsü
+Name[en]=OrvixOS Screenshot
 Comment=Ekranın seçilen alanını görüntü olarak kaydet
+Comment[en]=Save a selected area of the screen as an image
 Exec=trlde-screenshot area
 Icon=applets-screenshooter
 Type=Application

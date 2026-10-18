@@ -10,6 +10,13 @@ import gi
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, GLib, Gtk
+try:
+    import sys as _trlde_sys
+    _trlde_sys.path.insert(0, "/usr/share/trlde/i18n")
+    import trlde_i18n
+    trlde_i18n.install()
+except Exception:
+    pass
 
 
 def notify(message):

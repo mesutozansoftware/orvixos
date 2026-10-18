@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Ekran Profilleri
+Name[en]=OrvixOS Display Profiles
 Comment=Çoklu monitör düzenlerini kaydet ve uygula
+Comment[en]=Save and apply multi-monitor layouts
 Exec=trlde-display-profiles
 Icon=preferences-desktop-display
 Type=Application

@@ -61,6 +61,9 @@ install:
 	install -m 644 sessions/trlde.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
 	install -m 644 labwc/rc.xml $(DESTDIR)$(DATADIR)/trlde/labwc/rc.xml
 	install -m 644 labwc/menu.xml $(DESTDIR)$(DATADIR)/trlde/labwc/menu.xml
+	install -m 644 labwc/menu.en.xml $(DESTDIR)$(DATADIR)/trlde/labwc/menu.en.xml
+	install -d $(DESTDIR)$(DATADIR)/trlde/i18n
+	install -m 644 i18n/trlde_i18n.py i18n/en.py $(DESTDIR)$(DATADIR)/trlde/i18n/
 	install -d $(DESTDIR)$(DATADIR)/icons/OrvixOS/scalable/actions
 	install -m 644 icons/OrvixOS/index.theme $(DESTDIR)$(DATADIR)/icons/OrvixOS/index.theme
 	install -m 644 icons/OrvixOS/scalable/actions/*.svg $(DESTDIR)$(DATADIR)/icons/OrvixOS/scalable/actions/
@@ -74,6 +77,8 @@ install:
 	install -m 644 pcmanfm-qt/orvixos/settings.conf $(DESTDIR)$(DATADIR)/trlde/pcmanfm-qt/orvixos/settings.conf
 	install -d $(DESTDIR)$(DATADIR)/file-manager/actions
 	install -m 644 actions/*.desktop $(DESTDIR)$(DATADIR)/file-manager/actions/
+	install -d $(DESTDIR)$(SYSCONFDIR)/xdg/xfce4/xfconf/xfce-perchannel-xml
+	install -m 644 xfce4/xfconf/xfce-perchannel-xml/xfce4-terminal.xml $(DESTDIR)$(SYSCONFDIR)/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-terminal.xml
 	install -d $(DESTDIR)$(SYSCONFDIR)/xdg/lxqt
 	install -m 644 lxqt/lxqt.conf $(DESTDIR)$(SYSCONFDIR)/xdg/lxqt/lxqt.conf
 	install -m 644 wofi/style.css $(DESTDIR)$(DATADIR)/trlde/wofi/style.css

@@ -72,6 +72,15 @@ need_root() {
     exec sudo -- "$0" "$@"
 }
 
+# Paket listeleri hiç indirilmemişse (yeni kurulum, canlı sistem) önce yenilenir;
+# yoksa "paket bulunamadı" hatası alınır.
+ensure_lists() {
+    if ! ls /var/lib/apt/lists/*_Packages* >/dev/null 2>&1; then
+        say "Paket listeleri ilk kez indiriliyor"
+        "$VPX_APT" update
+    fi
+}
+
 require_args() {
     command_name=$1
     shift
@@ -94,6 +103,7 @@ case "$command_name" in
     install|reinstall)
         need_root "$command_name" "$@"
         require_args "$command_name" "$@"
+        ensure_lists
         exec "$VPX_APT" "$command_name" "$@"
         ;;
     remove|purge)
@@ -114,6 +124,9 @@ case "$command_name" in
         ;;
     search|find)
         [ "$#" -gt 0 ] || die "Aranacak bir kelime yaz. Örnek: $program search tarayıcı" 2
+        if ! ls /var/lib/apt/lists/*_Packages* >/dev/null 2>&1; then
+            die "Paket listeleri henüz indirilmemiş. Önce: $program update" 1
+        fi
         exec "$VPX_APT" search "$@"
         ;;
     show|info)

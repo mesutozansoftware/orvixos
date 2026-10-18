@@ -13,6 +13,13 @@ import gi
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, GLib, Gtk
+try:
+    import sys as _trlde_sys
+    _trlde_sys.path.insert(0, "/usr/share/trlde/i18n")
+    import trlde_i18n
+    trlde_i18n.install()
+except Exception:
+    pass
 
 
 def output(argv, timeout=3):
@@ -150,7 +157,7 @@ class Settings(Gtk.Application):
             ("Bildirim Merkezi", lambda: spawn(["trlde-notifications"])),
             ("Yazılım Merkezi", lambda: spawn(["trlde-software"])),
             ("Pano Geçmişi", lambda: spawn(["trlde-clipboard"])),
-            ("Terminal", lambda: open_first([["foot"], ["xterm"]])),
+            ("Terminal", lambda: open_first([["xfce4-terminal"], ["foot"]])),
             ("Ekranı Kilitle", lambda: spawn(["trlde-lock"])),
         ]
         for index, (label, callback) in enumerate(actions):

@@ -35,7 +35,7 @@
   <menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new" execute="trlde-taskbar --pipemenu running" />
   <menu id="orvixos-taskbar-menu">
     <item label="Görev yöneticisi" icon="orvixos-taskmanager">
-      <action name="Execute" command="foot -T 'Görev Yöneticisi' -e top" />
+      <action name="Execute" command="xfce4-terminal -T 'Görev Yöneticisi' -x top" />
     </item>
     <separator />
     <menu id="orvixos-pin-running" />
@@ -58,7 +58,7 @@
     <menu id="orvixos-new" />
     <separator />
     <item label="Terminalde aç" icon="orvixos-terminal">
-      <action name="Execute" command="foot" />
+      <action name="Execute" command="xfce4-terminal" />
     </item>
     <item label="Dosya Gezgini" icon="orvixos-files">
       <action name="Execute" command="thunar" />
@@ -77,7 +77,7 @@
       <action name="Execute" command="trlde-screenshot" />
     </item>
     <item label="Görev yöneticisi" icon="orvixos-taskmanager">
-      <action name="Execute" command="foot -T 'Görev Yöneticisi' -e top" />
+      <action name="Execute" command="xfce4-terminal -T 'Görev Yöneticisi' -x top" />
     </item>
     <item label="Görev çubuğunu düzenle" icon="orvixos-apps">
       <action name="Execute" command="trlde-taskbar --manage" />

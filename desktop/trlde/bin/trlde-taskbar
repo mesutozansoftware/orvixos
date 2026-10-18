@@ -40,10 +40,24 @@ MENU_TARGET = RUNTIME / "menu-target"
 DEFAULT_PINS = [
     "thunar.desktop",
     "@browser",
-    "foot.desktop",
+    "xfce4-terminal.desktop",
     "org.xfce.mousepad.desktop",
     "trlde-settings.desktop",
 ]
+def _lang():
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        if os.environ.get(variable):
+            return os.environ[variable].split(":")[0][:2].lower()
+    return "tr"
+
+
+TURKISH = _lang() == "tr"
+
+
+def T(turkish, english):
+    return turkish if TURKISH else english
+
+
 # labwc kısayolları (rc.xml) — menüler bunlarla imleç konumunda açılır.
 TASKBAR_MENU_KEYS = ["-M", "logo", "-M", "alt", "-M", "shift", "-k", "F10"]
 PIN_MENU_KEYS = ["-M", "logo", "-M", "alt", "-M", "shift", "-k", "F11"]
@@ -56,7 +70,9 @@ def read_pins():
         lines = PINS_FILE.read_text(encoding="utf-8").splitlines()
     except OSError:
         return list(DEFAULT_PINS)
-    return [line.strip() for line in lines if line.strip() and not line.startswith("#")]
+    pins = [line.strip() for line in lines if line.strip() and not line.startswith("#")]
+    # Eski sürümlerin varsayılan terminali foot'tu; yerini xfce4-terminal aldı.
+    return ["xfce4-terminal.desktop" if pin == "foot.desktop" else pin for pin in pins]
 
 
 def write_pins(pins):
@@ -270,8 +286,8 @@ def generate():
         modules.append(name)
         ignore += app["app_ids"]
         css.append(
-            f'#custom-pin{index} {{ background-image: url("{app["icon"]}"); background-size: 24px 24px; '
-            "background-position: center; background-repeat: no-repeat; min-width: 42px; "
+            f'#custom-pin{index} {{ background-image: url("{app["icon"]}"); background-size: 30px 30px; '
+            "background-position: center; background-repeat: no-repeat; min-width: 48px; "
             "margin: 5px 1px; border-radius: 10px; border-bottom: 3px solid transparent; }\n"
             f"#custom-pin{index}:hover {{ background-color: rgba(255, 255, 255, 0.09); }}\n"
             f"#custom-pin{index}.running {{ background-color: rgba(255, 255, 255, 0.06); "
@@ -289,6 +305,23 @@ def generate():
     config.setdefault("clock", {})["on-click-right"] = "trlde-taskbar --taskbar-menu"
     css.append(f"#custom-spacer {{ min-width: {max(120, int(screen_width() * 0.22))}px; }}")
 
+    if not TURKISH:
+        tips = {
+            "Başlat (Super + Boşluk) • Sağ tık: Ayarlar": "Start (Super + Space) • Right-click: quick menu",
+            "Hızlı ayarlar • Sağ tık: Ayarlar": "Quick settings • Right-click: Settings",
+            "Bildirim merkezi": "Notification center",
+            "Kapat, yeniden başlat, oturumu kapat": "Shut down, restart, log out",
+            "Ses: %{volume}": "Volume: {volume}%",
+            "Pil: %{capacity}": "Battery: {capacity}%",
+            "Kablolu ağ • {ipaddr}": "Wired network • {ipaddr}",
+            "Ağ bağlantısı yok": "No network connection",
+            "{essid} • %{signalStrength}": "{essid} • {signalStrength}%",
+        }
+        for module in config.values():
+            if isinstance(module, dict):
+                for key, value in list(module.items()):
+                    if isinstance(value, str) and value in tips:
+                        module[key] = tips[value]
     GENERATED.parent.mkdir(parents=True, exist_ok=True)
     GENERATED.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     GENERATED_STYLE.write_text("\n".join(css) + "\n", encoding="utf-8")
@@ -325,7 +358,8 @@ def activate(index):
         launch(app["id"])
 
 
-SYSTEM_MENU = Path("/usr/share/trlde/labwc/menu.xml")
+SYSTEM_MENU = Path("/usr/share/trlde/labwc/menu.xml" if TURKISH or not Path("/usr/share/trlde/labwc/menu.en.xml").exists()
+                   else "/usr/share/trlde/labwc/menu.en.xml")
 USER_MENU = CONFIG_HOME / "trlde" / "labwc" / "menu.xml"
 
 
@@ -344,10 +378,11 @@ def show_menu(keys, target=None):
     base = base.replace(
         '<menu id="orvixos-pin-menu" label="" execute="trlde-taskbar --pipemenu pin" />',
         f'<menu id="orvixos-pin-menu">\n{pin_items}\n</menu>')
+    running_label = T("Açık uygulamayı sabitle", "Pin an open app")
     base = base.replace(
-        '<menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new" '
+        f'<menu id="orvixos-pin-running" label="{running_label}" icon="orvixos-new" '
         'execute="trlde-taskbar --pipemenu running" />',
-        f'<menu id="orvixos-pin-running" label="Açık uygulamayı sabitle" icon="orvixos-new">\n'
+        f'<menu id="orvixos-pin-running" label="{running_label}" icon="orvixos-new">\n'
         f'{running_items}\n</menu>')
     USER_MENU.parent.mkdir(parents=True, exist_ok=True)
     USER_MENU.write_text(base, encoding="utf-8")
@@ -376,14 +411,14 @@ def pipemenu_items(kind):
             app = None
         if app:
             app_id = matching_app_id(app, running)
-            out.append(item(f"{app['name']} aç" if not app_id else "Yeni pencere",
+            out.append(item(T(f"{app['name']} aç", f"Open {app['name']}") if not app_id else T("Yeni pencere", "New window"),
                             f"gtk-launch {app['id'][:-8]}", "orvixos-new"))
-            out.append(item("Görev çubuğundan kaldır", f"trlde-taskbar --unpin {app['pin']}", "orvixos-apps"))
+            out.append(item(T("Görev çubuğundan kaldır", "Unpin from taskbar"), f"trlde-taskbar --unpin {app['pin']}", "orvixos-apps"))
             if app_id:
                 out.append("<separator />")
-                out.append(item("Pencereyi kapat", f"wlrctl toplevel close app_id:{app_id}", "orvixos-power"))
+                out.append(item(T("Pencereyi kapat", "Close window"), f"wlrctl toplevel close app_id:{app_id}", "orvixos-power"))
         out.append("<separator />")
-        out.append(item("Görev çubuğunu düzenle", "trlde-taskbar --manage", "orvixos-settings"))
+        out.append(item(T("Görev çubuğunu düzenle", "Edit taskbar"), "trlde-taskbar --manage", "orvixos-settings"))
     elif kind == "running":
         pinned = set()
         for app in resolved_pins():
@@ -403,10 +438,10 @@ def pipemenu_items(kind):
                     break
             if match:
                 offered.add(app_id)
-                out.append(item(f"{match[1]['name']} — sabitle", f"trlde-taskbar --pin {match[0]}",
+                out.append(item(T(f"{match[1]['name']} — sabitle", f"Pin {match[1]['name']}"), f"trlde-taskbar --pin {match[0]}",
                                 "orvixos-new"))
         if not offered:
-            out.append('<item label="Sabitlenecek açık uygulama yok" />')
+            out.append('<item label="%s" />' % T("Sabitlenecek açık uygulama yok", "No open apps to pin"))
     return out
 
 
@@ -421,6 +456,12 @@ def manage():
     gi.require_version("Gtk", "3.0")
     from gi.repository import Gio, Gtk
 
+    try:
+        sys.path.insert(0, "/usr/share/trlde/i18n")
+        import trlde_i18n
+        trlde_i18n.install()
+    except Exception:
+        pass
     settings = Gtk.Settings.get_default()
     if settings:
         settings.set_property("gtk-application-prefer-dark-theme", True)

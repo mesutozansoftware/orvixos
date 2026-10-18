@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Görev çubuğuna sabitle
+Name[en]=Pin to taskbar
 Icon=view-pin
 Profiles=orvixos;
 TargetLocation=false
@@ -9,6 +10,7 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Görev çubuğuna sabitle
+Name[en]=Pin to taskbar
 Exec=trlde-taskbar --pin %f
 MimeTypes=application/x-desktop;
 SelectionCount=1

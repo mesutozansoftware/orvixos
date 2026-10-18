@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS'a Hoş Geldin
+Name[en]=Welcome to OrvixOS
 Comment=OrvixOS masaüstünü ve kısayollarını keşfet
+Comment[en]=Discover the OrvixOS desktop and its shortcuts
 Exec=trlde-welcome
 Icon=trlde-logo
 Type=Application

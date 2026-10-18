@@ -2,3 +2,4 @@
 /etc/dconf/db/gdm.d/01-trlde
 /etc/trlde-release
 /etc/xdg/lxqt/lxqt.conf
+/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-terminal.xml

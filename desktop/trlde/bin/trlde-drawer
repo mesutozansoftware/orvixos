@@ -12,6 +12,13 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("Gio", "2.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
+try:
+    import sys as _trlde_sys
+    _trlde_sys.path.insert(0, "/usr/share/trlde/i18n")
+    import trlde_i18n
+    trlde_i18n.install()
+except Exception:
+    pass
 
 
 HIDDEN_IDS = {
@@ -108,6 +115,7 @@ class Drawer(Gtk.Application):
         group = None
         for label, values in CATEGORIES:
             button = Gtk.RadioButton.new_with_label_from_widget(group, label)
+            button.set_label(label)
             if group is None:
                 group = button
                 button.set_active(True)

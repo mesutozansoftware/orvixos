@@ -68,7 +68,7 @@ rm -f "$root/etc/resolv.conf"
 cleanup
 
 echo "==> Sistem imajı sıkıştırılıyor (birkaç dakika)"
-mksquashfs "$root" "$work/filesystem.squashfs" -comp xz -noappend -quiet
+mksquashfs "$root" "$work/filesystem.squashfs" -comp zstd -Xcompression-level 19 -noappend -quiet
 du -sx --block-size=1 "$root" | cut -f1 > "$work/filesystem.size"
 chroot "$root" dpkg-query -W --showformat='${Package} ${Version}\n' > "$work/filesystem.packages" 2>/dev/null || true
 rm -rf "$root"

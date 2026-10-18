@@ -2,37 +2,42 @@
 
 set -eu
 
+case "${LANGUAGE:-${LC_ALL:-${LC_MESSAGES:-${LANG:-tr}}}}" in
+    tr*|C|C.*|POSIX) T() { printf '%s' "$1"; } ;;
+    *) T() { printf '%s' "$2"; } ;;
+esac
+
 choose_action() {
     printf '%s\n' \
-        "Ekranı Kilitle" \
-        "Uykuya Al" \
-        "Oturumu Kapat" \
-        "Yeniden Başlat" \
-        "Bilgisayarı Kapat" |
+        "$(T "Ekranı Kilitle" "Lock Screen")" \
+        "$(T "Uykuya Al" "Sleep")" \
+        "$(T "Oturumu Kapat" "Log Out")" \
+        "$(T "Yeniden Başlat" "Restart")" \
+        "$(T "Bilgisayarı Kapat" "Shut Down")" |
         wofi --dmenu --normal-window --insensitive \
-            --prompt "Güç Menüsü" --width 430 --height 360 \
+            --prompt "$(T "Güç Menüsü" "Power Menu")" --width 430 --height 360 \
             --style /usr/share/trlde/wofi/style.css
 }
 
 confirm_action() {
     answer=$(
-        printf '%s\n' "Vazgeç" "Evet" |
+        printf '%s\n' "$(T "Vazgeç" "Cancel")" "$(T "Evet" "Yes")" |
             wofi --dmenu --normal-window \
                 --prompt "$1" --width 390 --height 220 \
                 --style /usr/share/trlde/wofi/style.css
     ) || return 1
-    [ "$answer" = "Evet" ]
+    [ "$answer" = "$(T "Evet" "Yes")" ]
 }
 
 action=${1:-}
 if [ -z "$action" ]; then
     selection=$(choose_action) || exit 0
     case "$selection" in
-        "Ekranı Kilitle") action=lock ;;
-        "Uykuya Al") action=suspend ;;
-        "Oturumu Kapat") action=logout ;;
-        "Yeniden Başlat") action=reboot ;;
-        "Bilgisayarı Kapat") action=poweroff ;;
+        "$(T "Ekranı Kilitle" "Lock Screen")") action=lock ;;
+        "$(T "Uykuya Al" "Sleep")") action=suspend ;;
+        "$(T "Oturumu Kapat" "Log Out")") action=logout ;;
+        "$(T "Yeniden Başlat" "Restart")") action=reboot ;;
+        "$(T "Bilgisayarı Kapat" "Shut Down")") action=poweroff ;;
         *) exit 0 ;;
     esac
 fi
@@ -42,23 +47,23 @@ case "$action" in
         exec trlde-lock
         ;;
     suspend)
-        confirm_action "Bilgisayar uykuya alınsın mı?" || exit 0
+        confirm_action "$(T "Bilgisayar uykuya alınsın mı?" "Put the computer to sleep?")" || exit 0
         trlde-lock
         systemctl suspend
         ;;
     logout)
-        confirm_action "OrvixOS oturumu kapatılsın mı?" || exit 0
+        confirm_action "$(T "OrvixOS oturumu kapatılsın mı?" "Log out of OrvixOS?")" || exit 0
         if [ -n "${LABWC_PID:-}" ]; then
             exec labwc --exit
         fi
         pkill -TERM -x labwc
         ;;
     reboot)
-        confirm_action "Bilgisayar yeniden başlatılsın mı?" || exit 0
+        confirm_action "$(T "Bilgisayar yeniden başlatılsın mı?" "Restart the computer?")" || exit 0
         systemctl reboot
         ;;
     poweroff)
-        confirm_action "Bilgisayar kapatılsın mı?" || exit 0
+        confirm_action "$(T "Bilgisayar kapatılsın mı?" "Shut down the computer?")" || exit 0
         systemctl poweroff
         ;;
 esac

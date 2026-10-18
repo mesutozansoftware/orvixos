@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=OrvixOS Yedekleme ve Kurtarma
+Name[en]=OrvixOS Backup and Restore
 Comment=Kişisel dosyalarını yedekle veya geri yükle
+Comment[en]=Back up or restore your personal files
 Exec=trlde-backup
 Icon=org.gnome.DejaDup
 Type=Application

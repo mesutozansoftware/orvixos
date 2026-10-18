@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Action
 Name=Kişiselleştir
+Name[en]=Personalize
 Icon=preferences-desktop-wallpaper
 Profiles=orvixos;
 TargetLocation=true
@@ -9,5 +10,6 @@ TargetToolbar=false
 
 [X-Action-Profile orvixos]
 Name=Kişiselleştir
+Name[en]=Personalize
 Exec=trlde-appearance
 SelectionCount=0

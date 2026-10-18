@@ -15,8 +15,10 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 arch=${1:-}
 case "$arch" in
-    arm64) install_dir=install.a64; serial=ttyAMA0 ;;
-    amd64) install_dir=install.amd; serial=ttyS0 ;;
+    # Kurulum ekranı monitörde çıksın: preseed varken debian-installer yalnızca
+    # "tercih edilen" konsolu kullanır; ARM64'te ACPI SPCR bunu seri port yapar.
+    arm64) install_dir=install.a64; serial=ttyAMA0; console_args="acpi=nospcr console=tty0" ;;
+    amd64) install_dir=install.amd; serial=ttyS0; console_args="console=tty0" ;;
     *) printf 'Kullanım: %s arm64|amd64\n' "$0" >&2; exit 2 ;;
 esac
 
@@ -52,6 +54,7 @@ render() {
         -e "s/@DEBIAN_MIRROR@/$DEBIAN_MIRROR/g" \
         -e "s/@INSTALL_DIR@/$install_dir/g" \
         -e "s/@SERIAL@/$serial/g" \
+        -e "s/@CONSOLE_ARGS@/$console_args/g" \
         -e "s/@ARCH@/$arch/g" \
         -e "s|@PKGSEL_INCLUDE@|$pkgsel_include|g" \
         "$@"

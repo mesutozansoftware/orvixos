@@ -17,24 +17,24 @@ label tr-gui
     menu label OrvixOS kur - grafik (Turkce)
     menu default
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=tr_TR.UTF-8 keymap=tr --- quiet
+    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=tr_TR.UTF-8 keymap=tr console=tty0 --- quiet
 label tr-text
     menu label OrvixOS kur - metin (Turkce)
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/initrd.gz locale=tr_TR.UTF-8 keymap=tr --- quiet
+    append vga=788 initrd=/install.amd/initrd.gz locale=tr_TR.UTF-8 keymap=tr console=tty0 --- quiet
 label en-gui
     menu label Install OrvixOS - graphical (English)
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=en_US.UTF-8 keymap=us --- quiet
+    append vga=788 initrd=/install.amd/gtk/initrd.gz locale=en_US.UTF-8 keymap=us console=tty0 --- quiet
 label en-text
     menu label Install OrvixOS - text (English)
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/initrd.gz locale=en_US.UTF-8 keymap=us --- quiet
+    append vga=788 initrd=/install.amd/initrd.gz locale=en_US.UTF-8 keymap=us console=tty0 --- quiet
 label expert
     menu label Uzman kurulum / Expert install
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/gtk/initrd.gz priority=low ---
+    append vga=788 initrd=/install.amd/gtk/initrd.gz priority=low console=tty0 ---
 label rescue
     menu label Kurtarma kipi / Rescue mode
     kernel /install.amd/vmlinuz
-    append vga=788 initrd=/install.amd/gtk/initrd.gz rescue/enable=true --- quiet
+    append vga=788 initrd=/install.amd/gtk/initrd.gz rescue/enable=true console=tty0 --- quiet

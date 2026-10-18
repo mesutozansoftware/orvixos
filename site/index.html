@@ -112,6 +112,12 @@
     .download .btn { width: 100%; }
     .sha { margin-top: 16px; font-size: 12px; color: var(--dim); word-break: break-all; }
     .sha b { color: var(--muted); font-weight: 500; }
+    .minimal { margin-top: 18px; }
+    .minimal h3 { font-size: 18px; margin-bottom: 6px; }
+    .minimal > p { color: var(--muted); font-size: 15px; }
+    .minimal ul { margin: 12px 0 18px 20px; color: var(--muted); font-size: 14.5px; display: grid; gap: 6px; }
+    .minimal ul b { color: var(--text); }
+    .minimal-links { display: flex; gap: 12px; flex-wrap: wrap; }
     .note { margin-top: 22px; text-align: center; color: var(--dim); font-size: 14px; }
 
     .steps { counter-reset: step; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
@@ -288,8 +294,22 @@
             <div class="for">Intel ve AMD işlemcili bilgisayarlar</div>
             <div class="facts"><span>Canlı ISO</span><span>UEFI ve BIOS</span></div>
             <span class="btn btn-ghost" id="x64-pending" style="width:100%;cursor:default">Canlı x64 ISO hazırlanıyor…</span>
-            <div class="sha">Bu sırada ağ kurulumu sürümünü kullanabilirsin: <a href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-amd64.iso" style="color: var(--teal)">x64 ağ kurulumu ISO'su</a> (internet gerektirir)</div>
+            <div class="sha">Hazır olunca bu sayfadan indirilebilecek.</div>
           </div>
+        </div>
+        <div class="card minimal">
+          <h3>Minimal sürüm (ağ kurulumu)</h3>
+          <p>Daha küçük ISO; masaüstü ve uygulamalar kurulum sırasında internetten indirilir. Canlı deneme yoktur.</p>
+          <ul>
+            <li><b>İnternet gerektirir</b> — kurulum boyunca bağlantı açık olmalı.</li>
+            <li><b>Kurulum uzun sürer</b> — internet hızına göre 20–40 dakika.</li>
+            <li>Son adımda ilerleme göstermeden uzun süre bekleyebilir; kapatma, kendiliğinden devam eder.</li>
+          </ul>
+          <div class="minimal-links">
+            <a class="btn btn-ghost" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-arm64.iso">ARM64 minimal • 782 MB</a>
+            <a class="btn btn-ghost" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-amd64.iso">x64 minimal • 842 MB</a>
+          </div>
+          <div class="sha"><b>SHA-256:</b> değerleri <a href="https://github.com/mesutozansoftware/orvixos/releases/tag/v1.0.0" style="color: var(--teal)">GitHub sürüm sayfasında</a></div>
         </div>
         <p class="note">Kaynak kodu ve lisanslar: <a href="https://github.com/mesutozansoftware/orvixos" style="color: var(--teal)">github.com/mesutozansoftware/orvixos</a></p>
       </div>

@@ -124,6 +124,10 @@
     .spec b { display: block; font-size: 28px; letter-spacing: -0.02em; background: linear-gradient(120deg, var(--teal), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .spec span { color: var(--muted); font-size: 14px; }
 
+    .vm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .vm ol, .vm ul { padding-left: 20px; color: var(--muted); font-size: 15px; display: grid; gap: 8px; margin-top: 12px; }
+    .vm b { color: var(--text); font-weight: 600; }
+    .vm code { color: var(--teal); font-size: 13.5px; }
     details { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; margin-bottom: 12px; }
     summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
     summary::-webkit-details-marker { display: none; }
@@ -141,6 +145,7 @@
 
     @media (max-width: 900px) {
       .grid, .browsers, .steps, .specs { grid-template-columns: 1fr 1fr; }
+      .vm { grid-template-columns: 1fr; }
       .downloads { grid-template-columns: 1fr; }
       .nav-links { display: none; }
     }
@@ -164,6 +169,7 @@
         <a href="#ozellikler">Özellikler</a>
         <a href="#tarayici">Tarayıcı</a>
         <a href="#kurulum">Kurulum</a>
+        <a href="#sanal-makine">Sanal makine</a>
         <a href="#sss">SSS</a>
       </nav>
       <a class="btn btn-primary" href="#indir">İndir</a>
@@ -305,6 +311,45 @@
           <div class="card spec"><b>4 GB</b><span>bellek</span></div>
           <div class="card spec"><b>25 GB</b><span>disk alanı</span></div>
           <div class="card spec"><b>İnternet</b><span>kurulum sırasında</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sanal-makine">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow">Sanal makine</div>
+          <h2>Sanal makinede kurulum (UTM)</h2>
+          <p>OrvixOS'u bilgisayarına dokunmadan denemek için sanal makineye kurabilirsin. ARM64 ISO'su UTM ile kullanılır.</p>
+        </div>
+        <div class="vm">
+          <div class="card">
+            <h3>Yeni sanal makine</h3>
+            <ol>
+              <li><b>Create a New Virtual Machine → Virtualize → Linux</b> seç.</li>
+              <li><b>Use Apple Virtualization</b> kutusunu işaretleme.</li>
+              <li><b>Boot ISO Image</b> olarak <code>OrvixOS-1.0.0-arm64.iso</code> dosyasını seç.</li>
+              <li>4096 MB bellek, 4 işlemci çekirdeği ve en az 25 GB disk ver.</li>
+              <li>Kaydetmeden önce <b>Open VM Settings</b> kutusunu işaretle.</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>Ayarlar</h3>
+            <ul>
+              <li><b>UEFI Boot:</b> açık</li>
+              <li><b>Secure Boot with TPM 2.0:</b> kapalı</li>
+              <li><b>Display:</b> <code>virtio-ramfb</code> veya <code>virtio-gpu-pci</code></li>
+              <li><b>Network:</b> Shared Network (kurulumda internet gerekir)</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Kurulum bitince</h3>
+            <ul>
+              <li>Sanal makine kapanınca <b>CD/DVD</b> sürücüsündeki ISO'yu <b>Clear</b> ile çıkar.</li>
+              <li>Yeniden başlat ve TRLDE masaüstüne giriş yap.</li>
+              <li>Ekran boş kalırsa Display ayarını diğer seçenekle değiştir.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>

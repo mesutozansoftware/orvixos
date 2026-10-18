@@ -1,0 +1,6 @@
+#!/bin/sh
+# Paket listelerini Debian depolarından yeniler (pkexec ile, şifresiz).
+# Yalnızca listeleri indirir; sistemde hiçbir paketi değiştirmez.
+set -eu
+export LC_ALL=C DEBIAN_FRONTEND=noninteractive
+exec apt-get -q -o APT::Status-Fd=1 update

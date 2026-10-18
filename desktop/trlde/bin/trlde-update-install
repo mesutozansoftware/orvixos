@@ -1,0 +1,11 @@
+#!/bin/sh
+# Kurulu paketleri günceller (pkexec ile, yönetici şifresi istenir).
+# Çıktıdaki "dlstatus:" ve "pmstatus:" satırları ilerleme çubuğu içindir.
+set -eu
+export LC_ALL=C DEBIAN_FRONTEND=noninteractive
+apt-get -q -o APT::Status-Fd=1 update
+apt-get -q -y -o APT::Status-Fd=1 \
+    -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
+    full-upgrade
+apt-get -q -y autoremove --purge || true
+apt-get -q clean || true

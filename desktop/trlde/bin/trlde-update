@@ -1,55 +1,429 @@
-#!/bin/sh
+#!/usr/bin/python3
+"""OrvixOS sistem güncellemeleri.
 
-set -u
+  trlde-update            Güncelleme penceresini açar (Ayarlar > Sistem).
+  trlde-update --check    Paket listelerini yeniler, güncelleme varsa bildirim
+                          gösterir (trlde-update.timer çalıştırır).
+  trlde-update status     Bekleyen güncelleme sayısını yazar.
 
-state_home=${XDG_STATE_HOME:-$HOME/.local/state}
-state_dir=$state_home/trlde
-marker=$state_dir/updates-available
-install -d -m 0700 "$state_dir"
+Paket listeleri şifresiz yenilenir; güncellemeleri kurmak için yönetici
+şifresi bir kez sorulur (polkit: org.orvixos.update.*).
+"""
 
-notify_updates() {
-    count=$1
-    if command -v notify-send >/dev/null 2>&1; then
-        notify-send -a OrvixOS -i software-update-available \
-            "Sistem güncellemeleri hazır" \
-            "$count paket güncellenebilir. Ayarlar > Sistem bölümünden kurulabilir."
-    fi
-}
+import os
+import subprocess
+import sys
+import threading
+from pathlib import Path
 
-case "${1:-open}" in
-    --check|check)
-        command -v apt >/dev/null 2>&1 || exit 0
-        # Paket listeleri sistemin apt-daily zamanlayıcısıyla yenilenir;
-        # burada yalnızca yerel önbellek okunur, yönetici yetkisi gerekmez.
-        count=$(LC_ALL=C apt list --upgradable 2>/dev/null | grep -c '\[upgradable from' || true)
-        case "${count:-0}" in
-            0)
-                rm -f "$marker"
-                ;;
-            *)
-                previous=0
-                [ -r "$marker" ] && read -r previous < "$marker"
-                printf '%s\n' "$count" > "$marker"
-                [ "$previous" = "$count" ] || notify_updates "$count"
-                ;;
-        esac
-        ;;
-    status)
-        if [ -r "$marker" ]; then
-            read -r count < "$marker"
-            printf 'Güncelleme %s\n' "${count:-}"
-        fi
-        ;;
-    open|"")
-        if command -v foot >/dev/null 2>&1; then
-            exec foot -T "OrvixOS Sistem Güncellemeleri" -e sh -lc \
-                'printf "OrvixOS sistem güncellemeleri\\n\\n"; vpx sync; code=$?; printf "\\nKapatmak için Enter..."; read answer; exit "$code"'
-        fi
-        printf '%s\n' "OrvixOS güncellemeleri için bir terminal gerekli." >&2
-        exit 127
-        ;;
-    *)
-        printf 'Kullanım: %s [open|--check|status]\n' "$0" >&2
-        exit 2
-        ;;
-esac
+HELPER_DIR = Path("/usr/libexec/trlde")
+REFRESH = str(HELPER_DIR / "trlde-update-refresh")
+INSTALL = str(HELPER_DIR / "trlde-update-install")
+STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "trlde"
+MARKER = STATE_DIR / "updates-available"
+LIVE = Path("/run/live/medium").exists()
+
+
+def _lang():
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        if os.environ.get(variable):
+            return os.environ[variable].split(":")[0][:2].lower()
+    return "tr"
+
+
+TURKISH = _lang() in ("tr", "c", "po")
+
+
+def T(turkish, english):
+    return turkish if TURKISH else english
+
+
+def upgradable():
+    """[(paket, eski sürüm, yeni sürüm)] — yerel önbellekten, şifresiz."""
+    try:
+        out = subprocess.run(["apt", "list", "--upgradable"], capture_output=True, text=True,
+                             env={**os.environ, "LC_ALL": "C"}, timeout=60).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    packages = []
+    for line in out.splitlines():
+        if "[upgradable from:" not in line:
+            continue
+        name = line.split("/", 1)[0]
+        parts = line.split()
+        new = parts[1] if len(parts) > 1 else ""
+        old = line.rsplit("[upgradable from:", 1)[1].strip(" ]")
+        packages.append((name, old, new))
+    return packages
+
+
+def write_marker(count):
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        if count:
+            MARKER.write_text(f"{count}\n")
+        else:
+            MARKER.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def notify(count):
+    subprocess.run(["notify-send", "-a", "OrvixOS", "-i", "software-update-available",
+                    T("Sistem güncellemeleri hazır", "System updates are ready"),
+                    T(f"{count} paket güncellenebilir. Kurmak için tıkla ya da Ayarlar > Sistem.",
+                      f"{count} packages can be updated. Open Settings > System to install.")],
+                   check=False)
+
+
+def check():
+    if LIVE:
+        return 0
+    if Path(REFRESH).exists():
+        subprocess.run(["pkexec", REFRESH], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       check=False)
+    count = len(upgradable())
+    previous = 0
+    try:
+        previous = int(MARKER.read_text().strip() or 0)
+    except (OSError, ValueError):
+        pass
+    write_marker(count)
+    if count and count != previous:
+        notify(count)
+    return 0
+
+
+def status():
+    try:
+        count = MARKER.read_text().strip()
+    except OSError:
+        return 0
+    if count:
+        print(T(f"Güncelleme {count}", f"Updates {count}"))
+    return 0
+
+
+# --- Pencere -----------------------------------------------------------------------
+
+def run_window():
+    import gi
+
+    gi.require_version("Gtk", "3.0")
+    from gi.repository import GLib, Gtk, Pango
+
+    css = b"""
+    window { background: #111820; color: #e8edf7; }
+    .title { font-size: 20px; font-weight: bold; }
+    .dim { color: #9ba1b6; }
+    .ok { color: #2ee6d6; }
+    .error { color: #ff7b7b; }
+    .card { background: #18222d; border-radius: 12px; padding: 4px; }
+    .pkg { padding: 6px 10px; }
+    .version { color: #9ba1b6; font-size: 12px; }
+    button.suggested { background-image: none; background-color: #2ee6d6; color: #0e1626;
+                       font-weight: bold; border: none; box-shadow: none; text-shadow: none; }
+    button.suggested:disabled { background-color: #2a3650; color: #7d869c; }
+    textview, textview text { background: #0b1118; color: #c8d0dc; font-family: monospace; font-size: 11px; }
+    progressbar trough { min-height: 8px; border-radius: 4px; background: #222d3c; }
+    progressbar progress { min-height: 8px; border-radius: 4px; background: #2ee6d6; }
+    list { background: transparent; }
+    list label { color: #e8edf7; }
+    list label.version { color: #9ba1b6; }
+    button { background-image: none; background-color: #232e47; color: #e8edf7; border: none;
+             box-shadow: none; text-shadow: none; border-radius: 8px; padding: 8px 14px; }
+    button:hover { background-color: #2c3a59; }
+    expander title label, expander arrow { color: #9ba1b6; }
+    """
+
+    class Window(Gtk.ApplicationWindow):
+        def __init__(self, app):
+            super().__init__(application=app, title=T("Sistem Güncellemeleri", "System Updates"))
+            self.set_default_size(620, 560)
+            self.set_icon_name("software-update-available")
+            self.busy = False
+            self.reboot_needed = False
+            provider = Gtk.CssProvider()
+            provider.load_from_data(css)
+            Gtk.StyleContext.add_provider_for_screen(self.get_screen(), provider,
+                                                     Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            settings = Gtk.Settings.get_default()
+            if settings:
+                settings.set_property("gtk-application-prefer-dark-theme", True)
+
+            outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14, margin=22)
+            self.add(outer)
+
+            header = Gtk.Box(spacing=14)
+            self.icon = Gtk.Image.new_from_icon_name("software-update-available", Gtk.IconSize.DIALOG)
+            self.icon.set_pixel_size(56)
+            header.pack_start(self.icon, False, False, 0)
+            texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, valign=Gtk.Align.CENTER)
+            self.title = Gtk.Label(xalign=0)
+            self.title.get_style_context().add_class("title")
+            texts.pack_start(self.title, False, False, 0)
+            self.subtitle = Gtk.Label(xalign=0, wrap=True)
+            self.subtitle.get_style_context().add_class("dim")
+            texts.pack_start(self.subtitle, False, False, 0)
+            header.pack_start(texts, True, True, 0)
+            outer.pack_start(header, False, False, 0)
+
+            if LIVE:
+                note = Gtk.Label(xalign=0, wrap=True, label=T(
+                    "Canlı sistemdesin: güncellemeler belleğe kurulur ve yeniden başlatınca kaybolur. "
+                    "Kalıcı güncellemeler için OrvixOS'u kur.",
+                    "You are in the live system: updates are installed to memory and lost on restart. "
+                    "Install OrvixOS for permanent updates."))
+                note.get_style_context().add_class("dim")
+                outer.pack_start(note, False, False, 0)
+
+            buttons = Gtk.Box(spacing=10)
+            self.check_button = Gtk.Button(label=T("Güncellemeleri denetle", "Check for updates"))
+            self.check_button.connect("clicked", lambda *_: self.refresh())
+            buttons.pack_start(self.check_button, False, False, 0)
+            self.install_button = Gtk.Button(label=T("Şimdi güncelle", "Update now"))
+            self.install_button.get_style_context().add_class("suggested")
+            self.install_button.connect("clicked", lambda *_: self.install())
+            buttons.pack_end(self.install_button, False, False, 0)
+            self.reboot_button = Gtk.Button(label=T("Yeniden başlat", "Restart now"))
+            self.reboot_button.get_style_context().add_class("suggested")
+            self.reboot_button.connect("clicked", lambda *_: subprocess.Popen(["trlde-power", "reboot"]))
+            self.reboot_button.set_no_show_all(True)
+            buttons.pack_end(self.reboot_button, False, False, 0)
+            outer.pack_start(buttons, False, False, 0)
+
+            self.progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            self.progress = Gtk.ProgressBar()
+            self.progress_box.pack_start(self.progress, False, False, 0)
+            self.progress_label = Gtk.Label(xalign=0)
+            self.progress_label.get_style_context().add_class("dim")
+            self.progress_label.set_ellipsize(Pango.EllipsizeMode.END)
+            self.progress_box.pack_start(self.progress_label, False, False, 0)
+            self.progress_box.set_no_show_all(True)
+            outer.pack_start(self.progress_box, False, False, 0)
+
+            frame = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+            frame.get_style_context().add_class("card")
+            self.listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+            frame.add(self.listbox)
+            outer.pack_start(frame, True, True, 0)
+
+            self.details = Gtk.Expander(label=T("Ayrıntılar", "Details"))
+            log_scroller = Gtk.ScrolledWindow()
+            log_scroller.set_min_content_height(140)
+            self.log = Gtk.TextView(editable=False, cursor_visible=False, monospace=True,
+                                    wrap_mode=Gtk.WrapMode.WORD_CHAR)
+            log_scroller.add(self.log)
+            self.details.add(log_scroller)
+            outer.pack_start(self.details, False, False, 0)
+
+            self.show_packages(upgradable(), checked=False)
+            GLib.idle_add(self.refresh)
+
+        # --- görünüm ---
+        def set_header(self, title, subtitle, icon, kind="dim"):
+            self.title.set_text(title)
+            self.subtitle.set_text(subtitle)
+            self.icon.set_from_icon_name(icon, Gtk.IconSize.DIALOG)
+            context = self.subtitle.get_style_context()
+            for name in ("dim", "ok", "error"):
+                context.remove_class(name)
+            context.add_class(kind)
+
+        def show_packages(self, packages, checked=True):
+            for child in self.listbox.get_children():
+                self.listbox.remove(child)
+            for name, old, new in packages:
+                row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                row.get_style_context().add_class("pkg")
+                label = Gtk.Label(label=name, xalign=0)
+                row.pack_start(label, False, False, 0)
+                version = Gtk.Label(label=f"{old}  →  {new}", xalign=0)
+                version.set_ellipsize(Pango.EllipsizeMode.END)
+                version.get_style_context().add_class("version")
+                row.pack_start(version, False, False, 0)
+                self.listbox.add(row)
+            self.listbox.show_all()
+            count = len(packages)
+            write_marker(count)
+            self.install_button.set_sensitive(count > 0 and not self.busy)
+            if self.reboot_needed:
+                return
+            if count:
+                self.set_header(T(f"{count} güncelleme var", f"{count} updates available"),
+                                T("Güvenlik düzeltmeleri ve yeni sürümler kurulmaya hazır.",
+                                  "Security fixes and new versions are ready to install."),
+                                "software-update-available")
+            elif checked:
+                self.set_header(T("Sistemin güncel", "You're up to date"),
+                                T("Kurulacak güncelleme yok.", "There are no updates to install."),
+                                "emblem-ok-symbolic", "ok")
+            else:
+                self.set_header(T("Sistem güncellemeleri", "System updates"),
+                                T("Güncellemeler denetleniyor…", "Checking for updates…"),
+                                "software-update-available")
+
+        def append_log(self, text):
+            buffer = self.log.get_buffer()
+            buffer.insert(buffer.get_end_iter(), text + "\n")
+            self.log.scroll_to_iter(buffer.get_end_iter(), 0, False, 0, 0)
+
+        def set_busy(self, busy):
+            self.busy = busy
+            self.check_button.set_sensitive(not busy)
+            self.install_button.set_sensitive(not busy and bool(self.listbox.get_children()))
+            if busy:
+                self.progress_box.show()
+                self.progress.show()
+                self.progress_label.show()
+                self.progress.set_fraction(0)
+            else:
+                self.progress_box.hide()
+
+        # --- işlemler ---
+        def run_helper(self, helper, on_done):
+            self.set_busy(True)
+
+            def worker():
+                try:
+                    process = subprocess.Popen(["pkexec", helper], stdout=subprocess.PIPE,
+                                               stderr=subprocess.STDOUT, text=True, bufsize=1)
+                except OSError as error:
+                    GLib.idle_add(on_done, 1, T("pkexec bulunamadı: ", "pkexec not found: ") + str(error))
+                    return
+                last = ""
+                for line in process.stdout:
+                    line = line.rstrip("\n")
+                    if line:
+                        last = line
+                        GLib.idle_add(self.handle_line, line)
+                code = process.wait()
+                GLib.idle_add(on_done, code, last)
+
+            threading.Thread(target=worker, daemon=True).start()
+
+        def handle_line(self, line):
+            kind, _, rest = line.partition(":")
+            if kind in ("dlstatus", "pmstatus") and rest:
+                fields = rest.split(":", 2)
+                if len(fields) == 3:
+                    try:
+                        self.progress.set_fraction(min(1.0, float(fields[1]) / 100))
+                    except ValueError:
+                        pass
+                    message = fields[2]
+                    if kind == "pmstatus":
+                        message = T("Kuruluyor: ", "Installing: ") + fields[0]
+                    self.progress_label.set_text(message)
+                    if kind == "pmstatus" and fields[0].startswith("linux-image"):
+                        self.reboot_needed = True
+                    return
+            self.append_log(line)
+
+        def refresh(self):
+            if self.busy or not Path(REFRESH).exists():
+                return False
+            self.progress_label.set_text(T("Paket listeleri indiriliyor…", "Downloading package lists…"))
+            self.set_header(self.title.get_text() or T("Sistem güncellemeleri", "System updates"),
+                            T("Güncellemeler denetleniyor…", "Checking for updates…"),
+                            "software-update-available")
+
+            def done(code, last):
+                self.set_busy(False)
+                if code == 0:
+                    self.show_packages(upgradable())
+                else:
+                    self.show_packages(upgradable(), checked=False)
+                    self.set_header(T("Denetlenemedi", "Could not check"),
+                                    T("İnternet bağlantını kontrol et ve yeniden dene.",
+                                      "Check your internet connection and try again."),
+                                    "dialog-warning", "error")
+                    self.append_log(last)
+            self.run_helper(REFRESH, done)
+            return False
+
+        def install(self):
+            if self.busy:
+                return
+            self.details.set_expanded(False)
+            self.progress_label.set_text(T("Hazırlanıyor…", "Preparing…"))
+            self.set_header(T("Güncelleniyor", "Updating"),
+                            T("Bilgisayarını kapatma. Bu birkaç dakika sürebilir.",
+                              "Don't turn off your computer. This may take a few minutes."),
+                            "software-update-available")
+
+            def done(code, last):
+                self.set_busy(False)
+                if code in (126, 127):
+                    self.show_packages(upgradable())
+                    self.set_header(T("Güncelleme iptal edildi", "Update cancelled"),
+                                    T("Yönetici şifresi girilmedi.", "The administrator password was not entered."),
+                                    "dialog-warning", "error")
+                    return
+                if code != 0:
+                    self.show_packages(upgradable())
+                    self.set_header(T("Güncelleme tamamlanamadı", "The update could not be completed"),
+                                    T("Ayrıntılara bak; sorun sürerse terminalde: vpx doctor",
+                                      "See the details; if it persists, run in a terminal: vpx doctor"),
+                                    "dialog-error", "error")
+                    self.details.set_expanded(True)
+                    return
+                if Path("/run/reboot-required").exists() or Path("/var/run/reboot-required").exists():
+                    self.reboot_needed = True
+                self.show_packages(upgradable())
+                if self.reboot_needed:
+                    self.set_header(T("Güncellemeler kuruldu", "Updates installed"),
+                                    T("Değişikliklerin tamamlanması için bilgisayarı yeniden başlat.",
+                                      "Restart your computer to finish installing updates."),
+                                    "system-reboot", "ok")
+                    self.reboot_button.show()
+                else:
+                    self.set_header(T("Güncellemeler kuruldu", "Updates installed"),
+                                    T("Sistemin güncel.", "You're up to date."), "emblem-ok-symbolic", "ok")
+                subprocess.run(["notify-send", "-a", "OrvixOS", "-i", "emblem-ok-symbolic",
+                                T("Güncellemeler kuruldu", "Updates installed")], check=False)
+            self.run_helper(INSTALL, done)
+
+        def do_delete_event(self, _event):
+            if self.busy:
+                # Kurulum yarıda kesilmesin: pencere gizlenir, işlem bitince kapanır.
+                self.hide()
+                GLib.timeout_add_seconds(2, self.quit_when_idle)
+                return True
+            return False
+
+        def quit_when_idle(self):
+            if self.busy:
+                return True
+            self.get_application().quit()
+            return False
+
+    class App(Gtk.Application):
+        def __init__(self):
+            super().__init__(application_id="org.trlde.Updates")
+
+        def do_activate(self):
+            window = self.get_active_window()
+            if window:
+                window.present()
+                return
+            Window(self).show_all()
+
+    return App().run(sys.argv[:1])
+
+
+def main():
+    command = sys.argv[1] if len(sys.argv) > 1 else "open"
+    if command in ("--check", "check"):
+        return check()
+    if command == "status":
+        return status()
+    if command in ("open", "--open"):
+        return run_window()
+    print(T(f"Kullanım: {sys.argv[0]} [open|--check|status]", f"Usage: {sys.argv[0]} [open|--check|status]"),
+          file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

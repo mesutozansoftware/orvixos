@@ -17,7 +17,8 @@ sh -n bin/trlde-wallpaper
 sh -n bin/trlde-run
 sh -n bin/trlde-screenshot
 sh -n bin/trlde-doctor
-sh -n bin/trlde-update
+sh -n bin/trlde-update-refresh
+sh -n bin/trlde-update-install
 sh -n bin/trlde-bluetooth
 sh -n bin/trlde-brightness
 sh -n bin/trlde-clipboard-watch
@@ -37,6 +38,8 @@ ET.parse("branding/trlde-logo.svg")
 
 for program in (
     "bin/trlde-quick-settings",
+    "bin/trlde-update",
+    "bin/trlde-wifi",
     "bin/trlde-appearance",
     "bin/trlde-notifications",
     "bin/trlde-about",

@@ -59,6 +59,10 @@ install:
 	install -m 755 bin/trlde-wifi $(DESTDIR)$(PREFIX)/bin/trlde-wifi
 	install -m 755 bin/trlde-autostart $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	install -m 755 bin/trlde-clipboard-watch $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
+	install -m 755 bin/trlde-update-refresh $(DESTDIR)$(LIBEXECDIR)/trlde-update-refresh
+	install -m 755 bin/trlde-update-install $(DESTDIR)$(LIBEXECDIR)/trlde-update-install
+	install -d $(DESTDIR)$(DATADIR)/polkit-1/actions
+	install -m 644 polkit/org.orvixos.update.policy $(DESTDIR)$(DATADIR)/polkit-1/actions/org.orvixos.update.policy
 	install -m 644 sessions/trlde.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
 	install -m 644 labwc/rc.xml $(DESTDIR)$(DATADIR)/trlde/labwc/rc.xml
 	install -m 644 labwc/menu.xml $(DESTDIR)$(DATADIR)/trlde/labwc/menu.xml
@@ -144,6 +148,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-wifi
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
+	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-update-refresh $(DESTDIR)$(LIBEXECDIR)/trlde-update-install
+	rm -f $(DESTDIR)$(DATADIR)/polkit-1/actions/org.orvixos.update.policy
 	rm -f $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
 	rm -rf $(DESTDIR)$(DATADIR)/trlde
 	rm -rf $(DESTDIR)$(DATADIR)/backgrounds/trlde

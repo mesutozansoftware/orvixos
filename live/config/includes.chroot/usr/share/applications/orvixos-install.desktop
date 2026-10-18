@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Install OrvixOS
+Name[tr]=OrvixOS'u Kur
+Comment=Install OrvixOS on this computer
+Comment[tr]=OrvixOS'u bu bilgisayara kur
+Exec=orvixos-install
+Icon=/usr/share/pixmaps/orvixos-logo.png
+Terminal=false
+Categories=System;
+Keywords=install;kur;kurulum;calamares;

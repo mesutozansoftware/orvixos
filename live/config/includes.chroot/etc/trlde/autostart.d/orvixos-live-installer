@@ -1,0 +1,11 @@
+#!/bin/sh
+# Canlı sistemde oturum açılınca "Dene / Kur" penceresini gösterir.
+[ -d /run/live/medium ] || exit 0
+command -v zenity >/dev/null 2>&1 || exit 0
+sleep 3
+if zenity --question --width=420 --title="OrvixOS" \
+    --icon=/usr/share/pixmaps/orvixos-logo.png \
+    --text="<b>OrvixOS'a hoş geldin!</b>\n\nOrvixOS şu an USB'den/DVD'den canlı olarak çalışıyor; bilgisayarındaki hiçbir şey değişmedi.\n\nŞimdi kurabilir ya da önce deneyebilirsin. Kurulum programına daha sonra uygulama menüsündeki <b>OrvixOS'u Kur</b> ile de ulaşabilirsin." \
+    --ok-label="OrvixOS'u Kur" --cancel-label="Önce Dene"; then
+    exec orvixos-install
+fi

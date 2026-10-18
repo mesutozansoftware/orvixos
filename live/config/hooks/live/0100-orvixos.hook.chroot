@@ -1,0 +1,16 @@
+#!/bin/sh
+# OrvixOS canlı sistem ayarları (chroot içinde, paketler kurulduktan sonra).
+set -e
+
+# Canlı sistemin varsayılan tarayıcısı Vira; kurulumda değiştirilebilir.
+/usr/lib/orvixos/set-browser vira
+
+update-alternatives --set x-session-manager /usr/bin/trlde-session || true
+printf '%s\n' /usr/bin/sddm > /etc/X11/default-display-manager
+systemctl enable sddm.service || true
+systemctl set-default graphical.target
+plymouth-set-default-theme orvixos || true
+command -v dconf >/dev/null 2>&1 && dconf update || true
+update-desktop-database -q /usr/share/applications || true
+# Canlı sistemde otomatik güncelleme çalışmasın.
+systemctl disable apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true

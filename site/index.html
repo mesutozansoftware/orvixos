@@ -183,7 +183,7 @@
         <div class="badge">OrvixOS 1.0 “Origin” • Debian tabanlı</div>
         <h1>Sade, hızlı ve<br><span class="grad">tamamen özgür.</span></h1>
         <p class="lead">OrvixOS; Debian tabanlı, Türkçe TRLDE Wayland masaüstü ve
-          <b>vpx</b> paket yöneticisiyle gelen ücretsiz bir işletim sistemidir. Hem ARM64 hem x64 bilgisayarlarda çalışır.</p>
+          <b>vpx</b> paket yöneticisiyle gelen ücretsiz bir işletim sistemidir. Kurmadan önce canlı olarak dene; ARM64 ve x64 bilgisayarlarda çalışır.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#indir">OrvixOS'u indir</a>
           <a class="btn btn-ghost" href="#ozellikler">Neler var?</a>
@@ -248,7 +248,7 @@
         <div class="section-head">
           <div class="eyebrow">Tarayıcı seçimi</div>
           <h2>Kurulumda üç seçenek</h2>
-          <p>Kurulum programı, diski bölümlemeden önce hangi tarayıcıyı istediğini sorar.</p>
+          <p>Canlı sistemde üçü de hazır; kurulum sırasında hangisini istediğini seçersin, diğerleri kaldırılır.</p>
         </div>
         <div class="browsers">
           <div class="card browser recommended">
@@ -273,22 +273,22 @@
         <div class="section-head">
           <div class="eyebrow">İndir</div>
           <h2>OrvixOS 1.0 “Origin”</h2>
-          <p>Bilgisayarına uygun sürümü seç. Kurulum sırasında internet bağlantısı gerekir; paketler internetten indirilir.</p>
+          <p>Bilgisayarına uygun sürümü seç. ISO açılınca OrvixOS canlı olarak çalışır: önce dene, beğenirsen birkaç dakikada kur. Kurulum için internet gerekmez.</p>
         </div>
         <div class="downloads">
           <div class="card download">
             <h3>ARM64</h3>
             <div class="for">ARM64 işlemcili bilgisayarlar ve sanal makineler</div>
-            <div class="facts"><span>ISO • 782 MB</span><span>UEFI</span></div>
-            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-arm64.iso">ARM64 ISO'yu indir</a>
-            <div class="sha"><b>SHA-256:</b> <span class="mono">eb5019c0dd69dcd7695501cd2e29a4faf3d9a69c3b38c92746415c57c219ef2e</span></div>
+            <div class="facts"><span>Canlı ISO • 1,14 GB</span><span>UEFI</span></div>
+            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-arm64.iso">ARM64 ISO'yu indir</a>
+            <div class="sha"><b>SHA-256:</b> <span class="mono">7f2b610abde058c47e0a14632cb832beadccd775578b98760d772fbf9c6f806a</span></div>
           </div>
           <div class="card download">
             <h3>x64</h3>
             <div class="for">Intel ve AMD işlemcili bilgisayarlar</div>
-            <div class="facts"><span>ISO • 842 MB</span><span>UEFI ve BIOS</span></div>
-            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-amd64.iso">x64 ISO'yu indir</a>
-            <div class="sha"><b>SHA-256:</b> <span class="mono">d79c3cece9dceba673242b5b000b06cdf211929984d5b8e2621e8305f6f17577</span></div>
+            <div class="facts"><span>Canlı ISO</span><span>UEFI ve BIOS</span></div>
+            <span class="btn btn-ghost" id="x64-pending" style="width:100%;cursor:default">Canlı x64 ISO hazırlanıyor…</span>
+            <div class="sha">Bu sırada ağ kurulumu sürümünü kullanabilirsin: <a href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-amd64.iso" style="color: var(--teal)">x64 ağ kurulumu ISO'su</a> (internet gerektirir)</div>
           </div>
         </div>
         <p class="note">Kaynak kodu ve lisanslar: <a href="https://github.com/mesutozansoftware/orvixos" style="color: var(--teal)">github.com/mesutozansoftware/orvixos</a></p>
@@ -304,14 +304,14 @@
         <div class="steps">
           <div class="card step"><h3>ISO'yu indir</h3><p>ARM64 ya da x64 sürümünü indir; dilersen SHA-256 değerini doğrula.</p></div>
           <div class="card step"><h3>Önyükleme ortamı</h3><p>ISO'yu balenaEtcher ile USB belleğe yaz ya da sanal makineye önyükleme diski olarak ekle.</p></div>
-          <div class="card step"><h3>Kurulumu başlat</h3><p>Menüden “OrvixOS kur — grafik (Türkçe)” seç; kullanıcını ve diskini belirle, tarayıcını seç.</p></div>
-          <div class="card step"><h3>Giriş yap</h3><p>Kurulum bitince ISO'yu çıkar, yeniden başlat ve TRLDE masaüstüne giriş yap.</p></div>
+          <div class="card step"><h3>Kurulumu başlat</h3><p>Menüden “OrvixOS'u dene veya kur”u seç. Masaüstü açılınca <b>OrvixOS'u Kur</b>'a bas; diskini, kullanıcını ve tarayıcını seç.</p></div>
+          <div class="card step"><h3>Giriş yap</h3><p>Kurulum birkaç dakikada biter. ISO'yu çıkar, yeniden başlat ve TRLDE masaüstüne giriş yap.</p></div>
         </div>
         <div class="specs" style="margin-top: 36px">
           <div class="card spec"><b>2 çekirdek</b><span>en az işlemci (4 önerilir)</span></div>
           <div class="card spec"><b>4 GB</b><span>bellek</span></div>
           <div class="card spec"><b>25 GB</b><span>disk alanı</span></div>
-          <div class="card spec"><b>İnternet</b><span>kurulum sırasında</span></div>
+          <div class="card spec"><b>4 GB</b><span>USB bellek (canlı ISO için)</span></div>
         </div>
       </div>
     </section>
@@ -346,7 +346,7 @@
           <details><summary>OrvixOS ücretsiz mi?</summary><p>Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
           <details><summary>vpx ile apt arasındaki fark nedir?</summary><p>vpx, APT'nin üzerinde çalışır ve aynı depoları kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
           <details><summary>Başka masaüstü kurabilir miyim?</summary><p>Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranındaki dişli menüsünden oturumu seçebilirsin.</p></details>
-          <details><summary>Neden kurulumda internet gerekiyor?</summary><p>OrvixOS ISO'su küçük bir ağ kurulum kalıbıdır. Masaüstü ve uygulamalar kurulum sırasında internetten en güncel hâlleriyle indirilir.</p></details>
+          <details><summary>Kurmadan deneyebilir miyim?</summary><p>Evet. ISO'yu açtığında OrvixOS canlı olarak çalışır; bilgisayarındaki hiçbir şey değişmez. Beğenirsen masaüstündeki <b>OrvixOS'u Kur</b> ile kurarsın. Kurulum için internet gerekmez.</p></details>
         </div>
       </div>
     </section>

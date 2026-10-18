@@ -1,0 +1,33 @@
+---
+componentName:  orvixos
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 900px,620px
+windowPlacement: center
+strings:
+    productName:         OrvixOS
+    shortProductName:    OrvixOS
+    version:             1.0.0
+    shortVersion:        1.0
+    versionedName:       OrvixOS 1.0 "Origin"
+    shortVersionedName:  OrvixOS 1.0
+    bootloaderEntryName: OrvixOS
+    productUrl:          https://orvixos.vercel.app
+    supportUrl:          https://github.com/mesutozansoftware/orvixos/issues
+    knownIssuesUrl:      https://github.com/mesutozansoftware/orvixos/issues
+    releaseNotesUrl:     https://github.com/mesutozansoftware/orvixos/releases
+    donateUrl:           https://orvixos.vercel.app
+sidebar: widget
+navigation: widget
+images:
+    productLogo:         "logo.png"
+    productIcon:         "logo.png"
+    productWelcome:      "welcome.png"
+slideshow:               "show.qml"
+slideshowAPI: 2
+style:
+   SidebarBackground:        "#0b1220"
+   SidebarText:              "#FFFFFF"
+   SidebarTextCurrent:       "#0b1220"
+   SidebarBackgroundCurrent: "#2ee6d6"

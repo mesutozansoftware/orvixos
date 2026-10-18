@@ -137,7 +137,19 @@ def login_wordmark():
     image.save(OUT / "orvixos-login.png", optimize=True)
 
 
+def live_boot_splash():
+    """Canlı ISO GRUB menüsü arka planı (800x600; menü alt yarıda)."""
+    image = Image.new("RGB", (800, 600), BG)
+    draw = ImageDraw.Draw(image)
+    draw_mark(image, 340, 70, 120)
+    big = font(48)
+    width = draw.textlength("OrvixOS", font=big)
+    wordmark(draw, (800 - width) / 2, 200, 48)
+    image.save(OUT / "live-boot-splash.png", optimize=True)
+
+
 if __name__ == "__main__":
+    live_boot_splash()
     login_wordmark()
     banner()
     splash()

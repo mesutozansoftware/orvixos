@@ -1,0 +1,59 @@
+#!/bin/sh
+# OrvixOS varsayılan tarayıcısını ayarlar.
+#
+#   set-browser vira|firefox|chromium [--purge-others]
+#
+# --purge-others: seçilmeyen tarayıcıları kaldırır (canlı ISO'dan kurulumda
+# Calamares kullanır; üç tarayıcı da canlı sistemde hazır bulunur).
+
+set -eu
+
+choice=${1:-}
+purge=${2:-}
+
+browser_info() {
+    case "$1" in
+        vira) binary=/usr/bin/vira-browser; desktop=vira-browser.desktop; packages="vira-browser" ;;
+        firefox) binary=/usr/bin/firefox-esr; desktop=firefox-esr.desktop; packages="firefox-esr firefox-esr-l10n-tr" ;;
+        chromium) binary=/usr/bin/chromium; desktop=chromium.desktop; packages="chromium chromium-l10n chromium-common chromium-sandbox" ;;
+        *) return 1 ;;
+    esac
+}
+
+browser_info "$choice" || {
+    printf 'Kullanım: %s vira|firefox|chromium [--purge-others]\n' "$0" >&2
+    exit 2
+}
+selected_binary=$binary
+selected_desktop=$desktop
+
+if [ "$purge" = --purge-others ]; then
+    remove=
+    for other in vira firefox chromium; do
+        [ "$other" = "$choice" ] && continue
+        browser_info "$other"
+        for package in $packages; do
+            dpkg-query -W -f '${Status}' "$package" 2>/dev/null | grep -q 'ok installed' &&
+                remove="$remove $package"
+        done
+    done
+    if [ -n "$remove" ]; then
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q purge $remove
+        DEBIAN_FRONTEND=noninteractive apt-get -y -q autoremove --purge
+    fi
+fi
+
+[ -x "$selected_binary" ] || { printf 'Tarayıcı kurulu değil: %s\n' "$selected_binary" >&2; exit 1; }
+
+install -d /etc/orvixos
+printf '%s\n' "$choice" > /etc/orvixos/browser
+update-alternatives --set x-www-browser "$selected_binary" >/dev/null 2>&1 || true
+update-alternatives --set gnome-www-browser "$selected_binary" >/dev/null 2>&1 || true
+cat > /etc/xdg/mimeapps.list <<MIME
+# OrvixOS varsayılan uygulamaları (set-browser tarafından üretildi)
+[Default Applications]
+x-scheme-handler/http=$selected_desktop
+x-scheme-handler/https=$selected_desktop
+inode/directory=thunar.desktop
+text/plain=org.xfce.mousepad.desktop
+MIME

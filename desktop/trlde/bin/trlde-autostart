@@ -131,4 +131,10 @@ else
     log "Polkit kimlik doğrulama aracısı bulunamadı."
 fi
 
+# Dağıtımın eklediği oturum başlangıç betikleri (ör. canlı sistemde kurulum
+# karşılama penceresi).
+for hook in /etc/trlde/autostart.d/*; do
+    [ -x "$hook" ] && "$hook" &
+done
+
 log "oturum bileşenleri başlatıldı"

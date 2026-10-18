@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Install
+Exec=orvixos-install
+NoDisplay=true

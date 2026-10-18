@@ -181,7 +181,7 @@
           <a class="btn btn-primary" href="#indir">OrvixOS'u indir</a>
           <a class="btn btn-ghost" href="#ozellikler">Neler var?</a>
         </div>
-        <div class="hero-meta">Ücretsiz • Açık kaynak • Apple Silicon (UTM) ve PC uyumlu</div>
+        <div class="hero-meta">Ücretsiz • Açık kaynak • ARM64 ve x64 uyumlu</div>
 
         <div class="terminal" aria-label="vpx örneği">
           <div class="terminal-bar"><i></i><i></i><i></i><span>orvix@orvixos: ~</span></div>
@@ -225,7 +225,7 @@
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg></div>
             <h3>ARM64 ve x64</h3>
-            <p>Apple Silicon Mac'lerde UTM ile sanal makinede, Intel/AMD bilgisayarlarda doğrudan kurulur.</p>
+            <p>ARM64 ve Intel/AMD (x64) bilgisayarlarda, ister doğrudan ister sanal makinede kurulur.</p>
           </div>
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
@@ -271,7 +271,7 @@
         <div class="downloads">
           <div class="card download">
             <h3>ARM64</h3>
-            <div class="for">Apple Silicon Mac (UTM), ARM sunucular ve kartlar</div>
+            <div class="for">ARM64 işlemcili bilgisayarlar ve sanal makineler</div>
             <div class="facts"><span>ISO • 782 MB</span><span>UEFI</span></div>
             <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-arm64.iso">ARM64 ISO'yu indir</a>
             <div class="sha"><b>SHA-256:</b> <span class="mono">85d1129c9063aafc0a630e884c1206f64b34ff9efac8af957541801b826fe733</span></div>
@@ -296,7 +296,7 @@
         </div>
         <div class="steps">
           <div class="card step"><h3>ISO'yu indir</h3><p>ARM64 ya da x64 sürümünü indir; dilersen SHA-256 değerini doğrula.</p></div>
-          <div class="card step"><h3>Önyükleme ortamı</h3><p>UTM'de <b>Virtualize → Linux</b> ile ISO'yu ekle ya da balenaEtcher ile USB belleğe yaz.</p></div>
+          <div class="card step"><h3>Önyükleme ortamı</h3><p>ISO'yu balenaEtcher ile USB belleğe yaz ya da sanal makineye önyükleme diski olarak ekle.</p></div>
           <div class="card step"><h3>Kurulumu başlat</h3><p>Menüden “OrvixOS kur — grafik (Türkçe)” seç; kullanıcını ve diskini belirle, tarayıcını seç.</p></div>
           <div class="card step"><h3>Giriş yap</h3><p>Kurulum bitince ISO'yu çıkar, yeniden başlat ve TRLDE masaüstüne giriş yap.</p></div>
         </div>
@@ -319,7 +319,6 @@
           <details><summary>OrvixOS ücretsiz mi?</summary><p>Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
           <details><summary>vpx ile apt arasındaki fark nedir?</summary><p>vpx, APT'nin üzerinde çalışır ve aynı Debian depolarını kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
           <details><summary>Başka masaüstü kurabilir miyim?</summary><p>Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranındaki dişli menüsünden oturumu seçebilirsin.</p></details>
-          <details><summary>Apple Silicon Mac'te çalışır mı?</summary><p>Evet. ARM64 ISO'sunu UTM'de <b>Virtualize → Linux</b> seçerek kur. En az 4 CPU, 4 GB bellek ve 25 GB disk ayırman önerilir.</p></details>
           <details><summary>Neden kurulumda internet gerekiyor?</summary><p>OrvixOS ISO'su küçük bir ağ kurulum kalıbıdır. Masaüstü ve uygulamalar kurulum sırasında Debian sunucularından en güncel hâlleriyle indirilir.</p></details>
           <details><summary>Debian ile ilişkisi nedir?</summary><p>OrvixOS, Debian 13 tabanlı bağımsız bir projedir. Debian projesi tarafından desteklenmez veya onaylanmaz; “Debian”, Software in the Public Interest, Inc.'in tescilli markasıdır.</p></details>
         </div>

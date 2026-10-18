@@ -7,7 +7,7 @@ sistemidir. Bu depo OrvixOS'un tüm kaynaklarını ve derleme araçlarını içe
 - **Paket yöneticisi:** [vpx](packages/vpx/): APT tabanlıdır ve paketleri doğrudan
   Debian sunucularından indirir. `apt install` yerine `vpx install` yazılır.
 - **Tarayıcı:** Kurulumda seçilir: **Vira Browser (önerilen)**, Firefox ESR ya da Chromium
-- **Mimariler:** ARM64 (Apple Silicon/UTM) ve x64 (Intel/AMD)
+- **Mimariler:** ARM64 ve x64 (Intel/AMD)
 - **Site:** [site/](site/) (Vercel'de yayınlanır)
 
 ## vpx

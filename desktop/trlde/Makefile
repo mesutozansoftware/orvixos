@@ -56,6 +56,7 @@ install:
 	install -m 755 bin/trlde-input $(DESTDIR)$(PREFIX)/bin/trlde-input
 	install -m 755 bin/trlde-display-profiles $(DESTDIR)$(PREFIX)/bin/trlde-display-profiles
 	install -m 755 bin/trlde-taskbar $(DESTDIR)$(PREFIX)/bin/trlde-taskbar
+	install -m 755 bin/trlde-wifi $(DESTDIR)$(PREFIX)/bin/trlde-wifi
 	install -m 755 bin/trlde-autostart $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	install -m 755 bin/trlde-clipboard-watch $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	install -m 644 sessions/trlde.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
@@ -139,6 +140,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-backup
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-input
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-display-profiles
+	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-taskbar
+	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-wifi
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	rm -f $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop

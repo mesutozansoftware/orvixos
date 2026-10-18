@@ -152,8 +152,12 @@ fi
     sleep 3
     while pgrep -x waybar >/dev/null 2>&1; do sleep 2; done
 done) &
-start_if_available nm-applet --indicator
-start_if_available blueman-applet
+# Ağ seçimi görev çubuğundaki Wi-Fi panelinden (trlde-wifi) yapılır; ayrı bir
+# ağ simgesi (nm-applet) bellekte yer tutmasın diye başlatılmaz.
+# Bluetooth simgesi yalnızca Bluetooth donanımı varsa başlar.
+if ls /sys/class/bluetooth/hci* >/dev/null 2>&1; then
+    start_if_available blueman-applet
+fi
 start_if_available swayidle -w timeout 600 "trlde-lock" before-sleep "trlde-lock"
 # Canlı sistemde kurulum penceresi zaten çıkıyor; ikinci karşılama gösterilmez.
 [ -d /run/live/medium ] || start_if_available trlde-welcome --first-run

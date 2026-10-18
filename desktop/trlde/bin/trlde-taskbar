@@ -237,16 +237,20 @@ def escape_sh(text):
     return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def status_command(app):
-    """Her saniye 'açık' durumunu JSON olarak yazan kabuk döngüsü."""
+def status_command(app, index):
+    """Her saniye 'açık' / 'açılıyor' durumunu JSON olarak yazan kabuk döngüsü."""
     patterns = " ".join(f"-e {i}" for i in app["app_ids"] if "'" not in i and " " not in i)
     tooltip = app["name"].replace("'", "").replace('"', "")
     running = '{"text":" ","class":"running","tooltip":"%s"}' % tooltip
+    launching = '{"text":" ","class":"launching","tooltip":"%s"}' % tooltip
     idle = '{"text":" ","class":"idle","tooltip":"%s"}' % tooltip
+    # Tıklanınca --activate "launching-N" dosyasını yazar; pencere açılana ya da
+    # 20 saniye geçene kadar simge yanıp söner (yavaş açılan uygulamalar için).
     return (
-        "sh -c 'f=${XDG_RUNTIME_DIR:-/tmp}/trlde/toplevels; while :; do "
-        f"if grep -qixF {patterns} \"$f\" 2>/dev/null; then echo \"{escape_sh(running)}\"; "
-        f"else echo \"{escape_sh(idle)}\"; fi; sleep 1; done'"
+        f"sh -c 'd=${{XDG_RUNTIME_DIR:-/tmp}}/trlde; f=$d/toplevels; l=$d/launching-{index}; while :; do "
+        f"if grep -qixF {patterns} \"$f\" 2>/dev/null; then rm -f \"$l\"; echo \"{escape_sh(running)}\"; "
+        f"elif [ -e \"$l\" ] && [ $(( $(date +%s) - $(stat -c %Y \"$l\") )) -lt 20 ]; then echo \"{escape_sh(launching)}\"; "
+        f"else rm -f \"$l\"; echo \"{escape_sh(idle)}\"; fi; sleep 1; done'"
     )
 
 
@@ -275,7 +279,7 @@ def generate():
     for index, app in enumerate(pins):
         name = f"custom/pin{index}"
         config[name] = {
-            "exec": status_command(app),
+            "exec": status_command(app, index),
             "return-type": "json",
             "format": "{}",
             "tooltip": True,
@@ -291,8 +295,12 @@ def generate():
             "margin: 5px 1px; border-radius: 10px; border-bottom: 3px solid transparent; }\n"
             f"#custom-pin{index}:hover {{ background-color: rgba(255, 255, 255, 0.09); }}\n"
             f"#custom-pin{index}.running {{ background-color: rgba(255, 255, 255, 0.06); "
-            "border-bottom: 3px solid #2ee6d6; }"
+            "border-bottom: 3px solid #2ee6d6; }\n"
+            f"#custom-pin{index}.launching {{ animation: trlde-launching 0.8s ease-in-out infinite alternate; "
+            "border-bottom: 3px solid rgba(46, 230, 214, 0.5); }"
         )
+    css.append("@keyframes trlde-launching { from { background-color: rgba(46, 230, 214, 0.05); } "
+               "to { background-color: rgba(46, 230, 214, 0.28); } }")
     position = left.index("custom/launcher") + 1 if "custom/launcher" in left else 0
     config["modules-left"] = left[:position] + modules + left[position:]
     # Sabit uygulamalar açıkken açık pencereler listesinde ikinci kez görünmez.
@@ -355,6 +363,11 @@ def activate(index):
     if app_id:
         subprocess.run(["wlrctl", "toplevel", "focus", f"app_id:{app_id}"], check=False)
     else:
+        try:
+            RUNTIME.mkdir(parents=True, exist_ok=True)
+            (RUNTIME / f"launching-{index}").touch()
+        except OSError:
+            pass
         launch(app["id"])
 
 

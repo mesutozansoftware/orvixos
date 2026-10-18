@@ -2,7 +2,11 @@
 # OrvixOS canlı sistem ayarları (chroot içinde, paketler kurulduktan sonra).
 set -e
 
-# Canlı sistemin varsayılan tarayıcısı Vira; kurulumda değiştirilebilir.
+# Tek tarayıcı Vira Browser; eski imajlardaki Firefox ve Chromium kaldırılır.
+if dpkg-query -W -f='${Status}\n' firefox-esr chromium 2>/dev/null | grep -q "install ok installed"; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y -q purge 'firefox-esr*' 'chromium*' || true
+    DEBIAN_FRONTEND=noninteractive apt-get -y -q --purge autoremove || true
+fi
 /usr/lib/orvixos/set-browser vira
 
 update-alternatives --set x-session-manager /usr/bin/trlde-session || true

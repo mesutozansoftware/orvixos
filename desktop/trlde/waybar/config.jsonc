@@ -20,7 +20,7 @@
     "format": "{icon}",
     "icon-size": 30,
     "tooltip-format": "{title}",
-    "on-click": "activate",
+    "on-click": "minimize-raise",
     "on-click-middle": "close"
   },
 
@@ -46,7 +46,7 @@
     "tooltip-format-wifi": "{essid} • %{signalStrength}",
     "tooltip-format-ethernet": "Kablolu ağ • {ipaddr}",
     "tooltip-format-disconnected": "Ağ bağlantısı yok",
-    "on-click": "nm-connection-editor",
+    "on-click": "trlde-wifi",
     "on-click-right": "trlde-quick-settings"
   },
 

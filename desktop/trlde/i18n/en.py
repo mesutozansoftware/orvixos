@@ -192,8 +192,8 @@ EN = {
     "Pencere ve uygulama geçişlerindeki hareketler": "Motion when switching windows and apps",
     "Metin boyutu": "Text size",
     "Normal": "Normal",
-    "Web bağlantıları kurulumda seçilen tarayıcı (Vira Browser, Firefox veya Chromium), klasörler Thunar ve düz metin dosyaları Mousepad ile açılır.":
-        "Web links open in the browser chosen during installation (Vira Browser, Firefox or Chromium), folders in Thunar and plain text files in Mousepad.",
+    "Web bağlantıları Vira Browser, klasörler Thunar ve düz metin dosyaları Mousepad ile açılır.":
+        "Web links open in Vira Browser, folders in Thunar and plain text files in Mousepad.",
     "Ağ Bağlantıları": "Network Connections",
     "Bluetooth Cihazları": "Bluetooth Devices",
     "Gelişmiş Ses Ayarları": "Advanced Sound Settings",
@@ -279,4 +279,5 @@ EN = {
     'Resimler': 'Pictures',
     'Videolar': 'Videos',
     'Aşağıdaki kısayollar günlük kullanımın çoğunu hızlandırır.': 'The shortcuts below speed up most everyday tasks.',
+    'Wi-Fi ağları': 'Wi-Fi networks',
 }

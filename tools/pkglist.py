@@ -19,7 +19,7 @@ OWN = {"vpx", "trlde", "vira-browser", "orvixos-base", "orvixos-desktop"}
 # Giriş ekranı kurulumun son adımında, önerileri olmadan kurulur
 # (iso/late-install.sh).
 LATE = {"sddm"}
-EXTRA = ["firefox-esr", "firefox-esr-l10n-tr", "chromium", "chromium-l10n"]
+EXTRA = []
 
 
 def fields(control):

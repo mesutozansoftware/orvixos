@@ -1,0 +1,13 @@
+#!/bin/sh
+# SDDM giriş ekranı için Wayland bileşimcisi (labwc). X sunucusu yerine
+# kullanılır: oturum açılınca kapanır ve bellekte yer tutmaz.
+if [ -r /etc/default/keyboard ]; then
+    . /etc/default/keyboard
+    export XKB_DEFAULT_LAYOUT="${XKBLAYOUT:-us}" XKB_DEFAULT_VARIANT="${XKBVARIANT:-}"
+    export XKB_DEFAULT_MODEL="${XKBMODEL:-pc105}" XKB_DEFAULT_OPTIONS="${XKBOPTIONS:-}"
+fi
+if systemd-detect-virt -q 2>/dev/null; then
+    export WLR_RENDERER="${WLR_RENDERER:-pixman}" WLR_NO_HARDWARE_CURSORS=1
+fi
+export XCURSOR_THEME=Adwaita XCURSOR_SIZE=24
+exec labwc -C /usr/share/orvixos/sddm-labwc "$@"

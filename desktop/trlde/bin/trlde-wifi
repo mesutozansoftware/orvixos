@@ -1,0 +1,478 @@
+#!/usr/bin/env python3
+"""OrvixOS Wi-Fi seçici: çevredeki ağları listeler, şifreyle bağlanır.
+
+Görev çubuğundaki ağ simgesine tıklanınca açılır. NetworkManager (nmcli)
+kullanır; bilinen ağlara şifre sormadan bağlanır.
+"""
+
+import os
+import subprocess
+import sys
+import threading
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib, Gtk  # noqa: E402
+
+try:
+    gi.require_version("GtkLayerShell", "0.1")
+    from gi.repository import GtkLayerShell  # noqa: E402
+except (ValueError, ImportError):
+    GtkLayerShell = None
+
+APP_ID = "org.trlde.Wifi"
+
+
+def _lang():
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        if os.environ.get(variable):
+            return os.environ[variable].split(":")[0][:2].lower()
+    return "tr"
+
+
+TURKISH = _lang() in ("tr", "c", "po")
+
+
+def T(turkish, english):
+    return turkish if TURKISH else english
+
+
+CSS = b"""
+window.flyout { background: transparent; }
+.panel { background: #141c2b; border: 1px solid #2a3650; border-radius: 14px; color: #e8edf7; }
+button { background-image: none; background-color: #232e47; color: #e8edf7; border: none;
+         box-shadow: none; text-shadow: none; border-radius: 8px; padding: 6px 12px; }
+button:hover { background-color: #2c3a59; }
+switch { background-color: #2a3650; border: none; }
+switch:checked { background-color: #2ee6d6; }
+switch slider { background-color: #ffffff; border: none; box-shadow: none; }
+checkbutton { color: #e8edf7; }
+.title { font-size: 17px; font-weight: bold; }
+.dim { color: #9ba1b6; }
+.status { color: #2ee6d6; }
+.error { color: #ff7b7b; }
+list { background: transparent; }
+.panel image { color: #e8edf7; }
+row label { color: #e8edf7; }
+row { border-radius: 10px; padding: 6px 8px; margin: 2px 0; }
+row:hover { background: rgba(255, 255, 255, 0.06); }
+row.connected { background: rgba(46, 230, 214, 0.12); }
+button.connect { background: #2ee6d6; color: #0e1626; font-weight: bold; border: none; }
+entry { background: #16213a; color: #e8edf7; border: 1px solid #2a3755; }
+"""
+
+
+def event_in_widget(widget, event):
+    """Olayın (iç pencerelerden gelse de) bileşenin içinde olup olmadığı."""
+    toplevel = widget.get_toplevel().get_window()
+    window, x, y = event.window, event.x, event.y
+    while window is not None and window != toplevel:
+        dx, dy = window.get_position()
+        x, y = x + dx, y + dy
+        window = window.get_parent()
+    allocation = widget.get_allocation()
+    return (allocation.x <= x <= allocation.x + allocation.width
+            and allocation.y <= y <= allocation.y + allocation.height)
+
+
+def nmcli(*args, timeout=40):
+    try:
+        result = subprocess.run(["nmcli", *args], capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return 1, "", str(error)
+    return result.returncode, result.stdout, result.stderr.strip()
+
+
+def split_terse(line):
+    """nmcli -t çıktısında '\\:' kaçışlı alanları ayırır."""
+    fields, current, escape = [], "", False
+    for char in line:
+        if escape:
+            current += char
+            escape = False
+        elif char == "\\":
+            escape = True
+        elif char == ":":
+            fields.append(current)
+            current = ""
+        else:
+            current += char
+    fields.append(current)
+    return fields
+
+
+def scan(rescan):
+    code, out, err = nmcli("-t", "-f", "IN-USE,SSID,SIGNAL,SECURITY", "device", "wifi", "list",
+                           "--rescan", "yes" if rescan else "auto")
+    if code != 0:
+        return None, err
+    networks = {}
+    for line in out.splitlines():
+        fields = split_terse(line)
+        if len(fields) < 4 or not fields[1]:
+            continue
+        in_use, ssid, signal, security = fields[0] == "*", fields[1], fields[2], fields[3]
+        try:
+            signal = int(signal)
+        except ValueError:
+            signal = 0
+        old = networks.get(ssid)
+        if old is None or in_use or (signal > old["signal"] and not old["in_use"]):
+            networks[ssid] = {"ssid": ssid, "signal": signal, "secure": security not in ("", "--"),
+                              "in_use": in_use or (old and old["in_use"])}
+    return sorted(networks.values(), key=lambda n: (not n["in_use"], -n["signal"])), ""
+
+
+def known_connections():
+    code, out, _err = nmcli("-t", "-f", "NAME,TYPE", "connection", "show")
+    if code != 0:
+        return set()
+    return {split_terse(line)[0] for line in out.splitlines()
+            if line.endswith(":802-11-wireless")}
+
+
+def signal_icon(signal):
+    for limit, name in ((75, "excellent"), (50, "good"), (25, "ok")):
+        if signal >= limit:
+            return f"network-wireless-signal-{name}-symbolic"
+    return "network-wireless-signal-weak-symbolic"
+
+
+class WifiWindow(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title="Wi-Fi")
+        self.set_icon_name("network-wireless")
+        self.get_style_context().add_class("flyout")
+        self.set_decorated(False)
+        visual = self.get_screen().get_rgba_visual()
+        if visual:
+            self.set_visual(visual)
+        # Windows'taki gibi sağ altta, görev çubuğunun üstünde açılan panel;
+        # dışarı tıklayınca kapanır.
+        overlay = GtkLayerShell is not None and GtkLayerShell.is_supported()
+        if overlay:
+            GtkLayerShell.init_for_window(self)
+            GtkLayerShell.set_namespace(self, "trlde-wifi")
+            GtkLayerShell.set_layer(self, GtkLayerShell.Layer.TOP)
+            for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                         GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+                GtkLayerShell.set_anchor(self, edge, True)
+            GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.EXCLUSIVE)
+        else:
+            self.set_default_size(380, 500)
+        self.busy = False
+        self.expanded = None
+        self.known = set()
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(self.get_screen(), provider,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        settings = Gtk.Settings.get_default()
+        if settings:
+            settings.set_property("gtk-application-prefer-dark-theme", True)
+
+        backdrop = Gtk.EventBox()
+        backdrop.set_visible_window(False)
+        self.add(backdrop)
+        self.panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.panel.get_style_context().add_class("panel")
+        self.panel.set_size_request(380, 500)
+        if overlay:
+            self.panel.set_halign(Gtk.Align.END)
+            self.panel.set_valign(Gtk.Align.END)
+            self.panel.set_margin_end(8)
+            self.panel.set_margin_bottom(8)
+        backdrop.add(self.panel)
+        backdrop.connect("button-press-event", self.on_backdrop_press)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, margin=16)
+        self.panel.pack_start(outer, True, True, 0)
+
+        header = Gtk.Box(spacing=10)
+        title = Gtk.Label(label="Wi-Fi", xalign=0)
+        title.get_style_context().add_class("title")
+        header.pack_start(title, True, True, 0)
+        self.refresh_button = Gtk.Button.new_from_icon_name("view-refresh-symbolic", Gtk.IconSize.BUTTON)
+        self.refresh_button.set_tooltip_text(T("Ağları yenile", "Refresh networks"))
+        self.refresh_button.connect("clicked", lambda *_: self.refresh(rescan=True))
+        header.pack_start(self.refresh_button, False, False, 0)
+        self.switch = Gtk.Switch(valign=Gtk.Align.CENTER)
+        self.switch_handler = self.switch.connect("notify::active", self.toggle_radio)
+        header.pack_start(self.switch, False, False, 0)
+        outer.pack_start(header, False, False, 0)
+
+        self.status = Gtk.Label(xalign=0, wrap=True)
+        self.status.get_style_context().add_class("dim")
+        outer.pack_start(self.status, False, False, 0)
+
+        scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        self.listbox = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        self.listbox.connect("row-activated", self.row_activated)
+        scroller.add(self.listbox)
+        outer.pack_start(scroller, True, True, 0)
+
+        footer = Gtk.Box(spacing=8)
+        advanced = Gtk.Button(label=T("Ağ ayarları", "Network settings"))
+        advanced.connect("clicked", lambda *_: (self.spawn(["nm-connection-editor"]), self.close()))
+        footer.pack_end(advanced, False, False, 0)
+        outer.pack_start(footer, False, False, 0)
+
+        self.connect("key-press-event", self.on_key)
+        self.refresh(rescan=False)
+        GLib.timeout_add_seconds(15, self.periodic)
+
+    # --- yardımcılar ---------------------------------------------------------
+
+    def on_backdrop_press(self, _widget, event):
+        if not event_in_widget(self.panel, event):
+            self.close()
+            return True
+        return False
+
+    def on_key(self, _widget, event):
+        if event.keyval == 0xff1b:  # Escape
+            self.close()
+        return False
+
+    def spawn(self, argv):
+        try:
+            subprocess.Popen(argv, start_new_session=True)
+        except OSError:
+            pass
+
+    def set_status(self, text, kind="dim"):
+        context = self.status.get_style_context()
+        for name in ("dim", "status", "error"):
+            context.remove_class(name)
+        context.add_class(kind)
+        self.status.set_text(text)
+
+    def run_async(self, work, done):
+        def worker():
+            result = work()
+            GLib.idle_add(done, result)
+        threading.Thread(target=worker, daemon=True).start()
+
+    def periodic(self):
+        if not self.busy and self.expanded is None:
+            self.refresh(rescan=False)
+        return True
+
+    # --- liste ---------------------------------------------------------------
+
+    def refresh(self, rescan):
+        if self.busy:
+            return
+        self.busy = True
+        self.refresh_button.set_sensitive(False)
+        if rescan:
+            self.set_status(T("Ağlar aranıyor…", "Searching for networks…"), "status")
+
+        def work():
+            code, out, _err = nmcli("-t", "-f", "TYPE", "device")
+            has_wifi = code == 0 and "wifi" in out.split()
+            radio = nmcli("radio", "wifi")[1].strip()
+            networks, error = scan(rescan) if has_wifi and radio == "enabled" else ([], "")
+            return has_wifi, radio, networks, error, known_connections()
+
+        self.run_async(work, self.show_networks)
+
+    def show_networks(self, result):
+        has_wifi, radio, networks, error, known = result
+        self.busy = False
+        self.refresh_button.set_sensitive(True)
+        self.known = known
+        self.switch.handler_block(self.switch_handler)
+        self.switch.set_active(radio == "enabled")
+        self.switch.set_sensitive(has_wifi)
+        self.switch.handler_unblock(self.switch_handler)
+        for child in self.listbox.get_children():
+            self.listbox.remove(child)
+        self.expanded = None
+        if not has_wifi:
+            self.set_status(T("Bu bilgisayarda Wi-Fi aygıtı bulunamadı. Kablolu bağlantı ya da USB Wi-Fi "
+                              "adaptörü kullanabilirsin.",
+                              "No Wi-Fi device was found on this computer. You can use a wired "
+                              "connection or a USB Wi-Fi adapter."), "error")
+            return
+        if radio != "enabled":
+            self.set_status(T("Wi-Fi kapalı. Açmak için sağ üstteki düğmeyi kullan.",
+                              "Wi-Fi is off. Use the switch at the top right to turn it on."))
+            return
+        if error:
+            self.set_status(error, "error")
+        elif not networks:
+            self.set_status(T("Ağ bulunamadı. Yenile düğmesiyle tekrar ara.",
+                              "No networks found. Press refresh to search again."))
+        else:
+            self.set_status(T("Bağlanmak için bir ağa tıkla.", "Click a network to connect."))
+        for network in networks:
+            self.listbox.add(self.make_row(network))
+        self.listbox.show_all()
+
+    def make_row(self, network):
+        row = Gtk.ListBoxRow()
+        row.network = network
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        line = Gtk.Box(spacing=10)
+        line.pack_start(Gtk.Image.new_from_icon_name(signal_icon(network["signal"]), Gtk.IconSize.LARGE_TOOLBAR),
+                        False, False, 0)
+        texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        name = Gtk.Label(label=network["ssid"], xalign=0)
+        name.set_ellipsize(3)
+        texts.pack_start(name, False, False, 0)
+        detail = T("Bağlı", "Connected") if network["in_use"] else (
+            T("Güvenli", "Secured") if network["secure"] else T("Açık ağ", "Open network"))
+        detail_label = Gtk.Label(label=detail, xalign=0)
+        detail_label.get_style_context().add_class("status" if network["in_use"] else "dim")
+        texts.pack_start(detail_label, False, False, 0)
+        line.pack_start(texts, True, True, 0)
+        if network["secure"]:
+            line.pack_end(Gtk.Image.new_from_icon_name("changes-prevent-symbolic", Gtk.IconSize.MENU),
+                          False, False, 0)
+        box.pack_start(line, False, False, 0)
+        row.add(box)
+        row.box = box
+        if network["in_use"]:
+            row.get_style_context().add_class("connected")
+        return row
+
+    def collapse(self):
+        if self.expanded is not None:
+            row = self.expanded
+            for child in row.box.get_children()[1:]:
+                row.box.remove(child)
+            self.expanded = None
+
+    def row_activated(self, _listbox, row):
+        if self.busy:
+            return
+        if self.expanded is row:
+            return
+        self.collapse()
+        network = row.network
+        actions = Gtk.Box(spacing=8)
+        if network["in_use"]:
+            button = Gtk.Button(label=T("Bağlantıyı kes", "Disconnect"))
+            button.connect("clicked", lambda *_: self.disconnect_network(network))
+            actions.pack_end(button, False, False, 0)
+        elif network["secure"] and network["ssid"] not in self.known:
+            entry = Gtk.Entry(visibility=False, placeholder_text=T("Ağ şifresi", "Network password"))
+            entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+            show = Gtk.CheckButton(label=T("Göster", "Show"))
+            show.connect("toggled", lambda b: entry.set_visibility(b.get_active()))
+            button = Gtk.Button(label=T("Bağlan", "Connect"))
+            button.get_style_context().add_class("connect")
+            button.connect("clicked", lambda *_: self.connect_network(network, entry.get_text()))
+            entry.connect("activate", lambda *_: self.connect_network(network, entry.get_text()))
+            actions.pack_start(entry, True, True, 0)
+            actions.pack_start(show, False, False, 0)
+            actions.pack_end(button, False, False, 0)
+            GLib.idle_add(entry.grab_focus)
+        else:
+            button = Gtk.Button(label=T("Bağlan", "Connect"))
+            button.get_style_context().add_class("connect")
+            button.connect("clicked", lambda *_: self.connect_network(network, None))
+            actions.pack_end(button, False, False, 0)
+            if network["ssid"] in self.known:
+                forget = Gtk.Button(label=T("Unut", "Forget"))
+                forget.connect("clicked", lambda *_: self.forget_network(network))
+                actions.pack_start(forget, False, False, 0)
+        row.box.pack_start(actions, False, False, 0)
+        row.box.show_all()
+        self.expanded = row
+
+    # --- işlemler ------------------------------------------------------------
+
+    def finish(self, result, success_text):
+        code, _out, err = result
+        self.busy = False
+        if code == 0:
+            self.set_status(success_text, "status")
+        else:
+            message = err.splitlines()[-1] if err else ""
+            if "Secrets were required" in err or "802-11-wireless-security.psk" in err or "password" in err.lower():
+                message = T("Şifre yanlış olabilir. Yeniden dene.", "The password may be wrong. Try again.")
+            self.set_status(T("Bağlanılamadı: ", "Could not connect: ") + message, "error")
+        self.refresh(rescan=False)
+
+    def connect_network(self, network, password):
+        if self.busy:
+            return
+        if network["secure"] and password is not None and len(password) < 8:
+            self.set_status(T("Wi-Fi şifresi en az 8 karakter olmalı.",
+                              "The Wi-Fi password must be at least 8 characters."), "error")
+            return
+        self.busy = True
+        self.set_status(T(f"{network['ssid']} ağına bağlanılıyor…", f"Connecting to {network['ssid']}…"), "status")
+        ssid = network["ssid"]
+
+        def work():
+            if ssid in self.known and password is None:
+                return nmcli("connection", "up", "id", ssid, timeout=60)
+            args = ["device", "wifi", "connect", ssid]
+            if password:
+                args += ["password", password]
+            result = nmcli(*args, timeout=60)
+            if result[0] != 0 and password:
+                # Hatalı şifreyle oluşan kaydı bırakma.
+                nmcli("connection", "delete", "id", ssid)
+            return result
+
+        self.run_async(work, lambda result: self.finish(result, T(f"{ssid} ağına bağlandı.",
+                                                                  f"Connected to {ssid}.")))
+
+    def disconnect_network(self, network):
+        if self.busy:
+            return
+        self.busy = True
+        ssid = network["ssid"]
+        self.run_async(lambda: nmcli("connection", "down", "id", ssid),
+                       lambda result: self.finish(result, T("Bağlantı kesildi.", "Disconnected.")))
+
+    def forget_network(self, network):
+        if self.busy:
+            return
+        self.busy = True
+        ssid = network["ssid"]
+        self.run_async(lambda: nmcli("connection", "delete", "id", ssid),
+                       lambda result: self.finish(result, T(f"{ssid} unutuldu.", f"Forgot {ssid}.")))
+
+    def toggle_radio(self, switch, _property):
+        state = "on" if switch.get_active() else "off"
+        self.busy = True
+
+        def work():
+            result = nmcli("radio", "wifi", state)
+            if state == "on":
+                import time
+                time.sleep(3)
+            return result
+
+        def done(_result):
+            self.busy = False
+            self.refresh(rescan=state == "on")
+
+        self.run_async(work, done)
+
+
+class WifiApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id=APP_ID)
+
+    def do_activate(self):
+        window = self.get_active_window()
+        if window:
+            # Ağ simgesine ikinci tıklama paneli kapatır.
+            window.close()
+            return
+        WifiWindow(self).show_all()
+
+
+if __name__ == "__main__":
+    if subprocess.run(["sh", "-c", "command -v nmcli"], capture_output=True).returncode != 0:
+        print(T("nmcli bulunamadı (network-manager kurulu değil).", "nmcli not found (network-manager missing)."),
+              file=sys.stderr)
+        sys.exit(1)
+    sys.exit(WifiApp().run(sys.argv[:1]))

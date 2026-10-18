@@ -165,7 +165,7 @@ class Settings(Gtk.Application):
         box.pack_start(grid, False, False, 0)
         self.section(box, "Varsayılan uygulamalar")
         note = Gtk.Label(
-            label="Web bağlantıları kurulumda seçilen tarayıcı (Vira Browser, Firefox veya Chromium), klasörler Thunar ve düz metin dosyaları Mousepad ile açılır.",
+            label="Web bağlantıları Vira Browser, klasörler Thunar ve düz metin dosyaları Mousepad ile açılır.",
             xalign=0,
             wrap=True,
         )
@@ -198,7 +198,7 @@ class Settings(Gtk.Application):
         grid = Gtk.Grid(column_spacing=12, row_spacing=12)
         grid.set_column_homogeneous(True)
         grid.attach(
-            self.action_button("Ağ Bağlantıları", lambda: open_first([["nm-connection-editor"]])),
+            self.action_button("Wi-Fi ağları", lambda: open_first([["trlde-wifi"], ["nm-connection-editor"]])),
             0, 0, 1, 1,
         )
         grid.attach(

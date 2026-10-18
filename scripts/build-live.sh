@@ -56,7 +56,6 @@ cp "$root/build/debs/$arch"/*.deb "$stage/config/packages.chroot/"
     python3 "$root/tools/pkglist.py" include | tr ' ' '\n'
     printf '%s\n' vpx trlde vira-browser orvixos-base orvixos-desktop \
         sddm qml6-module-qtquick-controls qml6-module-qtquick-layouts zenity \
-        firefox-esr firefox-esr-l10n-tr chromium chromium-l10n \
         calamares calamares-settings-debian \
         live-boot live-config live-config-systemd user-setup \
         locales console-setup keyboard-configuration sudo \

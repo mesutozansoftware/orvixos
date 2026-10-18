@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OrvixOS giriş ekranı (SDDM) için labwc ayarı: giriş penceresi tam ekran. -->
+<labwc_config>
+  <core>
+    <decoration>server</decoration>
+  </core>
+  <theme>
+    <name>TRLDE</name>
+  </theme>
+  <windowRules>
+    <windowRule identifier="*" serverDecoration="no">
+      <action name="ToggleFullscreen" />
+    </windowRule>
+  </windowRules>
+</labwc_config>

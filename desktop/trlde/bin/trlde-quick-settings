@@ -100,8 +100,8 @@ class QuickSettings(Gtk.Application):
         self.bluetooth_button.connect("clicked", self.toggle_bluetooth)
         toggles.attach(self.bluetooth_button, 1, 0, 1, 1)
 
-        network_settings = Gtk.Button(label="Ağ Ayarları")
-        network_settings.connect("clicked", lambda *_: spawn(["nm-connection-editor"]))
+        network_settings = Gtk.Button(label="Wi-Fi ağları")
+        network_settings.connect("clicked", lambda *_: spawn(["trlde-wifi"]))
         toggles.attach(network_settings, 0, 1, 1, 1)
 
         display_settings = Gtk.Button(label="Ekranlar")

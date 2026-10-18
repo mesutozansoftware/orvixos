@@ -1,28 +1,69 @@
 #!/usr/bin/python3
 
-"""OrvixOS uygulama menüsü."""
+"""OrvixOS başlat menüsü (Windows 11 tarzı).
+
+Görev çubuğunun üstünde açılır: arama, sabitlenmiş uygulamalar, tüm
+uygulamalar listesi, önerilen (son kullanılan) dosyalar ve güç menüsü.
+Başlat düğmesine ikinci kez basınca, Esc ile ya da dışarı tıklayınca kapanır.
+"""
 
 import locale
+import os
 import subprocess
 import sys
+import time
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gdk", "3.0")
 gi.require_version("Gio", "2.0")
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, Gio, GLib, Gtk, Pango
-try:
-    import sys as _trlde_sys
-    _trlde_sys.path.insert(0, "/usr/share/trlde/i18n")
-    import trlde_i18n
-    trlde_i18n.install()
-except Exception:
-    pass
+from gi.repository import Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
+try:
+    gi.require_version("GtkLayerShell", "0.1")
+    from gi.repository import GtkLayerShell  # noqa: E402
+except (ValueError, ImportError):
+    GtkLayerShell = None
+
+
+def _lang():
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        if os.environ.get(variable):
+            return os.environ[variable].split(":")[0][:2].lower()
+    return "tr"
+
+
+TURKISH = _lang() in ("tr", "c", "po")
+
+
+def T(turkish, english):
+    return turkish if TURKISH else english
+
+
+CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+START_PINS = CONFIG_HOME / "trlde" / "start-pins"
+DEFAULT_START_PINS = (
+    "@browser",
+    "thunar.desktop",
+    "xfce4-terminal.desktop",
+    "org.xfce.mousepad.desktop",
+    "trlde-settings.desktop",
+    "trlde-software.desktop",
+    "org.gnome.Calculator.desktop",
+    "org.xfce.ristretto.desktop",
+    "trlde-screenshot.desktop",
+    "trlde-appearance.desktop",
+    "org.gnome.FileRoller.desktop",
+    "trlde-updates.desktop",
+    "pavucontrol.desktop",
+)
+BROWSERS = ("vira-browser.desktop", "firefox-esr.desktop", "chromium.desktop")
 
 HIDDEN_IDS = {
     "blueman-adapters.desktop",
+    "foot.desktop",
     "footclient.desktop",
     "foot-server.desktop",
     "gnome-system-monitor-kde.desktop",
@@ -30,204 +71,512 @@ HIDDEN_IDS = {
     "org.gnome.Tour.desktop",
     "panel-preferences.desktop",
     "rygel-preferences.desktop",
+    "xfce4-terminal-settings.desktop",
+    "thunar-settings.desktop",
+    "org.xfce.mousepad-settings.desktop",
 }
 
-CATEGORIES = (
-    ("Tümü", None),
-    ("Donatılar", {"Utility", "Accessories"}),
-    ("Grafik", {"Graphics"}),
-    ("Ofis", {"Office"}),
-    ("Ses ve Video", {"AudioVideo", "Audio", "Video"}),
-    ("Sistem", {"Settings", "System"}),
-    ("İnternet ve Ağ", {"Network", "WebBrowser"}),
-)
+CSS = b"""
+window.start { background: transparent; }
+.panel { background: #141c2b; border: 1px solid #2a3650; border-radius: 14px; color: #e8edf7; }
+entry.search { min-height: 38px; padding: 0 14px; border-radius: 19px; color: #e8edf7;
+               background: #1d2740; border: 1px solid #2f3d5c; border-bottom: 2px solid #2ee6d6; }
+.section { font-weight: bold; font-size: 14px; color: #ffffff; }
+.link { padding: 2px 10px; border-radius: 6px; font-size: 12px; color: #e8edf7;
+        background: #232e47; border: none; }
+.link:hover { background: #2c3a59; }
+button { background-image: none; box-shadow: none; text-shadow: none; border: none; }
+.tile { padding: 8px 2px; border-radius: 8px; background: transparent; border: none; color: #e8edf7; }
+.tile:hover, .tile:focus { background: rgba(255, 255, 255, 0.07); }
+.tile label { font-size: 12px; }
+.app-row { padding: 6px 10px; border-radius: 8px; background: transparent; border: none; color: #e8edf7; }
+.app-row:hover, .app-row:focus { background: rgba(255, 255, 255, 0.07); }
+.letter { color: #2ee6d6; font-weight: bold; padding: 8px 10px 2px 10px; }
+.dim { color: #9ba1b6; font-size: 12px; }
+.panel image { color: #e8edf7; }
+.footer { background: #10172a; border-top: 1px solid #2a3650; border-radius: 0 0 14px 14px; }
+.user { padding: 4px 10px; border-radius: 8px; background: transparent; border: none; color: #e8edf7; }
+.user:hover, .power:hover { background: rgba(255, 255, 255, 0.08); }
+.power { padding: 8px; border-radius: 8px; background: transparent; border: none; color: #e8edf7; }
+menu, .menu { background: #1a2337; color: #e8edf7; border-radius: 8px; padding: 4px; }
+menuitem { padding: 6px 12px; border-radius: 6px; }
+menuitem:hover { background: #2c3a59; }
+scrollbar slider { min-width: 6px; border-radius: 6px; background: #3a4766; }
+"""
+
+
+def event_in_widget(widget, event):
+    """Olayın (iç pencerelerden gelse de) bileşenin içinde olup olmadığı."""
+    toplevel = widget.get_toplevel().get_window()
+    window, x, y = event.window, event.x, event.y
+    while window is not None and window != toplevel:
+        dx, dy = window.get_position()
+        x, y = x + dx, y + dy
+        window = window.get_parent()
+    allocation = widget.get_allocation()
+    return (allocation.x <= x <= allocation.x + allocation.width
+            and allocation.y <= y <= allocation.y + allocation.height)
 
 
 def spawn(argv):
     try:
-        subprocess.Popen(argv, start_new_session=True)
+        subprocess.Popen(argv, start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except OSError:
         pass
 
 
-class Drawer(Gtk.Application):
+def read_start_pins():
+    try:
+        lines = START_PINS.read_text(encoding="utf-8").splitlines()
+        return [line.strip() for line in lines if line.strip() and not line.startswith("#")]
+    except OSError:
+        return list(DEFAULT_START_PINS)
+
+
+def write_start_pins(pins):
+    START_PINS.parent.mkdir(parents=True, exist_ok=True)
+    START_PINS.write_text("\n".join(pins) + "\n", encoding="utf-8")
+
+
+def app_info(desktop_id):
+    if desktop_id == "@browser":
+        default = Gio.AppInfo.get_default_for_type("x-scheme-handler/https", False)
+        if default:
+            return default
+        for browser in BROWSERS:
+            info = app_info(browser)
+            if info:
+                return info
+        return None
+    try:
+        return Gio.DesktopAppInfo.new(desktop_id)
+    except TypeError:
+        return None
+
+
+def icon_image(gicon, size, fallback="application-x-executable"):
+    image = (Gtk.Image.new_from_gicon(gicon, Gtk.IconSize.DIALOG) if gicon
+             else Gtk.Image.new_from_icon_name(fallback, Gtk.IconSize.DIALOG))
+    image.set_pixel_size(size)
+    return image
+
+
+def age_text(timestamp):
+    seconds = max(0, int(time.time() - timestamp))
+    if seconds < 60:
+        return T("Az önce", "Just now")
+    if seconds < 3600:
+        return T(f"{seconds // 60} dk önce", f"{seconds // 60} min ago")
+    if seconds < 86400:
+        return T(f"{seconds // 3600} sa önce", f"{seconds // 3600} h ago")
+    return time.strftime("%d.%m.%Y", time.localtime(timestamp))
+
+
+class StartMenu(Gtk.Application):
     def __init__(self):
         super().__init__(application_id="org.trlde.Drawer")
         self.window = None
-        self.flow = None
-        self.search = None
         self.apps = []
-        self.category = None
+        self.opened_at = 0.0
+
+    # --- açılış ---------------------------------------------------------------
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
         provider = Gtk.CssProvider()
-        provider.load_from_data(
-            b"""
-            window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
-            entry { min-height: 42px; padding: 2px 14px; border-radius: 12px;
-                    color: #ffffff; background: #202c38; border: 1px solid #39d6c5; }
-            .category { min-height: 38px; padding: 2px 14px; border-radius: 10px;
-                        color: #d7e0e7; background: #18232e; }
-            .category:checked { color: #ffffff; background: #c93652; }
-            .app-button { min-height: 104px; min-width: 126px; padding: 10px 6px;
-                          border-radius: 12px; color: #e7edf2; background: transparent; }
-            .app-button:hover, .app-button:focus { color: #ffffff; background: #273746; }
-            .power-button { min-height: 42px; padding: 2px 15px; border-radius: 10px;
-                            color: #e7edf2; background: #202c38; }
-            .power-button:hover { color: #39d6c5; background: #314253; }
-            .danger:hover { color: #ffffff; background: #c93652; }
-            scrollbar slider { min-width: 8px; min-height: 8px; border-radius: 8px; background: #526575; }
-            """
-        )
-        Gtk.StyleContext.add_provider_for_screen(
-            Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), provider,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        settings = Gtk.Settings.get_default()
+        if settings:
+            settings.set_property("gtk-application-prefer-dark-theme", True)
 
     def do_activate(self):
         if self.window:
-            self.window.present()
-            self.search.grab_focus()
+            # Başlat düğmesine ikinci basış menüyü kapatır (Windows gibi).
+            self.quit()
             return
-
-        self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("OrvixOS Uygulamalar")
-        self.window.set_default_size(1040, 700)
-        self.window.set_size_request(760, 520)
-        self.window.connect("key-press-event", self.on_key)
-        self.window.connect("destroy", lambda *_: self.quit())
-
-        header = Gtk.HeaderBar(title="Uygulamalar", subtitle="Aradığın uygulamayı aç")
-        header.set_show_close_button(True)
-        self.window.set_titlebar(header)
-
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        outer.set_border_width(16)
-        self.window.add(outer)
-
-        self.search = Gtk.SearchEntry(placeholder_text="Uygulama ara")
-        self.search.connect("search-changed", lambda *_: self.refresh_grid())
-        outer.pack_start(self.search, False, False, 0)
-
-        categories = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        categories.set_halign(Gtk.Align.CENTER)
-        group = None
-        for label, values in CATEGORIES:
-            button = Gtk.RadioButton.new_with_label_from_widget(group, label)
-            button.set_label(label)
-            if group is None:
-                group = button
-                button.set_active(True)
-            button.set_mode(False)
-            button.get_style_context().add_class("category")
-            button.connect("toggled", self.category_changed, values)
-            categories.pack_start(button, False, False, 0)
-        outer.pack_start(categories, False, False, 0)
-
-        scroller = Gtk.ScrolledWindow()
-        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroller.set_shadow_type(Gtk.ShadowType.NONE)
-        self.flow = Gtk.FlowBox()
-        self.flow.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.flow.set_homogeneous(True)
-        self.flow.set_max_children_per_line(6)
-        self.flow.set_min_children_per_line(3)
-        self.flow.set_row_spacing(6)
-        self.flow.set_column_spacing(8)
-        self.flow.set_halign(Gtk.Align.FILL)
-        scroller.add(self.flow)
-        outer.pack_start(scroller, True, True, 0)
-
-        power = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        power.set_halign(Gtk.Align.CENTER)
-        for label, command, danger in (
-            ("Kilitle", ["trlde-lock"], False),
-            ("Oturumu Kapat", ["trlde-power", "logout"], False),
-            ("Yeniden Başlat", ["trlde-power", "reboot"], False),
-            ("Uyku", ["trlde-power", "suspend"], False),
-            ("Bilgisayarı Kapat", ["trlde-power", "poweroff"], True),
-        ):
-            button = Gtk.Button(label=label)
-            button.get_style_context().add_class("power-button")
-            if danger:
-                button.get_style_context().add_class("danger")
-            button.connect("clicked", lambda _button, argv=command: self.run_command(argv))
-            power.pack_start(button, False, False, 0)
-        outer.pack_end(power, False, False, 0)
-
         self.apps = self.load_apps()
-        self.refresh_grid()
+        self.build_window()
+        self.opened_at = time.monotonic()
         self.window.show_all()
-        self.window.maximize()
+        self.show_home()
         self.search.grab_focus()
+
+    def build_window(self):
+        window = Gtk.ApplicationWindow(application=self, title=T("Başlat", "Start"))
+        window.get_style_context().add_class("start")
+        window.set_decorated(False)
+        window.set_resizable(False)
+        window.connect("key-press-event", self.on_key)
+        window.connect("focus-out-event", self.on_focus_out)
+        screen = window.get_screen()
+        visual = screen.get_rgba_visual()
+        if visual:
+            window.set_visual(visual)
+        # Katman kabuğu varsa menü görev çubuğu dışındaki tüm alanı kaplayan saydam
+        # bir katmanda açılır: panelin dışına tıklamak menüyü kapatır.
+        overlay = GtkLayerShell is not None and GtkLayerShell.is_supported()
+        if overlay:
+            GtkLayerShell.init_for_window(window)
+            GtkLayerShell.set_namespace(window, "trlde-start")
+            GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+            for edge in (GtkLayerShell.Edge.TOP, GtkLayerShell.Edge.BOTTOM,
+                         GtkLayerShell.Edge.LEFT, GtkLayerShell.Edge.RIGHT):
+                GtkLayerShell.set_anchor(window, edge, True)
+            GtkLayerShell.set_keyboard_mode(window, GtkLayerShell.KeyboardMode.EXCLUSIVE)
+        else:
+            window.set_position(Gtk.WindowPosition.CENTER)
+        self.window = window
+
+        backdrop = Gtk.EventBox()
+        backdrop.set_visible_window(False)
+        backdrop.connect("button-press-event", self.on_backdrop_press)
+        window.add(backdrop)
+
+        panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        panel.get_style_context().add_class("panel")
+        panel.set_size_request(640, 700)
+        if overlay:
+            panel.set_halign(Gtk.Align.START)
+            panel.set_valign(Gtk.Align.END)
+            panel.set_margin_start(8)
+            panel.set_margin_bottom(8)
+        self.panel = panel
+        backdrop.add(panel)
+
+        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        body.set_border_width(24)
+        panel.pack_start(body, True, True, 0)
+
+        self.search = Gtk.SearchEntry(placeholder_text=T("Uygulama, ayar ve belge ara",
+                                                         "Search for apps, settings and documents"))
+        self.search.get_style_context().add_class("search")
+        self.search.connect("search-changed", self.on_search)
+        self.search.connect("activate", self.on_search_activate)
+        body.pack_start(self.search, False, False, 0)
+
+        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT,
+                               transition_duration=160)
+        body.pack_start(self.stack, True, True, 0)
+        self.stack.add_named(self.build_home(), "home")
+        self.stack.add_named(self.build_all_apps(), "all")
+        self.results = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        results_scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        results_scroller.add(self.results)
+        self.stack.add_named(results_scroller, "search")
+
+        panel.pack_end(self.build_footer(), False, False, 0)
+
+    # --- ana görünüm ------------------------------------------------------------
+
+    def section_header(self, title, link_label, link_action):
+        header = Gtk.Box(spacing=8)
+        label = Gtk.Label(label=title, xalign=0)
+        label.get_style_context().add_class("section")
+        header.pack_start(label, True, True, 0)
+        if link_label:
+            link = Gtk.Button(label=link_label)
+            link.get_style_context().add_class("link")
+            link.connect("clicked", lambda *_: link_action())
+            header.pack_end(link, False, False, 0)
+        return header
+
+    def build_home(self):
+        home = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        home.pack_start(self.section_header(T("Sabitlenmiş", "Pinned"), T("Tüm uygulamalar  ›", "All apps  ›"),
+                                            self.show_all_apps), False, False, 0)
+        self.pinned_grid = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=True,
+                                       max_children_per_line=6, min_children_per_line=6,
+                                       row_spacing=4, column_spacing=4)
+        home.pack_start(self.pinned_grid, False, False, 0)
+
+        home.pack_start(self.section_header(T("Önerilen", "Recommended"), None, None), False, False, 8)
+        self.recent_grid = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=True,
+                                       max_children_per_line=2, min_children_per_line=2,
+                                       row_spacing=4, column_spacing=8)
+        home.pack_start(self.recent_grid, False, False, 0)
+        return home
+
+    def fill_pinned(self):
+        for child in self.pinned_grid.get_children():
+            self.pinned_grid.remove(child)
+        count = 0
+        for desktop_id in read_start_pins():
+            info = app_info(desktop_id)
+            if not info or count >= 18:
+                continue
+            self.pinned_grid.add(self.tile(info, desktop_id))
+            count += 1
+        self.pinned_grid.show_all()
+
+    def tile(self, info, desktop_id):
+        button = Gtk.Button()
+        button.get_style_context().add_class("tile")
+        button.set_tooltip_text(info.get_description() or info.get_display_name())
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box.pack_start(icon_image(info.get_icon(), 34), False, False, 0)
+        label = Gtk.Label(label=info.get_display_name(), justify=Gtk.Justification.CENTER)
+        label.set_max_width_chars(11)
+        label.set_ellipsize(Pango.EllipsizeMode.END)
+        box.pack_start(label, False, False, 0)
+        button.add(box)
+        button.connect("clicked", lambda *_: self.launch(info))
+        button.connect("button-press-event", self.on_app_button_press, info, desktop_id)
+        return button
+
+    def fill_recent(self):
+        for child in self.recent_grid.get_children():
+            self.recent_grid.remove(child)
+        items = []
+        try:
+            for item in Gtk.RecentManager.get_default().get_items():
+                if item.exists():
+                    items.append(item)
+        except GLib.Error:
+            pass
+        items.sort(key=lambda item: item.get_modified(), reverse=True)
+        if not items:
+            label = Gtk.Label(label=T("Son kullandığın dosyalar burada görünecek.",
+                                      "Your recent files will show up here."), xalign=0)
+            label.get_style_context().add_class("dim")
+            self.recent_grid.add(label)
+        for item in items[:6]:
+            button = Gtk.Button()
+            button.get_style_context().add_class("app-row")
+            row = Gtk.Box(spacing=10)
+            row.pack_start(icon_image(item.get_gicon(), 30, "text-x-generic"), False, False, 0)
+            texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            name = Gtk.Label(label=item.get_display_name(), xalign=0)
+            name.set_ellipsize(Pango.EllipsizeMode.END)
+            name.set_max_width_chars(24)
+            texts.pack_start(name, False, False, 0)
+            when = Gtk.Label(label=age_text(item.get_modified()), xalign=0)
+            when.get_style_context().add_class("dim")
+            texts.pack_start(when, False, False, 0)
+            row.pack_start(texts, True, True, 0)
+            button.add(row)
+            uri = item.get_uri()
+            button.connect("clicked", lambda *_, u=uri: self.open_uri(u))
+            self.recent_grid.add(button)
+        self.recent_grid.show_all()
+
+    # --- tüm uygulamalar --------------------------------------------------------
+
+    def build_all_apps(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box.pack_start(self.section_header(T("Tüm uygulamalar", "All apps"), T("‹  Geri", "‹  Back"),
+                                           self.show_home), False, False, 0)
+        scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        self.all_list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        scroller.add(self.all_list)
+        box.pack_start(scroller, True, True, 0)
+        return box
+
+    def fill_all_apps(self):
+        if self.all_list.get_children():
+            return
+        letter = None
+        for _sort, name, info, _searchable in self.apps:
+            first = name[:1].upper()
+            if not first.isalpha():
+                first = "#"
+            if first != letter:
+                letter = first
+                header = Gtk.Label(label=letter, xalign=0)
+                header.get_style_context().add_class("letter")
+                self.all_list.pack_start(header, False, False, 0)
+            self.all_list.pack_start(self.app_row(info), False, False, 0)
+        self.all_list.show_all()
+
+    def app_row(self, info):
+        button = Gtk.Button()
+        button.get_style_context().add_class("app-row")
+        row = Gtk.Box(spacing=12)
+        row.pack_start(icon_image(info.get_icon(), 28), False, False, 0)
+        label = Gtk.Label(label=info.get_display_name(), xalign=0)
+        label.set_ellipsize(Pango.EllipsizeMode.END)
+        row.pack_start(label, True, True, 0)
+        button.add(row)
+        button.connect("clicked", lambda *_: self.launch(info))
+        button.connect("button-press-event", self.on_app_button_press, info, info.get_id())
+        return button
 
     def load_apps(self):
         apps = []
-        for app in Gio.AppInfo.get_all():
-            app_id = app.get_id() or ""
-            if app_id in HIDDEN_IDS or not app.should_show():
+        for info in Gio.AppInfo.get_all():
+            app_id = info.get_id() or ""
+            if app_id in HIDDEN_IDS or not info.should_show():
                 continue
-            name = (app.get_display_name() or app.get_name() or "").strip()
+            name = (info.get_display_name() or info.get_name() or "").strip()
             if not name:
                 continue
-            categories = set()
-            if isinstance(app, Gio.DesktopAppInfo):
-                categories.update(filter(None, (app.get_categories() or "").split(";")))
-            apps.append((locale.strxfrm(name.casefold()), name, app, categories))
+            keywords = ""
+            if isinstance(info, Gio.DesktopAppInfo):
+                keywords = " ".join(info.get_keywords() or [])
+            searchable = " ".join(filter(None, (name, info.get_description() or "",
+                                                info.get_executable() or "", keywords))).casefold()
+            apps.append((locale.strxfrm(name.casefold()), name, info, searchable))
         apps.sort(key=lambda item: item[0])
         return apps
 
-    def category_changed(self, button, values):
-        if button.get_active():
-            self.category = values
-            self.refresh_grid()
+    # --- arama ------------------------------------------------------------------
 
-    def refresh_grid(self):
-        if not self.flow:
+    def on_search(self, entry):
+        query = entry.get_text().strip().casefold()
+        if not query:
+            self.show_home()
             return
-        for child in self.flow.get_children():
-            self.flow.remove(child)
-        query = (self.search.get_text() if self.search else "").strip().casefold()
-        for _sort, name, app, categories in self.apps:
-            searchable = " ".join(
-                filter(None, (name, app.get_description() or "", app.get_executable() or ""))
-            ).casefold()
-            if query and query not in searchable:
-                continue
-            if self.category and not self.category.intersection(categories):
-                continue
-            self.flow.add(self.app_button(name, app))
-        self.flow.show_all()
+        for child in self.results.get_children():
+            self.results.remove(child)
+        matches = [item for item in self.apps if query in item[3]]
+        matches.sort(key=lambda item: (not item[1].casefold().startswith(query), item[0]))
+        self.matches = [item[2] for item in matches]
+        if not matches:
+            label = Gtk.Label(label=T("Sonuç bulunamadı.", "No results."), xalign=0)
+            label.get_style_context().add_class("dim")
+            self.results.add(label)
+        for _sort, _name, info, _searchable in matches[:40]:
+            self.results.add(self.app_row(info))
+        self.results.show_all()
+        self.stack.set_visible_child_name("search")
 
-    def app_button(self, name, app):
-        button = Gtk.Button()
-        button.get_style_context().add_class("app-button")
-        button.set_tooltip_text(app.get_description() or name)
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
-        icon = app.get_icon()
-        image = (
-            Gtk.Image.new_from_gicon(icon, Gtk.IconSize.DIALOG)
-            if icon
-            else Gtk.Image.new_from_icon_name("application-x-executable", Gtk.IconSize.DIALOG)
-        )
-        image.set_pixel_size(48)
-        content.pack_start(image, False, False, 0)
-        label = Gtk.Label(label=name, lines=2, justify=Gtk.Justification.CENTER)
-        label.set_max_width_chars(18)
-        label.set_ellipsize(Pango.EllipsizeMode.END)
-        content.pack_start(label, False, False, 0)
-        button.add(content)
-        button.connect("clicked", lambda *_: self.launch(app))
-        return button
+    def on_search_activate(self, _entry):
+        if self.stack.get_visible_child_name() == "search" and getattr(self, "matches", None):
+            self.launch(self.matches[0])
 
-    def launch(self, app):
+    # --- alt çubuk ---------------------------------------------------------------
+
+    def build_footer(self):
+        footer = Gtk.Box(spacing=8)
+        footer.get_style_context().add_class("footer")
+        footer.set_border_width(10)
+        footer.set_margin_start(14)
+        footer.set_margin_end(14)
+
+        user = Gtk.Button()
+        user.get_style_context().add_class("user")
+        user_box = Gtk.Box(spacing=10)
+        face = Path.home() / ".face"
+        if face.exists():
+            avatar = Gtk.Image()
+            try:
+                from gi.repository import GdkPixbuf
+                avatar.set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(str(face), 32, 32, True))
+            except (GLib.Error, ImportError):
+                avatar = icon_image(None, 32, "avatar-default-symbolic")
+        else:
+            avatar = icon_image(None, 28, "avatar-default-symbolic")
+        user_box.pack_start(avatar, False, False, 0)
+        name = GLib.get_real_name()
+        if not name or name == "Unknown":
+            name = GLib.get_user_name()
+        user_box.pack_start(Gtk.Label(label=name, xalign=0), False, False, 0)
+        user.add(user_box)
+        user.set_tooltip_text(T("Hesap ve ayarlar", "Account and settings"))
+        user.connect("clicked", lambda *_: self.run_command(["trlde-settings"]))
+        footer.pack_start(user, False, False, 0)
+
+        settings = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
+        settings.get_style_context().add_class("power")
+        settings.set_tooltip_text(T("Ayarlar", "Settings"))
+        settings.connect("clicked", lambda *_: self.run_command(["trlde-settings"]))
+        files = Gtk.Button.new_from_icon_name("folder-symbolic", Gtk.IconSize.BUTTON)
+        files.get_style_context().add_class("power")
+        files.set_tooltip_text(T("Dosya Gezgini", "File Explorer"))
+        files.connect("clicked", lambda *_: self.run_command(["thunar"]))
+
+        power = Gtk.Button.new_from_icon_name("system-shutdown-symbolic", Gtk.IconSize.BUTTON)
+        power.get_style_context().add_class("power")
+        power.set_tooltip_text(T("Güç", "Power"))
+        power.connect("clicked", self.show_power_menu)
+        footer.pack_end(power, False, False, 0)
+        footer.pack_end(settings, False, False, 0)
+        footer.pack_end(files, False, False, 0)
+        return footer
+
+    def show_power_menu(self, button):
+        menu = Gtk.Menu()
+        for label, argv in (
+            (T("Kilitle", "Lock"), ["trlde-lock"]),
+            (T("Uyku", "Sleep"), ["trlde-power", "suspend"]),
+            (T("Oturumu kapat", "Sign out"), ["trlde-power", "logout"]),
+            (T("Yeniden başlat", "Restart"), ["trlde-power", "reboot"]),
+            (T("Bilgisayarı kapat", "Shut down"), ["trlde-power", "poweroff"]),
+        ):
+            item = Gtk.MenuItem(label=label)
+            item.connect("activate", lambda *_, a=argv: self.run_command(a))
+            menu.append(item)
+        menu.show_all()
+        menu.attach_to_widget(button, None)
+        self.menu_open = True
+        menu.connect("deactivate", lambda *_: setattr(self, "menu_open", False))
+        menu.popup_at_widget(button, Gdk.Gravity.NORTH_EAST, Gdk.Gravity.SOUTH_EAST, None)
+
+    # --- sağ tık: sabitleme ------------------------------------------------------
+
+    def on_app_button_press(self, button, event, info, desktop_id):
+        if event.button != 3:
+            return False
+        pins = read_start_pins()
+        menu = Gtk.Menu()
+        open_item = Gtk.MenuItem(label=T("Aç", "Open"))
+        open_item.connect("activate", lambda *_: self.launch(info))
+        menu.append(open_item)
+        if desktop_id in pins or (desktop_id == info.get_id() and info.get_id() in pins):
+            item = Gtk.MenuItem(label=T("Başlangıçtan kaldır", "Unpin from Start"))
+            item.connect("activate", lambda *_: self.change_pin(desktop_id, False))
+        else:
+            item = Gtk.MenuItem(label=T("Başlangıca sabitle", "Pin to Start"))
+            item.connect("activate", lambda *_: self.change_pin(info.get_id(), True))
+        menu.append(item)
+        filename = info.get_filename() if isinstance(info, Gio.DesktopAppInfo) else None
+        if filename:
+            taskbar = Gtk.MenuItem(label=T("Görev çubuğuna sabitle", "Pin to taskbar"))
+            taskbar.connect("activate", lambda *_: spawn(["trlde-taskbar", "--pin", filename]))
+            menu.append(taskbar)
+        menu.show_all()
+        menu.attach_to_widget(button, None)
+        self.menu_open = True
+        menu.connect("deactivate", lambda *_: setattr(self, "menu_open", False))
+        menu.popup_at_pointer(event)
+        return True
+
+    def change_pin(self, desktop_id, pin):
+        pins = read_start_pins()
+        if pin and desktop_id not in pins:
+            pins.append(desktop_id)
+        elif not pin:
+            pins = [p for p in pins if p != desktop_id]
+        write_start_pins(pins)
+        self.fill_pinned()
+
+    # --- görünüm geçişleri ve işlemler --------------------------------------------
+
+    def show_home(self):
+        self.fill_pinned()
+        self.fill_recent()
+        self.stack.set_visible_child_name("home")
+
+    def show_all_apps(self):
+        self.fill_all_apps()
+        self.stack.set_visible_child_name("all")
+
+    def launch(self, info):
         try:
             context = Gdk.Display.get_default().get_app_launch_context()
-            app.launch([], context)
-            self.quit()
+            info.launch([], context)
         except GLib.Error as error:
-            spawn(["notify-send", "Uygulama açılamadı", str(error)])
+            spawn(["notify-send", T("Uygulama açılamadı", "Could not open app"), str(error)])
+        self.quit()
+
+    def open_uri(self, uri):
+        try:
+            Gio.AppInfo.launch_default_for_uri(uri, None)
+        except GLib.Error:
+            spawn(["xdg-open", uri])
+        self.quit()
 
     def run_command(self, argv):
         spawn(argv)
@@ -235,10 +584,35 @@ class Drawer(Gtk.Application):
 
     def on_key(self, _window, event):
         if event.keyval == Gdk.KEY_Escape:
+            if self.stack.get_visible_child_name() != "home" and not self.search.get_text():
+                self.show_home()
+            else:
+                self.quit()
+            return True
+        if event.keyval in (Gdk.KEY_Super_L, Gdk.KEY_Super_R):
             self.quit()
             return True
         return False
 
+    def on_backdrop_press(self, _widget, event):
+        if not event_in_widget(self.panel, event) and not getattr(self, "menu_open", False):
+            self.quit()
+            return True
+        return False
 
-locale.setlocale(locale.LC_COLLATE, "")
-Drawer().run([sys.argv[0]])
+    def on_focus_out(self, _window, _event):
+        # Dışarı tıklayınca kapan; açılış anındaki ve açık menülerdeki odak
+        # kayıpları sayılmaz.
+        if getattr(self, "menu_open", False) or time.monotonic() - self.opened_at < 0.4:
+            return False
+        GLib.timeout_add(120, self.close_if_unfocused)
+        return False
+
+    def close_if_unfocused(self):
+        if self.window and not self.window.is_active() and not getattr(self, "menu_open", False):
+            self.quit()
+        return False
+
+
+locale.setlocale(locale.LC_ALL, "")
+StartMenu().run([sys.argv[0]])

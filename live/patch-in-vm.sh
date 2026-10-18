@@ -3,7 +3,9 @@
 # root olarak). ISO'daki sistem imajı açılır, OrvixOS paketleri ve canlı sistem
 # dosyaları yenilenir, imaj yeniden sıkıştırılıp ISO'ya konur.
 #
-# Kullanım: patch-in-vm.sh KAYNAK.iso KAYNAK_DİZİNİ ÇIKTI.iso
+# Kullanım: patch-in-vm.sh KAYNAK.iso KAYNAK_DİZİNİ ÇIKTI.iso [KÖK_DİZİNİ]
+#   KÖK_DİZİNİ verilirse açılmış sistem orada saklanır; bir sonraki
+#   güncellemede ISO yeniden açılmaz (yalnızca değişen paketler kurulur).
 #   KAYNAK_DİZİNİ/debs/*.deb       kurulacak OrvixOS paketleri
 #   KAYNAK_DİZİNİ/includes/        canlı sistem dosyaları (includes.chroot)
 #   KAYNAK_DİZİNİ/hooks/*.chroot   chroot kancaları
@@ -14,7 +16,8 @@ iso=$1
 src=$2
 out=$3
 work=$(dirname "$out")/patch-$(basename "$out" .iso)
-root=$work/root
+root=${4:-$work/root}
+ready=$root/.orvixos-ready
 
 cleanup() {
     for mount_point in dev/pts dev sys proc; do
@@ -26,10 +29,17 @@ trap cleanup EXIT INT TERM
 rm -rf "$work"
 mkdir -p "$work"
 
-echo "==> Sistem imajı açılıyor"
-xorriso -osirrox on -indev "$iso" -extract /live/filesystem.squashfs "$work/old.squashfs" >/dev/null 2>&1
-unsquashfs -q -d "$root" "$work/old.squashfs"
-rm -f "$work/old.squashfs"
+if [ -f "$ready" ]; then
+    echo "==> Saklanan sistem kullanılıyor (ISO yeniden açılmadı)"
+else
+    echo "==> Sistem imajı açılıyor"
+    rm -rf "$root"
+    xorriso -osirrox on -indev "$iso" -extract /live/filesystem.squashfs "$work/old.squashfs" >/dev/null 2>&1
+    unsquashfs -q -d "$root" "$work/old.squashfs"
+    rm -f "$work/old.squashfs"
+fi
+# Yarıda kesilirse saklanan sistem bir dahaki sefere yeniden açılır.
+rm -f "$ready"
 
 echo "==> OrvixOS paketleri ve dosyaları güncelleniyor"
 mkdir -p "$root/tmp/orvixos"
@@ -73,10 +83,14 @@ rm -f "$root/etc/resolv.conf"
 cleanup
 
 echo "==> Sistem imajı sıkıştırılıyor (birkaç dakika)"
-mksquashfs "$root" "$work/filesystem.squashfs" -comp zstd -Xcompression-level 19 -noappend -quiet
+mksquashfs "$root" "$work/filesystem.squashfs" -e .orvixos-ready -comp zstd -Xcompression-level 19 -noappend -quiet
 du -sx --block-size=1 "$root" | cut -f1 > "$work/filesystem.size"
 chroot "$root" dpkg-query -W --showformat='${Package} ${Version}\n' > "$work/filesystem.packages" 2>/dev/null || true
-rm -rf "$root"
+if [ -n "${4:-}" ]; then
+    touch "$ready"
+else
+    rm -rf "$root"
+fi
 
 echo "==> ISO oluşturuluyor"
 rm -f "$out"

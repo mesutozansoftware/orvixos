@@ -35,7 +35,17 @@ for arch in "$@"; do
     iso=OrvixOS-$ORVIXOS_VERSION-live-$arch.iso
     [ -f "outputs/$iso" ] || { echo "outputs/$iso yok; önce scripts/release.sh $arch" >&2; exit 1; }
     start=$(date +%s)
-    echo "==> $arch: ISO sanal makineye gönderiliyor"
+    cache=/srv/orvixos-live/cache-$arch
+    sha=$(shasum -a 256 "outputs/$iso" | cut -d" " -f1)
+    # Sanal makinede bu ISO'nun açılmış sistemi saklıysa ISO gönderilmez ve
+    # yeniden açılmaz; yalnızca paketler kurulup imaj sıkıştırılır.
+    if [ "$(sh tests/vm.sh "cat $cache/base.sha256 2>/dev/null; test -f $cache/root/.orvixos-ready || echo yok")" = "$sha" ]; then
+        echo "==> $arch: saklanan sistem kullanılacak"
+    else
+        echo "==> $arch: ISO sanal makineye gönderiliyor"
+        sh tests/vm.sh "rm -rf $cache; mkdir -p $cache; chmod 777 $cache"
+        to_vm "outputs/$iso" "$cache/base.iso"
+    fi
     stage=build/patch-src/$arch
     rm -rf "$stage"
     mkdir -p "$stage/debs" "$stage/hooks"
@@ -48,17 +58,18 @@ for arch in "$@"; do
     cp live/patch-in-vm.sh "$stage/"
     sh tools/drivers.sh "$arch" > "$stage/extra-packages"
     (cd "$stage" && COPYFILE_DISABLE=1 tar --no-xattrs -cf ../$arch.tar .)
-    to_vm "outputs/$iso" "/srv/orvixos-live/in/$iso"
     to_vm "build/patch-src/$arch.tar" "/srv/orvixos-live/in/src-$arch.tar"
 
     echo "==> $arch: güncelleniyor"
-    sh tests/vm.sh "mkdir -p /srv/orvixos-live/src-$arch && tar -C /srv/orvixos-live/src-$arch -xf /srv/orvixos-live/in/src-$arch.tar && sh /srv/orvixos-live/src-$arch/patch-in-vm.sh /srv/orvixos-live/in/$iso /srv/orvixos-live/src-$arch /srv/orvixos-live/out-$iso"
+    sh tests/vm.sh "mkdir -p /srv/orvixos-live/src-$arch && tar -C /srv/orvixos-live/src-$arch -xf /srv/orvixos-live/in/src-$arch.tar && sh /srv/orvixos-live/src-$arch/patch-in-vm.sh $cache/base.iso /srv/orvixos-live/src-$arch $cache/out.iso $cache/root"
 
     echo "==> $arch: ISO alınıyor"
-    sh tests/vm.sh "chmod 644 /srv/orvixos-live/out-$iso"
-    from_vm "/srv/orvixos-live/out-$iso" "outputs/$iso"
-    sh tests/vm.sh "rm -rf /srv/orvixos-live/out-$iso /srv/orvixos-live/in/$iso /srv/orvixos-live/in/src-$arch.tar /srv/orvixos-live/src-$arch"
+    sh tests/vm.sh "chmod 644 $cache/out.iso"
+    from_vm "$cache/out.iso" "outputs/$iso"
     (cd outputs && shasum -a 256 "$iso" > "$iso.sha256" && cat "$iso.sha256")
+    sha=$(cut -d" " -f1 "outputs/$iso.sha256")
+    # Yeni ISO bir sonraki güncellemenin temeli olur.
+    sh tests/vm.sh "mv -f $cache/out.iso $cache/base.iso && echo $sha > $cache/base.sha256; rm -rf /srv/orvixos-live/in/src-$arch.tar /srv/orvixos-live/src-$arch"
     echo "==> $arch: $(( ($(date +%s) - start) / 60 )) dakikada güncellendi"
 done
 

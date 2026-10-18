@@ -23,7 +23,7 @@ iso: debs
 test-iso: debs
 	mkdir -p build/test
 	test -f build/test/id_ed25519 || ssh-keygen -q -t ed25519 -N '' -C orvixos-test -f build/test/id_ed25519
-	for a in $(ARCHES); do ORVIXOS_TEST=1 sh scripts/build-iso.sh $$a || exit 1; done
+	for a in $(ARCHES); do ORVIXOS_TEST=1 ORVIXOS_TEST_BROWSER=vira sh scripts/build-iso.sh $$a || exit 1; done
 
 clean:
 	rm -rf build

@@ -10,6 +10,8 @@ sistemidir. Bu depo OrvixOS'un tüm kaynaklarını ve derleme araçlarını içe
 - **Mimariler:** ARM64 ve x64 (Intel/AMD)
 - **Site:** [site/](site/) (Vercel'de yayınlanır)
 
+> **Adım adım Türkçe kılavuz ve tek komutla yayınlama:** [NASIL.md](NASIL.md) — `sh scripts/release.sh`
+
 ## vpx
 
 ```bash

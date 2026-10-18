@@ -75,6 +75,14 @@ build_deb() {
     python3 "$root/tools/mkdeb.py" --root "$stage" --control "$control" --output "$output" "$@"
 }
 
+# ORVIXOS_REUSE_VIRA=1: Vira paketi (yalnızca uygulama değişmediyse) yeniden
+# sıkıştırılmaz; önceki derlemedeki .deb kullanılır.
+reuse=$build/vira-reuse
+rm -rf "$reuse"
+if [ "${ORVIXOS_REUSE_VIRA:-0}" = 1 ]; then
+    mkdir -p "$reuse"
+    cp "$build"/debs/*/vira-browser_"${VIRA_VERSION}"_*.deb "$reuse/" 2>/dev/null || true
+fi
 rm -rf "$build/debs"
 mkdir -p "$build/debs/all"
 
@@ -109,6 +117,7 @@ done
 mkdir -p "$stage/usr/share/pixmaps" "$stage/usr/share/icons/hicolor/scalable/apps" "$stage/usr/share/icons/hicolor/256x256/apps"
 cp "$root/branding/orvixos-logo.svg" "$stage/usr/share/pixmaps/orvixos-logo.svg"
 cp "$root/branding/orvixos-logo-256.png" "$stage/usr/share/pixmaps/orvixos-logo.png"
+cp "$root/branding/orvixos-login.png" "$stage/usr/share/pixmaps/orvixos-login.png"
 cp "$root/branding/orvixos-logo.svg" "$stage/usr/share/icons/hicolor/scalable/apps/orvixos.svg"
 cp "$root/branding/orvixos-logo-256.png" "$stage/usr/share/icons/hicolor/256x256/apps/orvixos.png"
 cp "$root/branding/orvixos-logo-256.png" "$stage/usr/share/plymouth/themes/orvixos/logo.png"
@@ -126,6 +135,14 @@ build_deb orvixos-desktop "$stage" "$stage_root/orvixos-desktop/DEBIAN" "$build/
 
 # --- vira-browser (mimariye özgü) ------------------------------------------
 for deb_arch in "$@"; do
+    mkdir -p "$build/debs/$deb_arch"
+    reused=$reuse/vira-browser_${VIRA_VERSION}_$deb_arch.deb
+    if [ -r "$reused" ]; then
+        mv "$reused" "$build/debs/$deb_arch/"
+        cp "$build/debs/all/"*.deb "$build/debs/$deb_arch/"
+        printf 'vira-browser_%s_%s.deb: önceki derlemeden kullanıldı\n' "$VIRA_VERSION" "$deb_arch" >&2
+        continue
+    fi
     case "$deb_arch" in
         arm64) electron_arch=arm64 ;;
         amd64) electron_arch=x64 ;;
@@ -165,4 +182,5 @@ for deb_arch in "$@"; do
     rm -rf "$stage_root/vira-browser-$deb_arch"
 done
 
+rm -rf "$reuse"
 printf 'Paketler hazır: %s\n' "$build/debs"

@@ -12,3 +12,28 @@ Description-tr.UTF-8: Web tarayıcısı:
  Kurulacak web tarayıcısını seç. Seçilen tarayıcı varsayılan tarayıcı olur.
  Vira Browser, OrvixOS'un önerdiği tarayıcıdır. Firefox ESR ve Chromium
  güvenlik güncellemelerini Debian'dan "vpx sync" ile alır.
+
+Template: orvixos/progress/title
+Type: text
+Description: Installing the OrvixOS desktop
+Description-tr.UTF-8: OrvixOS masaüstü kuruluyor
+
+Template: orvixos/progress/prepare
+Type: text
+Description: Preparing OrvixOS packages...
+Description-tr.UTF-8: OrvixOS paketleri hazırlanıyor...
+
+Template: orvixos/progress/login
+Type: text
+Description: Installing the login screen...
+Description-tr.UTF-8: Giriş ekranı kuruluyor...
+
+Template: orvixos/progress/desktop
+Type: text
+Description: Installing TRLDE desktop and web browser...
+Description-tr.UTF-8: TRLDE masaüstü ve web tarayıcısı kuruluyor...
+
+Template: orvixos/progress/finish
+Type: text
+Description: Finishing OrvixOS setup...
+Description-tr.UTF-8: OrvixOS kurulumu tamamlanıyor...

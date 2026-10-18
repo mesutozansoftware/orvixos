@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|abort-install|disappear)
+        dpkg-divert --package orvixos-desktop --remove --rename \
+            --divert /usr/share/orvixos/labwc-session.desktop \
+            /usr/share/wayland-sessions/labwc.desktop >/dev/null
+        ;;
+esac
+exit 0

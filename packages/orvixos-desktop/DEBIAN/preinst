@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# Çıplak labwc oturumu giriş ekranında görünmesin; OrvixOS'ta labwc,
+# TRLDE oturumunun parçası olarak çalışır.
+case "$1" in
+    install|upgrade)
+        mkdir -p /usr/share/orvixos
+        dpkg-divert --package orvixos-desktop --add --rename \
+            --divert /usr/share/orvixos/labwc-session.desktop \
+            /usr/share/wayland-sessions/labwc.desktop >/dev/null
+        ;;
+esac
+exit 0

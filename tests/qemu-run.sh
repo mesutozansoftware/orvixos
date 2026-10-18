@@ -55,7 +55,12 @@ case "$mode" in
         [ -n "$iso" ] || { echo "ISO yolu gerekli" >&2; exit 2; }
         set -- "$@" -device virtio-scsi-pci -device scsi-cd,drive=cd \
             -drive if=none,id=cd,file="$iso",media=cdrom,readonly=on \
-            -serial file:"$work/install-$arch.log" -display none -no-reboot
+            -display none -no-reboot
+        if [ -n "${SERIAL_SOCK:-}" ]; then
+            set -- "$@" -serial unix:"$SERIAL_SOCK",server=on,wait=off
+        else
+            set -- "$@" -serial file:"$work/install-$arch.log"
+        fi
         ;;
     boot)
         set -- "$@" -serial file:"$work/boot-$arch.log"

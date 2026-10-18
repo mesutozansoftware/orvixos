@@ -120,7 +120,25 @@ def logo_png():
     image.save(OUT / "orvixos-logo-256.png", optimize=True)
 
 
+def login_wordmark():
+    """GDM giriş ekranı için şeffaf, yatay logo (Debian'ınki gibi ~64 px)."""
+    height = 64
+    probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    bold = font(40)
+    text_width = probe.textlength("OrvixOS", font=bold)
+    width = int(height + 16 + text_width + 4)
+    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    ring, moon = masks(height)
+    image.paste(gradient((height, height)), (0, 0), ring)
+    image.paste(Image.new("RGB", (height, height), TEAL), (0, 0), moon)
+    draw = ImageDraw.Draw(image)
+    draw.text((height + 16, 6), "Orvix", font=bold, fill=(255, 255, 255, 255))
+    draw.text((height + 16 + probe.textlength("Orvix", font=bold), 6), "OS", font=bold, fill=TEAL + (255,))
+    image.save(OUT / "orvixos-login.png", optimize=True)
+
+
 if __name__ == "__main__":
+    login_wordmark()
     banner()
     splash()
     logo_png()

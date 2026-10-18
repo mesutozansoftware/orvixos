@@ -1,8 +1,6 @@
 #!/bin/sh
 set -e
 
-gdm_conf=/etc/gdm3/daemon.conf
-
 set_browser() {
     case "$1" in
         vira) binary=/usr/bin/vira-browser; desktop=vira-browser.desktop ;;
@@ -26,15 +24,10 @@ MIME
 
 case "$1" in
     configure)
-        # Giriş ekranında varsayılan oturum TRLDE olsun.
-        if [ -w "$gdm_conf" ]; then
-            if grep -q '^DefaultSession=' "$gdm_conf"; then
-                sed -i 's/^DefaultSession=.*/DefaultSession=trlde.desktop/' "$gdm_conf"
-            elif grep -q '^\[daemon\]' "$gdm_conf"; then
-                sed -i '/^\[daemon\]/a DefaultSession=trlde.desktop' "$gdm_conf"
-            else
-                printf '\n[daemon]\nDefaultSession=trlde.desktop\n' >> "$gdm_conf"
-            fi
+        # Giriş ekranı: SDDM (OrvixOS teması).
+        if [ -x /usr/bin/sddm ]; then
+            printf '%s\n' /usr/bin/sddm > /etc/X11/default-display-manager
+            systemctl enable --force sddm.service >/dev/null 2>&1 || true
         fi
         # Varsayılan tarayıcı: kurulumda seçilen (/etc/orvixos/browser),
         # yoksa kurulu olanlardan ilki (Vira Browser, Firefox ESR, Chromium).

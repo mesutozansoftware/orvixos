@@ -100,7 +100,10 @@ cp "$root/iso/choose-browser.sh" "$root/iso/late-install.sh" "$root/iso/orvixos.
 cp "$root/LICENSE" "$payload/LICENSE.txt"
 cp "$root/SOURCES.md" "$payload/SOURCES.md"
 if [ "$test_mode" = 1 ]; then
-    printf 'vira\n' > "$payload/browser.default"
+    # ORVIXOS_TEST_BROWSER verilirse tarayıcı sorusu atlanır.
+    if [ -n "${ORVIXOS_TEST_BROWSER:-}" ]; then
+        printf '%s\n' "$ORVIXOS_TEST_BROWSER" > "$payload/browser.default"
+    fi
     cp "$root/tests/test-late.sh" "$payload/test-late.sh"
     cp "$root/build/test/id_ed25519.pub" "$payload/test-authorized_keys"
 fi

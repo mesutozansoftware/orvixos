@@ -16,9 +16,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OWN = {"vpx", "trlde", "vira-browser", "orvixos-base", "orvixos-desktop"}
-# gdm3 önerileri GNOME oturumunu çekmesin diye kurulumun son adımında,
-# önerileri olmadan kurulur (iso/late-install.sh).
-LATE = {"gdm3"}
+# Giriş ekranı kurulumun son adımında, önerileri olmadan kurulur
+# (iso/late-install.sh).
+LATE = {"sddm"}
 EXTRA = ["firefox-esr", "firefox-esr-l10n-tr", "chromium", "chromium-l10n"]
 
 

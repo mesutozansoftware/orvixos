@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=TRLDE Hakkında
-Comment=TRLDE sürüm ve proje bilgisi
+Name=OrvixOS Hakkında
+Comment=OrvixOS sürüm ve proje bilgisi
 Exec=trlde-about
 Icon=trlde-logo
 Type=Application

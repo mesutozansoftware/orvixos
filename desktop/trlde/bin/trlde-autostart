@@ -30,7 +30,7 @@ start_if_available() {
 
 share_dir=${TRLDE_SHARE_DIR:-/usr/share/trlde}
 config_home=${XDG_CONFIG_HOME:-$HOME/.config}
-wallpaper=${TRLDE_WALLPAPER:-/usr/share/backgrounds/trlde/trlde.svg}
+wallpaper=${TRLDE_WALLPAPER:-/usr/share/backgrounds/trlde/orvixos.svg}
 
 # Sistem varsayılanı (/etc/xdg/mimeapps.list) varsa önce o tarayıcı denenir.
 trlde_browsers() {
@@ -101,7 +101,16 @@ systemctl --user enable --now trlde-update.timer >/dev/null 2>&1 || true
 systemctl --user restart trlde-clipboard.service >/dev/null 2>&1 || true
 
 if command -v wlr-randr >/dev/null 2>&1; then
-    trlde-display-profiles --apply-last >/dev/null 2>&1 || true
+    if ! trlde-display-profiles --apply-last >/dev/null 2>&1; then
+        # Kayıtlı profil yoksa yüksek çözünürlüklü ekranlar 2x ölçeklenir;
+        # böylece yazı ve ikonlar küçük ya da pikselli görünmez.
+        wlr-randr | awk '
+            /^[^ ]/ { output = $1 }
+            /current/ { split($1, size, "x"); if (size[1] + 0 >= 2400) print output }
+        ' | while IFS= read -r output; do
+            wlr-randr --output "$output" --scale 2 || true
+        done
+    fi
 fi
 
 start_if_available swaybg -i "$wallpaper" -m fill

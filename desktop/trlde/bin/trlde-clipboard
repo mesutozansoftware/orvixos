@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE pano geçmişi arayüzü."""
+"""OrvixOS pano geçmişi arayüzü."""
 
 import subprocess
 import sys
@@ -14,7 +14,7 @@ from gi.repository import Gdk, GLib, Gtk
 
 def notify(message):
     if GLib.find_program_in_path("notify-send"):
-        subprocess.Popen(["notify-send", "TRLDE Pano", message], start_new_session=True)
+        subprocess.Popen(["notify-send", "OrvixOS Pano", message], start_new_session=True)
 
 
 class Clipboard(Gtk.Application):
@@ -47,9 +47,9 @@ class Clipboard(Gtk.Application):
             self.window.present()
             return
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Pano Geçmişi")
+        self.window.set_title("OrvixOS Pano Geçmişi")
         self.window.set_default_size(620, 520)
-        header = Gtk.HeaderBar(title="TRLDE Pano Geçmişi")
+        header = Gtk.HeaderBar(title="OrvixOS Pano Geçmişi")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)

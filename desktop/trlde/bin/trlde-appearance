@@ -44,10 +44,10 @@ class Appearance(Gtk.Application):
             return
 
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Görünüm")
+        self.window.set_title("OrvixOS Görünüm")
         self.window.set_default_size(520, 430)
 
-        header = Gtk.HeaderBar(title="TRLDE Görünüm")
+        header = Gtk.HeaderBar(title="OrvixOS Görünüm")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
 
@@ -60,7 +60,8 @@ class Appearance(Gtk.Application):
         box.pack_start(title, False, False, 0)
 
         wallpapers = [
-            ("TRLDE Gece", "/usr/share/backgrounds/trlde/trlde.svg"),
+            ("OrvixOS", "/usr/share/backgrounds/trlde/orvixos.svg"),
+            ("Gece", "/usr/share/backgrounds/trlde/trlde.svg"),
             ("Turkuaz Akış", "/usr/share/backgrounds/trlde/trlde-turquoise.svg"),
             ("Gün Batımı", "/usr/share/backgrounds/trlde/trlde-sunset.svg"),
         ]

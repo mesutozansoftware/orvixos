@@ -1,4 +1,4 @@
-# TRLDE labwc teması
+# OrvixOS labwc teması (TRLDE)
 border.width: 2
 window.titlebar.padding.height: 5
 window.titlebar.padding.width: 8
@@ -6,21 +6,31 @@ window.button.width: 24
 window.button.height: 24
 window.button.spacing: 3
 
-window.active.border.color: #39d6c5
+window.active.border.color: #2ee6d6
 window.inactive.border.color: #273442
-window.active.title.bg.color: #111820
-window.inactive.title.bg.color: #18222d
+window.active.title.bg.color: #0e1626
+window.inactive.title.bg.color: #141d2e
 window.active.label.text.color: #f4f7fa
 window.inactive.label.text.color: #91a0ad
 window.active.button.unpressed.image.color: #dce7ee
 window.inactive.button.unpressed.image.color: #788997
 
-menu.items.bg.color: #111820
+menu.items.bg.color: #141c2e
 menu.items.text.color: #e7edf2
-menu.items.active.bg.color: #d62e4f
+menu.items.active.bg.color: #24324d
 menu.items.active.text.color: #ffffff
-menu.separator.color: #273442
+menu.separator.color: #2a364d
+menu.separator.width: 1
+menu.separator.padding.width: 8
+menu.separator.padding.height: 4
+menu.items.padding.x: 14
+menu.items.padding.y: 7
+menu.border.width: 1
+menu.border.color: #2a364d
+menu.width.min: 230
+menu.width.max: 320
+menu.overlap.x: 2
 
 osd.bg.color: #111820
-osd.border.color: #39d6c5
+osd.border.color: #2ee6d6
 osd.label.text.color: #f4f7fa

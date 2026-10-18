@@ -10,7 +10,7 @@ install -d -m 0700 "$state_dir"
 notify_updates() {
     count=$1
     if command -v notify-send >/dev/null 2>&1; then
-        notify-send -a TRLDE -i software-update-available \
+        notify-send -a OrvixOS -i software-update-available \
             "Sistem güncellemeleri hazır" \
             "$count paket güncellenebilir. Ayarlar > Sistem bölümünden kurulabilir."
     fi
@@ -42,10 +42,10 @@ case "${1:-open}" in
         ;;
     open|"")
         if command -v foot >/dev/null 2>&1; then
-            exec foot -T "TRLDE Sistem Güncellemeleri" -e sh -lc \
-                'printf "TRLDE sistem güncellemeleri\\n\\n"; vpx sync; code=$?; printf "\\nKapatmak için Enter..."; read answer; exit "$code"'
+            exec foot -T "OrvixOS Sistem Güncellemeleri" -e sh -lc \
+                'printf "OrvixOS sistem güncellemeleri\\n\\n"; vpx sync; code=$?; printf "\\nKapatmak için Enter..."; read answer; exit "$code"'
         fi
-        printf '%s\n' "TRLDE güncellemeleri için bir terminal gerekli." >&2
+        printf '%s\n' "OrvixOS güncellemeleri için bir terminal gerekli." >&2
         exit 127
         ;;
     *)

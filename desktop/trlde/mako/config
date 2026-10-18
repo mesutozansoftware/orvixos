@@ -1,7 +1,7 @@
 font=Noto Sans 11
 background-color=#111820f2
 text-color=#e7edf2ff
-border-color=#39d6c5ff
+border-color=#2ee6d6ff
 border-size=2
 border-radius=10
 default-timeout=5000
@@ -16,5 +16,5 @@ on-button-left=dismiss
 on-button-right=dismiss-all
 
 [urgency=high]
-border-color=#d62e4fff
+border-color=#2ee6d6ff
 default-timeout=0

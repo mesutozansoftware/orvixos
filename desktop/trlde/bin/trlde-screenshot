@@ -4,7 +4,7 @@ set -eu
 
 mode=${1:-area}
 if ! command -v grim >/dev/null 2>&1; then
-    command -v notify-send >/dev/null 2>&1 && notify-send "TRLDE" "Ekran görüntüsü aracı bulunamadı."
+    command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "Ekran görüntüsü aracı bulunamadı."
     exit 127
 fi
 
@@ -15,9 +15,9 @@ fi
 if [ -z "$pictures" ] || [ "$pictures" = "$HOME" ] || [ "$pictures" = "$HOME/" ]; then
     pictures=$HOME/Resimler
 fi
-target_dir=$pictures/TRLDE
+target_dir=$pictures/OrvixOS
 install -d -m 0700 "$target_dir"
-target=$target_dir/TRLDE-$(date +%Y%m%d-%H%M%S).png
+target=$target_dir/OrvixOS-$(date +%Y%m%d-%H%M%S).png
 
 case "$mode" in
     full)
@@ -25,7 +25,7 @@ case "$mode" in
         ;;
     area)
         if ! command -v slurp >/dev/null 2>&1; then
-            command -v notify-send >/dev/null 2>&1 && notify-send "TRLDE" "Alan seçme aracı bulunamadı."
+            command -v notify-send >/dev/null 2>&1 && notify-send "OrvixOS" "Alan seçme aracı bulunamadı."
             exit 127
         fi
         geometry=$(slurp) || exit 0

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OrvixOS masaüstü sağ tık menüsü -->
+<openbox_menu>
+  <menu id="orvixos-new" label="Yeni" icon="orvixos-new">
+    <item label="Klasör (Masaüstü)" icon="orvixos-folder-new">
+      <action name="Execute" command="sh -c 'd=$(xdg-user-dir DESKTOP); n=&quot;$d/Yeni Klasör&quot;; i=2; while [ -e &quot;$n&quot; ]; do n=&quot;$d/Yeni Klasör ($i)&quot;; i=$((i+1)); done; mkdir -p &quot;$n&quot; &amp;&amp; thunar &quot;$d&quot;'" />
+    </item>
+    <item label="Metin belgesi" icon="orvixos-file-new">
+      <action name="Execute" command="sh -c 'd=$(xdg-user-dir DESKTOP); n=&quot;$d/Yeni Metin Belgesi.txt&quot;; i=2; while [ -e &quot;$n&quot; ]; do n=&quot;$d/Yeni Metin Belgesi ($i).txt&quot;; i=$((i+1)); done; : &gt; &quot;$n&quot; &amp;&amp; mousepad &quot;$n&quot;'" />
+    </item>
+  </menu>
+
+  <menu id="orvixos-power" label="Güç" icon="orvixos-power">
+    <item label="Ekranı kilitle" icon="orvixos-lock">
+      <action name="Execute" command="trlde-power lock" />
+    </item>
+    <item label="Uyku" icon="orvixos-sleep">
+      <action name="Execute" command="trlde-power suspend" />
+    </item>
+    <item label="Oturumu kapat" icon="orvixos-logout">
+      <action name="Execute" command="trlde-power logout" />
+    </item>
+    <item label="Yeniden başlat" icon="orvixos-reboot">
+      <action name="Execute" command="trlde-power reboot" />
+    </item>
+    <item label="Bilgisayarı kapat" icon="orvixos-power">
+      <action name="Execute" command="trlde-power poweroff" />
+    </item>
+  </menu>
+
+  <menu id="root-menu">
+    <item label="Uygulamalar" icon="orvixos-apps">
+      <action name="Execute" command="trlde-launcher" />
+    </item>
+    <menu id="orvixos-new" />
+    <separator />
+    <item label="Terminalde aç" icon="orvixos-terminal">
+      <action name="Execute" command="foot" />
+    </item>
+    <item label="Dosya Gezgini" icon="orvixos-files">
+      <action name="Execute" command="thunar" />
+    </item>
+    <item label="Web tarayıcısı" icon="orvixos-browser">
+      <action name="Execute" command="x-www-browser" />
+    </item>
+    <separator />
+    <item label="Ekran ayarları" icon="orvixos-display">
+      <action name="Execute" command="wdisplays" />
+    </item>
+    <item label="Kişiselleştir" icon="orvixos-personalize">
+      <action name="Execute" command="trlde-appearance" />
+    </item>
+    <item label="Ekran görüntüsü al" icon="orvixos-screenshot">
+      <action name="Execute" command="trlde-screenshot" />
+    </item>
+    <item label="Görev yöneticisi" icon="orvixos-taskmanager">
+      <action name="Execute" command="foot -T 'Görev Yöneticisi' -e top" />
+    </item>
+    <item label="Ayarlar" icon="orvixos-settings">
+      <action name="Execute" command="trlde-settings" />
+    </item>
+    <separator />
+    <item label="Masaüstünü yenile" icon="orvixos-refresh">
+      <action name="Reconfigure" />
+    </item>
+    <menu id="orvixos-power" />
+  </menu>
+</openbox_menu>

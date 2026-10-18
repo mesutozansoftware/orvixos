@@ -47,7 +47,7 @@ case "$action" in
         systemctl suspend
         ;;
     logout)
-        confirm_action "TRLDE oturumu kapatılsın mı?" || exit 0
+        confirm_action "OrvixOS oturumu kapatılsın mı?" || exit 0
         if [ -n "${LABWC_PID:-}" ]; then
             exec labwc --exit
         fi

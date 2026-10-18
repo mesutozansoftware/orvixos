@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE uygulama menüsü."""
+"""OrvixOS uygulama menüsü."""
 
 import locale
 import subprocess
@@ -85,7 +85,7 @@ class Drawer(Gtk.Application):
             return
 
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Uygulamalar")
+        self.window.set_title("OrvixOS Uygulamalar")
         self.window.set_default_size(1040, 700)
         self.window.set_size_request(760, 520)
         self.window.connect("key-press-event", self.on_key)

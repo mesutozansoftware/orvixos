@@ -59,15 +59,21 @@ install:
 	install -m 755 bin/trlde-clipboard-watch $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	install -m 644 sessions/trlde.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/trlde.desktop
 	install -m 644 labwc/rc.xml $(DESTDIR)$(DATADIR)/trlde/labwc/rc.xml
+	install -m 644 labwc/menu.xml $(DESTDIR)$(DATADIR)/trlde/labwc/menu.xml
+	install -d $(DESTDIR)$(DATADIR)/icons/OrvixOS/scalable/actions
+	install -m 644 icons/OrvixOS/index.theme $(DESTDIR)$(DATADIR)/icons/OrvixOS/index.theme
+	install -m 644 icons/OrvixOS/scalable/actions/*.svg $(DESTDIR)$(DATADIR)/icons/OrvixOS/scalable/actions/
 	install -m 644 labwc/autostart $(DESTDIR)$(DATADIR)/trlde/labwc/autostart
 	install -m 644 labwc/environment $(DESTDIR)$(DATADIR)/trlde/labwc/environment
 	install -m 644 labwc/themerc $(DESTDIR)$(DATADIR)/themes/TRLDE/labwc/themerc
 	install -m 644 waybar/config.jsonc $(DESTDIR)$(DATADIR)/trlde/waybar/config.jsonc
 	install -m 644 waybar/style.css $(DESTDIR)$(DATADIR)/trlde/waybar/style.css
+	install -m 644 waybar/start.svg $(DESTDIR)$(DATADIR)/trlde/waybar/start.svg
 	install -m 644 wofi/style.css $(DESTDIR)$(DATADIR)/trlde/wofi/style.css
 	install -m 644 mako/config $(DESTDIR)$(DATADIR)/trlde/mako/config
 	install -m 644 mako/config $(DESTDIR)$(SYSCONFDIR)/xdg/mako/config
 	install -m 644 wallpapers/trlde.svg $(DESTDIR)$(DATADIR)/backgrounds/trlde/trlde.svg
+	install -m 644 wallpapers/orvixos.svg $(DESTDIR)$(DATADIR)/backgrounds/trlde/orvixos.svg
 	install -m 644 wallpapers/trlde-turquoise.svg $(DESTDIR)$(DATADIR)/backgrounds/trlde/trlde-turquoise.svg
 	install -m 644 wallpapers/trlde-sunset.svg $(DESTDIR)$(DATADIR)/backgrounds/trlde/trlde-sunset.svg
 	install -m 644 branding/trlde-logo.svg $(DESTDIR)$(DATADIR)/pixmaps/trlde-logo.svg
@@ -93,6 +99,8 @@ install:
 	install -m 644 systemd/trlde-update.service $(DESTDIR)$(SYSTEMDUSERDIR)/trlde-update.service
 	install -m 644 systemd/trlde-update.timer $(DESTDIR)$(SYSTEMDUSERDIR)/trlde-update.timer
 	install -m 644 systemd/trlde-clipboard.service $(DESTDIR)$(SYSTEMDUSERDIR)/trlde-clipboard.service
+	install -d $(DESTDIR)$(SYSTEMDUSERDIR)/mako.service.d
+	install -m 644 systemd/mako.service.d/trlde.conf $(DESTDIR)$(SYSTEMDUSERDIR)/mako.service.d/trlde.conf
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-session

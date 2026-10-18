@@ -1,0 +1,26 @@
+#!/bin/sh
+# OrvixOS canlı sistem: SDDM otomatik girişi.
+#
+# live-config'in 0085-sddm bileşeni /etc/sddm.conf dosyasını yazarken
+# tanımadığı masaüstü için oturum adını boş bırakır; bu da otomatik girişi
+# bozar ve şifre ekranı çıkar. Bu bileşen dosyayı TRLDE oturumuyla yeniden yazar.
+
+. /usr/lib/live/config.sh
+
+username=orvix
+for parameter in $(cat /proc/cmdline); do
+    case "$parameter" in
+        live-config.noautologin|noautologin|live-config.nox11autologin|nox11autologin) exit 0 ;;
+        live-config.username=*|username=*) username=${parameter#*username=} ;;
+    esac
+done
+
+pkg_is_installed sddm || exit 0
+echo -n " orvixos-sddm"
+
+cat > /etc/sddm.conf <<CONF
+[Autologin]
+User=$username
+Session=trlde.desktop
+Relogin=false
+CONF

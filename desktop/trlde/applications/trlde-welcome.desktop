@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=TRLDE'ye Hoş Geldin
-Comment=TRLDE masaüstünü ve kısayollarını keşfet
+Name=OrvixOS'a Hoş Geldin
+Comment=OrvixOS masaüstünü ve kısayollarını keşfet
 Exec=trlde-welcome
 Icon=trlde-logo
 Type=Application

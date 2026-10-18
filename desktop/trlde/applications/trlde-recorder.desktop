@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=TRLDE Ekran Kaydı
+Name=OrvixOS Ekran Kaydı
 Comment=Ekranın tamamını veya seçilen alanı videoya kaydet
 Exec=trlde-recorder
 Icon=media-record

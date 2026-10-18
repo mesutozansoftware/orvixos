@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2ee6d6"/>
+      <stop offset="1" stop-color="#7c5cff"/>
+    </linearGradient>
+    <mask id="gap">
+      <rect width="256" height="256" fill="#fff"/>
+      <circle cx="196" cy="62" r="32" fill="#000"/>
+    </mask>
+  </defs>
+  <path d="M124 48a84 84 0 1 0 0.01 0zM124 78a54 54 0 1 1 -0.01 0z" fill="url(#orbit)" fill-rule="evenodd" mask="url(#gap)"/>
+  <circle cx="196" cy="62" r="22" fill="#2ee6d6"/>
+</svg>

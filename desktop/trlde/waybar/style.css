@@ -1,140 +1,124 @@
+/* OrvixOS görev çubuğu (Waybar) */
 * {
   border: none;
   border-radius: 0;
-  font-family: "Noto Sans", sans-serif;
+  font-family: "Noto Sans", "FontAwesome", sans-serif;
   font-size: 13px;
   min-height: 0;
 }
 
 window#waybar {
-  background: rgba(17, 24, 32, 0.96);
+  /* Opak: yarı saydam panel sanal makinelerde çizim artığı bırakabiliyor. */
+  background: #0e1626;
   color: #e7edf2;
-  border: 1px solid rgba(57, 214, 197, 0.35);
-  border-radius: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-#custom-launcher {
-  background: #d62e4f;
-  color: #ffffff;
-  font-weight: 800;
-  padding: 0 17px;
+tooltip {
+  background: #111a2c;
+  border: 1px solid rgba(46, 230, 214, 0.35);
   border-radius: 10px;
-  margin: 4px;
+}
+
+tooltip label {
+  color: #e7edf2;
+  padding: 2px 4px;
+}
+
+/* Başlat düğmesi: OrvixOS logosu (SVG) */
+#custom-launcher {
+  min-width: 42px;
+  margin: 5px 4px 5px 8px;
+  border-radius: 10px;
+  background-image: url("/usr/share/trlde/waybar/start.svg");
+  background-size: 26px 26px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#custom-launcher:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+#taskbar {
+  margin: 0 4px;
 }
 
 #taskbar button {
-  padding: 0 8px;
-  margin: 4px 1px;
-  border-radius: 8px;
-  color: #91a0ad;
-}
-
-#taskbar button.active,
-#taskbar button:hover {
-  background: #273442;
-  color: #39d6c5;
-}
-
-#workspaces {
-  background: #18222d;
-  border-radius: 9px;
-  margin: 4px 2px;
-}
-
-#workspaces button {
-  min-width: 28px;
+  min-width: 42px;
   padding: 0 6px;
-  color: #91a0ad;
-  border-radius: 7px;
+  margin: 5px 2px;
+  border-radius: 10px;
+  border-bottom: 3px solid transparent;
 }
 
-#workspaces button.active,
-#workspaces button:hover {
-  background: #314253;
-  color: #39d6c5;
+#taskbar button:hover {
+  background: rgba(255, 255, 255, 0.09);
 }
 
-#clock {
-  font-weight: 700;
-  color: #ffffff;
-}
-
-#network,
-#custom-settings,
-#custom-bluetooth,
-#custom-brightness,
-#pulseaudio,
-#cpu,
-#memory,
-#battery,
-#custom-power {
-  padding: 0 8px;
-  color: #b9c6cf;
-}
-
-#custom-recorder.recording {
-  background: #d62e4f;
-  color: #ffffff;
-  font-weight: 800;
-  border-radius: 8px;
-  margin: 4px 1px;
-  padding: 0 9px;
+#taskbar button.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-bottom: 3px solid #2ee6d6;
 }
 
 #tray,
-#custom-notifications,
-#custom-quicksettings {
-  padding: 0 9px;
-  background: #202c38;
-  border-radius: 8px;
-  margin: 4px 1px;
-  color: #b9c6cf;
-}
-
-#custom-notifications:hover,
-#custom-quicksettings:hover {
-  background: #314253;
-  color: #39d6c5;
-}
-
-#custom-settings,
+#custom-recorder,
 #network,
-#custom-bluetooth,
-#custom-brightness,
-#pulseaudio {
-  background: #202c38;
-  border-radius: 8px;
-  margin: 4px 1px;
+#pulseaudio,
+#battery,
+#custom-quicksettings,
+#custom-notifications,
+#custom-power {
+  padding: 0 11px;
+  margin: 5px 1px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #dbe3ec;
 }
 
-#custom-settings:hover,
 #network:hover,
-#custom-bluetooth:hover,
-#custom-brightness:hover,
-#pulseaudio:hover {
-  background: #314253;
-  color: #39d6c5;
+#pulseaudio:hover,
+#battery:hover,
+#custom-quicksettings:hover,
+#custom-notifications:hover,
+#custom-power:hover,
+#clock:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+#network.disconnected,
+#pulseaudio.muted {
+  color: #6b7390;
 }
 
 #battery.warning {
   color: #ffc857;
 }
 
-#battery.critical {
-  color: #ff5577;
+#battery.critical:not(.charging) {
+  color: #ff6b81;
+}
+
+#clock {
+  padding: 0 12px;
+  margin: 5px 2px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+#custom-recorder.recording {
+  background: #ff5470;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 #custom-power {
-  background: #273442;
-  color: #ffffff;
-  border-radius: 8px;
-  margin: 4px;
-  padding: 0 12px;
+  margin-right: 8px;
 }
 
-tooltip {
-  background: #111820;
-  color: #e7edf2;
-  border: 1px solid #39d6c5;
-  border-radius: 8px;
+#custom-power:hover {
+  background: rgba(255, 84, 112, 0.22);
+  color: #ffffff;
 }

@@ -1,6 +1,6 @@
 window {
   margin: 0;
-  border: 2px solid #39d6c5;
+  border: 2px solid #2ee6d6;
   border-radius: 14px;
   background-color: rgba(17, 24, 32, 0.98);
   font-family: "Noto Sans", sans-serif;
@@ -27,8 +27,8 @@ window {
 }
 
 #entry:selected {
-  background-color: #d62e4f;
-  color: #ffffff;
+  background-color: #2ee6d6;
+  color: #07101d;
 }
 
 #img {

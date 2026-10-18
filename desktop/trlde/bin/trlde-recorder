@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE ekran kayıt aracı ve Waybar durum sağlayıcısı."""
+"""OrvixOS ekran kayıt aracı ve Waybar durum sağlayıcısı."""
 
 import json
 import os
@@ -73,7 +73,7 @@ from gi.repository import Gdk, GLib, Gtk
 
 def notify(message):
     if GLib.find_program_in_path("notify-send"):
-        subprocess.Popen(["notify-send", "TRLDE Ekran Kaydı", message], start_new_session=True)
+        subprocess.Popen(["notify-send", "OrvixOS Ekran Kaydı", message], start_new_session=True)
 
 
 class Recorder(Gtk.Application):
@@ -87,12 +87,12 @@ class Recorder(Gtk.Application):
         provider.load_from_data(
             b"""
             window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #2ee6d6; }
             .hero { font-size: 22px; font-weight: 800; color: #fff; }
             .muted { color: #91a0ad; }
             button { min-height: 44px; border-radius: 10px; background: #202c38; color: #e7edf2; }
-            button:hover { background: #314253; color: #39d6c5; }
-            button.suggested-action { background: #d62e4f; color: #fff; }
+            button:hover { background: #314253; color: #2ee6d6; }
+            button.suggested-action { background: #2ee6d6; color: #07101d; }
             """
         )
         Gtk.StyleContext.add_provider_for_screen(
@@ -104,9 +104,9 @@ class Recorder(Gtk.Application):
             self.window.present()
             return
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Ekran Kaydı")
+        self.window.set_title("OrvixOS Ekran Kaydı")
         self.window.set_default_size(540, 380)
-        header = Gtk.HeaderBar(title="TRLDE Ekran Kaydı")
+        header = Gtk.HeaderBar(title="OrvixOS Ekran Kaydı")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
@@ -145,7 +145,7 @@ class Recorder(Gtk.Application):
             ["xdg-user-dir", "VIDEOS"], check=False, capture_output=True, text=True
         )
         base = Path(result.stdout.strip() or Path.home() / "Videolar")
-        target = base / "TRLDE"
+        target = base / "OrvixOS"
         target.mkdir(mode=0o700, parents=True, exist_ok=True)
         return target
 
@@ -169,7 +169,7 @@ class Recorder(Gtk.Application):
                     GLib.idle_add(self.finish_start, None, "Alan seçimi iptal edildi.")
                     return
                 geometry = selected.stdout.strip()
-            target = self.video_dir() / f"TRLDE-Kayit-{datetime.now():%Y%m%d-%H%M%S}.mp4"
+            target = self.video_dir() / f"OrvixOS-Kayit-{datetime.now():%Y%m%d-%H%M%S}.mp4"
             argv = ["wf-recorder", "-f", str(target)]
             if geometry:
                 argv[1:1] = ["-g", geometry]
@@ -216,7 +216,7 @@ class Recorder(Gtk.Application):
         if state:
             self.status.set_text("Kayıt sürüyor: " + state["path"])
         elif not self.status.get_text() or self.status.get_text().startswith("Kayıt sürüyor"):
-            self.status.set_text("Kayıtlar Videolar/TRLDE klasörüne MP4 olarak kaydedilir.")
+            self.status.set_text("Kayıtlar Videolar/OrvixOS klasörüne MP4 olarak kaydedilir.")
         return True
 
 

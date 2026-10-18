@@ -8,6 +8,26 @@ export XDG_SESSION_TYPE=wayland
 export MOZ_ENABLE_WAYLAND=1
 export QT_QPA_PLATFORM=wayland
 
+# Klavye düzeni: sistem ayarı (/etc/default/keyboard) labwc'ye aktarılır;
+# aksi halde labwc ABD düzeniyle açılır ve Türkçe harfler yazılamaz.
+if [ -r /etc/default/keyboard ]; then
+    . /etc/default/keyboard
+    [ -n "${XKBLAYOUT:-}" ] && export XKB_DEFAULT_LAYOUT="$XKBLAYOUT"
+    [ -n "${XKBVARIANT:-}" ] && export XKB_DEFAULT_VARIANT="$XKBVARIANT"
+    [ -n "${XKBMODEL:-}" ] && export XKB_DEFAULT_MODEL="$XKBMODEL"
+    [ -n "${XKBOPTIONS:-}" ] && export XKB_DEFAULT_OPTIONS="$XKBOPTIONS"
+fi
+
+# Sanal makinelerde (UTM, VirtualBox, QEMU...) çoğunlukla 3B hızlandırma yoktur;
+# wlroots'un GPU çizicisi hatalı bir yazılım yoluna (kms_swrast) düşer ve
+# ekranda siyah bloklar/noktalar kalır. wlroots'un kendi yazılım çizicisi
+# (pixman) ve yazılım imleci bu ortamlarda kararlı çalışır.
+if command -v systemd-detect-virt >/dev/null 2>&1 && systemd-detect-virt --quiet --vm; then
+    export WLR_RENDERER=${TRLDE_RENDERER:-pixman}
+    export WLR_NO_HARDWARE_CURSORS=1
+fi
+export XCURSOR_THEME=${XCURSOR_THEME:-Adwaita}
+
 system_config_dir=/usr/share/trlde/labwc
 if [ -n "${TRLDE_CONFIG_DIR:-}" ]; then
     config_dir=$TRLDE_CONFIG_DIR
@@ -18,16 +38,17 @@ else
         cp "$system_config_dir/rc.xml" "$config_dir/rc.xml"
     fi
     cp "$system_config_dir/autostart" "$config_dir/autostart"
+    cp "$system_config_dir/menu.xml" "$config_dir/menu.xml"
     cp "$system_config_dir/environment" "$config_dir/environment"
 fi
 
 if ! command -v labwc >/dev/null 2>&1; then
-    printf '%s\n' "TRLDE başlatılamadı: labwc bulunamadı." >&2
+    printf '%s\n' "OrvixOS başlatılamadı: labwc bulunamadı." >&2
     exit 127
 fi
 
 if [ ! -r "$config_dir/rc.xml" ]; then
-    printf '%s\n' "TRLDE başlatılamadı: $config_dir/rc.xml okunamıyor." >&2
+    printf '%s\n' "OrvixOS başlatılamadı: $config_dir/rc.xml okunamıyor." >&2
     exit 1
 fi
 

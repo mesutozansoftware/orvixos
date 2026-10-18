@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=TRLDE Sistem Güncellemeleri
-Comment=OrvixOS ve TRLDE paketlerini güncelle
+Name=OrvixOS Sistem Güncellemeleri
+Comment=OrvixOS ve OrvixOS paketlerini güncelle
 Exec=trlde-update
 Icon=software-update-available
 Type=Application

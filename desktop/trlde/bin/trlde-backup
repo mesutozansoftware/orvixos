@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE kişisel dosya yedekleme ve kurtarma aracı."""
+"""OrvixOS kişisel dosya yedekleme ve kurtarma aracı."""
 
 import os
 from pathlib import Path
@@ -40,15 +40,15 @@ class Backup(Gtk.Application):
         provider.load_from_data(
             b"""
             window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #2ee6d6; }
             .hero { font-size: 24px; font-weight: 800; color: #fff; }
-            .accent { color: #39d6c5; font-weight: 700; }
+            .accent { color: #2ee6d6; font-weight: 700; }
             .muted { color: #91a0ad; }
             button { min-height: 46px; border-radius: 10px; background: #202c38; color: #e7edf2; }
-            button:hover { background: #314253; color: #39d6c5; }
-            button.suggested-action { background: #d62e4f; color: #fff; }
+            button:hover { background: #314253; color: #2ee6d6; }
+            button.suggested-action { background: #2ee6d6; color: #07101d; }
             progressbar trough { min-height: 8px; background: #273442; }
-            progressbar progress { background: #39d6c5; }
+            progressbar progress { background: #2ee6d6; }
             """
         )
         Gtk.StyleContext.add_provider_for_screen(
@@ -60,9 +60,9 @@ class Backup(Gtk.Application):
             self.window.present()
             return
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Yedekleme ve Kurtarma")
+        self.window.set_title("OrvixOS Yedekleme ve Kurtarma")
         self.window.set_default_size(650, 460)
-        header = Gtk.HeaderBar(title="TRLDE Yedekleme ve Kurtarma")
+        header = Gtk.HeaderBar(title="OrvixOS Yedekleme ve Kurtarma")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
@@ -73,7 +73,7 @@ class Backup(Gtk.Application):
         outer.pack_start(title, False, False, 0)
         note = Gtk.Label(
             label=(
-                "Belgeler, İndirilenler, Resimler, Müzik, Videolar, Masaüstü ve TRLDE "
+                "Belgeler, İndirilenler, Resimler, Müzik, Videolar, Masaüstü ve OrvixOS "
                 "ayarları tek bir sıkıştırılmış arşive yazılır. Sistem dosyaları değiştirilmez."
             ),
             xalign=0,
@@ -99,7 +99,7 @@ class Backup(Gtk.Application):
         self.window.show_all()
 
     def default_folder(self):
-        target = xdg_dir("DOCUMENTS", "Belgeler") / "TRLDE Yedekleri"
+        target = xdg_dir("DOCUMENTS", "Belgeler") / "OrvixOS Yedekleri"
         target.mkdir(mode=0o700, parents=True, exist_ok=True)
         return target
 
@@ -152,7 +152,7 @@ class Backup(Gtk.Application):
 
     def create_backup(self, folder):
         folder.mkdir(mode=0o700, parents=True, exist_ok=True)
-        target = folder / f"TRLDE-Yedek-{datetime.now():%Y%m%d-%H%M%S}.tar.gz"
+        target = folder / f"OrvixOS-Yedek-{datetime.now():%Y%m%d-%H%M%S}.tar.gz"
         cache = Path.home() / ".cache" / "trlde"
         cache.mkdir(mode=0o700, parents=True, exist_ok=True)
         temporary_target = cache / (target.name + ".partial")
@@ -190,7 +190,7 @@ class Backup(Gtk.Application):
 
     def choose_archive(self, _button):
         chooser = Gtk.FileChooserNative(
-            title="TRLDE yedeğini seç",
+            title="OrvixOS yedeğini seç",
             transient_for=self.window,
             action=Gtk.FileChooserAction.OPEN,
             accept_label="Seç",
@@ -198,7 +198,7 @@ class Backup(Gtk.Application):
         )
         chooser.set_current_folder(str(self.default_folder()))
         file_filter = Gtk.FileFilter()
-        file_filter.set_name("TRLDE yedekleri (*.tar.gz)")
+        file_filter.set_name("OrvixOS yedekleri (*.tar.gz)")
         file_filter.add_pattern("*.tar.gz")
         chooser.add_filter(file_filter)
         if chooser.run() == Gtk.ResponseType.ACCEPT:

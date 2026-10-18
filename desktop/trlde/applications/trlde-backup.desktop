@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=TRLDE Yedekleme ve Kurtarma
+Name=OrvixOS Yedekleme ve Kurtarma
 Comment=Kişisel dosyalarını yedekle veya geri yükle
 Exec=trlde-backup
 Icon=org.gnome.DejaDup

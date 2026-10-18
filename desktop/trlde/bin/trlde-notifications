@@ -90,7 +90,7 @@ class Notifications(Gtk.Application):
             return
 
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Bildirimler")
+        self.window.set_title("OrvixOS Bildirimler")
         self.window.set_default_size(480, 520)
 
         header = Gtk.HeaderBar(title="Bildirim Merkezi")

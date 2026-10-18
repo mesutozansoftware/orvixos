@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=TRLDE
-Comment=Turkish Linux Desktop Environment
+Name=OrvixOS
+Comment=OrvixOS masaüstü (TRLDE)
 Exec=/usr/bin/trlde-session
 TryExec=/usr/bin/trlde-session
 Type=Application

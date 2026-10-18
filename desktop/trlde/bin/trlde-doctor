@@ -31,7 +31,7 @@ check_user_unit() {
     fi
 }
 
-printf 'TRLDE sistem denetimi\n'
+printf 'OrvixOS sistem denetimi\n'
 printf 'Sürüm: 0.4.0 | Mimari: %s | Oturum: %s\n\n' "$(uname -m)" "${XDG_SESSION_TYPE:-bilinmiyor}"
 printf 'Temel bileşenler:\n'
 for program in labwc waybar trlde-drawer mako swaybg foot wpctl nmcli; do
@@ -70,7 +70,7 @@ printf '\nBellek:\n'
 free -h 2>/dev/null | awk 'NR <= 2 { print "  " $0 }' || true
 
 if [ "$status" -eq 0 ]; then
-    printf '\nSonuç: TRLDE hazır görünüyor.\n'
+    printf '\nSonuç: OrvixOS hazır görünüyor.\n'
 else
     printf '\nSonuç: Yukarıdaki eksik veya durmuş bileşenler incelenmeli.\n'
 fi

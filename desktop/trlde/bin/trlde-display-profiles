@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE çoklu monitör profilleri."""
+"""OrvixOS çoklu monitör profilleri."""
 
 import json
 from pathlib import Path
@@ -73,7 +73,8 @@ if "--apply-last" in sys.argv:
     try:
         profile = LAST_PROFILE.read_text(encoding="utf-8").strip()
     except OSError:
-        raise SystemExit(0)
+        # Kayıtlı profil yok: çağıran varsayılan ölçeklemeyi uygulayabilsin.
+        raise SystemExit(3)
     code, message = apply_profile(PROFILE_DIR / profile)
     if message:
         print(message, file=sys.stderr)
@@ -97,14 +98,14 @@ class DisplayProfiles(Gtk.Application):
         provider.load_from_data(
             b"""
             window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #2ee6d6; }
             .hero { font-size: 23px; font-weight: 800; color: #fff; }
             .muted { color: #91a0ad; }
             list { background: #111820; }
             row { padding: 12px; border-bottom: 1px solid #273442; }
-            row:selected { background: #273442; color: #39d6c5; }
+            row:selected { background: #273442; color: #2ee6d6; }
             button { min-height: 42px; border-radius: 10px; background: #202c38; color: #e7edf2; }
-            button.suggested-action { background: #d62e4f; color: #fff; }
+            button.suggested-action { background: #2ee6d6; color: #07101d; }
             """
         )
         Gtk.StyleContext.add_provider_for_screen(
@@ -117,9 +118,9 @@ class DisplayProfiles(Gtk.Application):
             return
         PROFILE_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Ekran Profilleri")
+        self.window.set_title("OrvixOS Ekran Profilleri")
         self.window.set_default_size(620, 500)
-        header = Gtk.HeaderBar(title="TRLDE Ekran Profilleri")
+        header = Gtk.HeaderBar(title="OrvixOS Ekran Profilleri")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)

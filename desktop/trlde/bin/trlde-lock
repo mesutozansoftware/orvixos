@@ -4,7 +4,7 @@ set -eu
 
 if ! command -v swaylock >/dev/null 2>&1; then
     command -v notify-send >/dev/null 2>&1 && \
-        notify-send "TRLDE" "Ekran kilidi kullanılamıyor."
+        notify-send "OrvixOS" "Ekran kilidi kullanılamıyor."
     exit 1
 fi
 

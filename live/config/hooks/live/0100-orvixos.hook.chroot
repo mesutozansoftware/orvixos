@@ -12,5 +12,6 @@ systemctl set-default graphical.target
 plymouth-set-default-theme orvixos || true
 command -v dconf >/dev/null 2>&1 && dconf update || true
 update-desktop-database -q /usr/share/applications || true
+systemctl --global disable waybar.service 2>/dev/null || true
 # Canlı sistemde otomatik güncelleme çalışmasın.
 systemctl disable apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true

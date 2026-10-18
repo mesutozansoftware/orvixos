@@ -15,7 +15,16 @@
       <size>10</size>
       <weight>Bold</weight>
     </font>
+    <font place="MenuItem">
+      <name>Noto Sans</name>
+      <size>10</size>
+    </font>
+    <icon>OrvixOS</icon>
   </theme>
+
+  <menu>
+    <showIcons>yes</showIcons>
+  </menu>
 
   <desktops>
     <popupTime>1000</popupTime>
@@ -39,6 +48,12 @@
   <keyboard>
     <default />
 
+    <keybind key="W-x">
+      <action name="ShowMenu" menu="root-menu" />
+    </keybind>
+    <keybind key="Menu">
+      <action name="ShowMenu" menu="root-menu" />
+    </keybind>
     <keybind key="W-space">
       <action name="Execute" command="trlde-launcher" />
     </keybind>

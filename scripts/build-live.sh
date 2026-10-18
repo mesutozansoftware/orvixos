@@ -19,7 +19,7 @@ case "$arch" in
            bootloader_pool="grub-efi grub-efi-arm64 grub-efi-arm64-bin"
            bootloader_chroot="grub-efi-arm64-bin efibootmgr" ;;
     amd64) firmware="firmware-brcm80211 firmware-realtek firmware-atheros firmware-iwlwifi firmware-sof-signed amd64-microcode intel-microcode"
-           bootloader_pool="grub-efi grub-efi-amd64 grub-efi-amd64-bin grub-pc grub-pc-bin"
+           bootloader_pool="grub-efi grub-efi-amd64 grub-efi-amd64-bin"
            bootloader_chroot="grub-efi-amd64-bin grub-pc-bin efibootmgr" ;;
     *) printf 'Kullanım: %s arm64|amd64\n' "$0" >&2; exit 2 ;;
 esac
@@ -63,6 +63,19 @@ cp "$root/build/debs/$arch"/*.deb "$stage/config/packages.chroot/"
         cryptsetup cryptsetup-initramfs keyutils os-prober \
         firmware-linux-free $firmware $bootloader_chroot
 } | sort -u > "$stage/config/package-lists/orvixos.list.chroot"
+# BIOS kurulumları için grub-pc ayrı .deb olarak eklenir: grub-efi-amd64 ile
+# çakıştığı için aynı paket listesinde çözümlenemez.
+if [ "$arch" = amd64 ]; then
+    mkdir -p "$stage/config/packages.binary"
+    grub_pc=$(python3 -c "
+import lzma, re, sys
+data = lzma.open(sys.argv[1]).read().decode()
+for block in data.split('\\n\\n'):
+    if re.search(r'^Package: grub-pc$', block, re.M):
+        print(re.search(r'^Filename: (.+)$', block, re.M).group(1)); break
+" "$root/downloads/Packages-amd64.xz")
+    curl -fsSL -o "$stage/config/packages.binary/$(basename "$grub_pc")" "https://$DEBIAN_MIRROR/debian/$grub_pc"
+fi
 # Kurulumda internetsiz kurulabilmesi için önyükleyici paketleri ISO'ya eklenir.
 printf '%s\n' $bootloader_pool cryptsetup cryptsetup-initramfs keyutils \
     > "$stage/config/package-lists/bootloader.list.binary"

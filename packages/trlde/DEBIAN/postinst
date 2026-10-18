@@ -8,6 +8,10 @@ case "$1" in
         if command -v dconf >/dev/null 2>&1; then
             dconf update || true
         fi
+        # Debian'ın Waybar paketi kendi kullanıcı servisini herkes için açar ve
+        # varsayılan ayarlarla ikinci bir panel başlatır. TRLDE kendi panelini
+        # başlattığı için bu servis kapatılır.
+        systemctl --global disable waybar.service >/dev/null 2>&1 || true
         if command -v systemd-tmpfiles >/dev/null 2>&1; then
             systemd-tmpfiles --create /usr/lib/tmpfiles.d/trlde-x11.conf || true
         fi

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE klavye ve dokunmatik yüzey ayarları."""
+"""OrvixOS klavye ve dokunmatik yüzey ayarları."""
 
 from pathlib import Path
 import shutil
@@ -46,14 +46,14 @@ class InputSettings(Gtk.Application):
         provider.load_from_data(
             b"""
             window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #39d6c5; }
+            headerbar { background: #18222d; color: #fff; border-bottom: 1px solid #2ee6d6; }
             .hero { font-size: 23px; font-weight: 800; color: #fff; }
-            .accent { color: #39d6c5; font-weight: 700; }
+            .accent { color: #2ee6d6; font-weight: 700; }
             .muted { color: #91a0ad; }
             button { min-height: 44px; border-radius: 10px; background: #202c38; color: #e7edf2; }
-            button.suggested-action { background: #d62e4f; color: #fff; }
+            button.suggested-action { background: #2ee6d6; color: #07101d; }
             combobox button { background: #202c38; }
-            switch:checked, scale highlight { background: #39d6c5; }
+            switch:checked, scale highlight { background: #2ee6d6; }
             """
         )
         Gtk.StyleContext.add_provider_for_screen(
@@ -65,7 +65,7 @@ class InputSettings(Gtk.Application):
             self.window.present()
             return
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Giriş Aygıtları")
+        self.window.set_title("OrvixOS Giriş Aygıtları")
         self.window.set_default_size(620, 560)
         header = Gtk.HeaderBar(title="Klavye ve Dokunmatik Yüzey")
         header.set_show_close_button(True)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""TRLDE'nin günlük kullanım için merkezi ayarlar uygulaması."""
+"""OrvixOS'un günlük kullanım için merkezi ayarlar uygulaması."""
 
 import os
 import platform
@@ -36,7 +36,7 @@ def spawn(argv):
     except OSError:
         if available("notify-send"):
             subprocess.Popen(
-                ["notify-send", "TRLDE Ayarları", f"{argv[0]} kullanılamıyor."],
+                ["notify-send", "OrvixOS Ayarları", f"{argv[0]} kullanılamıyor."],
                 start_new_session=True,
             )
 
@@ -47,7 +47,7 @@ def open_first(candidates):
             spawn(argv)
             return
     if available("notify-send"):
-        spawn(["notify-send", "TRLDE Ayarları", "Bu ayar aracı sistemde bulunamadı."])
+        spawn(["notify-send", "OrvixOS Ayarları", "Bu ayar aracı sistemde bulunamadı."])
 
 
 class Settings(Gtk.Application):
@@ -109,11 +109,11 @@ class Settings(Gtk.Application):
             return
 
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Ayarları")
+        self.window.set_title("OrvixOS Ayarları")
         self.window.set_default_size(880, 610)
         self.window.set_size_request(720, 500)
 
-        header = Gtk.HeaderBar(title="TRLDE Ayarları")
+        header = Gtk.HeaderBar(title="OrvixOS Ayarları")
         header.set_show_close_button(True)
         self.window.set_titlebar(header)
 
@@ -140,7 +140,7 @@ class Settings(Gtk.Application):
         self.window.show_all()
 
     def general_page(self):
-        box = self.page("Genel", "Sık kullanılan TRLDE özellikleri")
+        box = self.page("Genel", "Sık kullanılan OrvixOS özellikleri")
         grid = Gtk.Grid(column_spacing=12, row_spacing=12)
         grid.set_column_homogeneous(True)
         actions = [
@@ -259,7 +259,7 @@ class Settings(Gtk.Application):
         return box
 
     def keyboard_page(self):
-        box = self.page("Klavye ve Pencereler", "En önemli TRLDE kısayolları")
+        box = self.page("Klavye ve Pencereler", "En önemli OrvixOS kısayolları")
         shortcuts = [
             ("Super + Space", "Uygulama menüsü"),
             ("Super + R", "Komut çalıştır"),
@@ -312,7 +312,7 @@ class Settings(Gtk.Application):
         return box
 
     def system_page(self):
-        box = self.page("Sistem", "TRLDE ve OrvixOS durumunu denetle")
+        box = self.page("Sistem", "OrvixOS durumunu denetle")
         release = "Debian tabanlı"
         try:
             with open("/etc/os-release", encoding="utf-8") as release_file:
@@ -323,13 +323,13 @@ class Settings(Gtk.Application):
         except OSError:
             pass
         info = Gtk.Label(
-            label=f"TRLDE 0.4.0\n{release}\n{platform.machine()}", xalign=0, selectable=True
+            label=f"OrvixOS 1.0\n{release}\n{platform.machine()}", xalign=0, selectable=True
         )
         box.pack_start(info, False, False, 0)
         grid = Gtk.Grid(column_spacing=12, row_spacing=12)
         grid.set_column_homogeneous(True)
         actions = [
-            ("TRLDE Hakkında", lambda: spawn(["trlde-about"])),
+            ("OrvixOS Hakkında", lambda: spawn(["trlde-about"])),
             ("Sistem Denetimi", lambda: open_first([["foot", "-e", "trlde-doctor"], ["trlde-doctor"]])),
             ("Sistem Güncellemeleri", self.open_updates),
             ("Yazılım Merkezi", lambda: spawn(["trlde-software"])),
@@ -405,7 +405,7 @@ class Settings(Gtk.Application):
         spawn(["trlde-update"])
 
     def copy_version(self):
-        text = f"TRLDE 0.4.0 | {platform.platform()} | {platform.machine()}"
+        text = f"OrvixOS 1.0 | {platform.platform()} | {platform.machine()}"
         clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         clipboard.set_text(text, -1)
 

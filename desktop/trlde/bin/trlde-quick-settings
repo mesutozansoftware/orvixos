@@ -49,13 +49,13 @@ class QuickSettings(Gtk.Application):
         provider.load_from_data(
             b"""
             window { background: #111820; color: #e7edf2; }
-            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #39d6c5; }
+            headerbar { background: #18222d; color: #ffffff; border-bottom: 1px solid #2ee6d6; }
             .title { font-size: 19px; font-weight: 800; }
             button { min-height: 42px; border-radius: 10px; background: #202c38; color: #e7edf2; }
-            button:hover { background: #314253; color: #39d6c5; }
-            button.suggested-action { background: #d62e4f; color: #ffffff; }
+            button:hover { background: #314253; color: #2ee6d6; }
+            button.suggested-action { background: #2ee6d6; color: #07101d; }
             scale trough { min-height: 8px; border-radius: 8px; background: #273442; }
-            scale highlight { border-radius: 8px; background: #39d6c5; }
+            scale highlight { border-radius: 8px; background: #2ee6d6; }
             """
         )
         Gtk.StyleContext.add_provider_for_screen(
@@ -68,13 +68,13 @@ class QuickSettings(Gtk.Application):
             return
 
         self.window = Gtk.ApplicationWindow(application=self)
-        self.window.set_title("TRLDE Hızlı Ayarlar")
+        self.window.set_title("OrvixOS Hızlı Ayarlar")
         self.window.set_default_size(440, 500)
         self.window.set_resizable(False)
 
         header = Gtk.HeaderBar()
         header.set_show_close_button(True)
-        header.props.title = "TRLDE Hızlı Ayarlar"
+        header.props.title = "OrvixOS Hızlı Ayarlar"
         self.window.set_titlebar(header)
 
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)

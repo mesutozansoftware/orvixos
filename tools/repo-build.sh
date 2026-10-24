@@ -74,4 +74,6 @@ if ! gh release view packages -R "$repo_slug" >/dev/null 2>&1; then
         --latest=false
 fi
 gh release upload packages -R "$repo_slug" --clobber "$repo"/*
+# Kısa indirme adresleri (/repo/PAKET) ve paket listesi sayfası
+python3 tools/repo-site.py
 echo "Depo hazır."

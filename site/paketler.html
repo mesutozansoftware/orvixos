@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrvixOS Paket Deposu</title>
+  <meta name="description" content="OrvixOS paket deposundaki programlar: vpx install ile kur ya da .deb olarak indir.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0b1220; --card: #111a2c; --border: #1f2b44; --text: #e8edf7; --muted: #9ba1b6; --teal: #2ee6d6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; line-height: 1.6; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 48px 16px 72px; }
+    a { color: var(--teal); text-decoration: none; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 36px; }
+    h1 { font-size: 34px; font-weight: 800; margin-bottom: 8px; }
+    .lead { color: var(--muted); margin-bottom: 28px; }
+    .pkg { display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--card);
+           border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; }
+    .pkg h3 { font-size: 18px; }
+    .pkg .ver { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
+    .pkg p { color: var(--muted); font-size: 14.5px; margin: 2px 0 8px; }
+    code { font-family: "JetBrains Mono", monospace; font-size: 13px; background: #070c16; border: 1px solid var(--border);
+           border-radius: 6px; padding: 2px 8px; color: #cfd6e6; }
+    .links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn { display: inline-block; padding: 8px 14px; border-radius: 9px; background: var(--teal); color: #071019;
+           font-weight: 600; font-size: 14px; white-space: nowrap; }
+    .lang { background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 8px;
+            padding: 6px 12px; cursor: pointer; font: inherit; }
+    .note { color: var(--muted); font-size: 14px; margin-top: 24px; }
+    @media (max-width: 640px) { .pkg { flex-direction: column; align-items: flex-start; } .links { justify-content: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><a href="/">← OrvixOS</a><button class="lang" id="lang">EN</button></header>
+    <h1 data-tr="OrvixOS paket deposu" data-en="OrvixOS package repository">OrvixOS paket deposu</h1>
+    <p class="lead" data-tr="OrvixOS'ta kurmak için komutu yaz; başka bir Debian tabanlı sistemde .deb dosyasını indirip vpx install ./dosya.deb ya da sudo apt install ./dosya.deb ile kur. Depo imzalıdır."
+       data-en="On OrvixOS, run the command; on another Debian-based system, download the .deb and install it with sudo apt install ./file.deb. The repository is signed.">OrvixOS'ta kurmak için komutu yaz; başka bir Debian tabanlı sistemde .deb dosyasını indirip vpx install ./dosya.deb ya da sudo apt install ./dosya.deb ile kur. Depo imzalıdır.</p>
+<div class="pkg"><div><h3>chestzip <span class="ver">1.1.0</span></h3><p data-tr="Arşiv yöneticisi" data-en="Archive manager">Arşiv yöneticisi</p><code>vpx install chestzip</code></div><div class="links"><a class="btn" href="/repo/chestzip">x64</a></div></div>
+<div class="pkg"><div><h3>codium <span class="ver">1.140.06880</span></h3><p data-tr="VSCodium kod düzenleyici" data-en="VSCodium code editor">VSCodium kod düzenleyici</p><code>vpx install codium</code></div><div class="links"><a class="btn" href="/repo/codium/amd64">x64</a><a class="btn" href="/repo/codium/arm64">ARM64</a></div></div>
+<div class="pkg"><div><h3>heroic <span class="ver">2.22.4</span></h3><p data-tr="Epic ve GOG oyun başlatıcısı" data-en="Epic and GOG game launcher">Epic ve GOG oyun başlatıcısı</p><code>vpx install heroic</code></div><div class="links"><a class="btn" href="/repo/heroic">x64</a></div></div>
+<div class="pkg"><div><h3>nanolimiter <span class="ver">1.0</span></h3><p data-tr="Az bellekli HTTP ters vekil ve hız sınırlayıcı" data-en="Low-memory HTTP reverse proxy and rate limiter">Az bellekli HTTP ters vekil ve hız sınırlayıcı</p><code>vpx install nanolimiter</code></div><div class="links"><a class="btn" href="/repo/nanolimiter">x64</a></div></div>
+<div class="pkg"><div><h3>orvixos-base <span class="ver">1.1.0</span></h3><p data-tr="OrvixOS temel sistem dosyaları ve depo anahtarı" data-en="OrvixOS base files and repository key">OrvixOS temel sistem dosyaları ve depo anahtarı</p><code>vpx install orvixos-base</code></div><div class="links"><a class="btn" href="/repo/orvixos-base">x64 + ARM64</a></div></div>
+<div class="pkg"><div><h3>orvixos-desktop <span class="ver">1.1.0</span></h3><p data-tr="OrvixOS masaüstü meta paketi" data-en="OrvixOS desktop meta package">OrvixOS masaüstü meta paketi</p><code>vpx install orvixos-desktop</code></div><div class="links"><a class="btn" href="/repo/orvixos-desktop">x64 + ARM64</a></div></div>
+<div class="pkg"><div><h3>pybench <span class="ver">2.0.0</span></h3><p data-tr="Bilgisayar performans testi" data-en="Computer benchmark">Bilgisayar performans testi</p><code>vpx install pybench</code></div><div class="links"><a class="btn" href="/repo/pybench">x64</a></div></div>
+<div class="pkg"><div><h3>subpulse <span class="ver">1.0.1</span></h3><p data-tr="Alan adı keşfi ve HTTP yoklama aracı" data-en="Subdomain discovery and HTTP probing">Alan adı keşfi ve HTTP yoklama aracı</p><code>vpx install subpulse</code></div><div class="links"><a class="btn" href="/repo/subpulse">x64 + ARM64</a></div></div>
+<div class="pkg"><div><h3>trlde <span class="ver">0.5.0-1orvixos1</span></h3><p data-tr="TRLDE Wayland masaüstü ortamı" data-en="TRLDE Wayland desktop environment">TRLDE Wayland masaüstü ortamı</p><code>vpx install trlde</code></div><div class="links"><a class="btn" href="/repo/trlde">x64 + ARM64</a></div></div>
+<div class="pkg"><div><h3>vira-browser <span class="ver">1.0.0-1orvixos1</span></h3><p data-tr="Hızlı, gizlilik odaklı tarayıcı" data-en="Fast, privacy-focused browser">Hızlı, gizlilik odaklı tarayıcı</p><code>vpx install vira-browser</code></div><div class="links"><a class="btn" href="/repo/vira-browser/amd64">x64</a><a class="btn" href="/repo/vira-browser/arm64">ARM64</a></div></div>
+<div class="pkg"><div><h3>vpx <span class="ver">1.1.0</span></h3><p data-tr="OrvixOS paket yöneticisi (APT tabanlı)" data-en="OrvixOS package manager (APT based)">OrvixOS paket yöneticisi (APT tabanlı)</p><code>vpx install vpx</code></div><div class="links"><a class="btn" href="/repo/vpx">x64 + ARM64</a></div></div>
+    <p class="note" data-tr="Kısa adresler: orvixos.vercel.app/repo/PAKET (ARM için /repo/PAKET/arm64). Tüm dosyalar: GitHub'daki packages sürümü."
+       data-en="Short links: orvixos.vercel.app/repo/PACKAGE (ARM: /repo/PACKAGE/arm64). All files: the packages release on GitHub.">Kısa adresler: orvixos.vercel.app/repo/PAKET (ARM için /repo/PAKET/arm64). Tüm dosyalar: GitHub'daki packages sürümü.</p>
+    <p class="note"><a href="https://github.com/mesutozansoftware/orvixos/releases/tag/packages">github.com/mesutozansoftware/orvixos/releases/tag/packages</a></p>
+  </div>
+  <script>
+    (function () {
+      var lang = "tr";
+      try { lang = localStorage.getItem("orvixos-lang") || (navigator.language || "tr").slice(0, 2); } catch (e) {}
+      function apply() {
+        document.documentElement.lang = lang === "tr" ? "tr" : "en";
+        document.querySelectorAll("[data-tr]").forEach(function (el) {
+          el.textContent = el.getAttribute(lang === "tr" ? "data-tr" : "data-en");
+        });
+        document.getElementById("lang").textContent = lang === "tr" ? "EN" : "TR";
+      }
+      document.getElementById("lang").addEventListener("click", function () {
+        lang = lang === "tr" ? "en" : "tr";
+        try { localStorage.setItem("orvixos-lang", lang); } catch (e) {}
+        apply();
+      });
+      if (lang !== "tr") { lang = "en"; }
+      apply();
+    })();
+  </script>
+</body>
+</html>

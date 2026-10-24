@@ -1,5 +1,111 @@
 {
+  "cleanUrls": true,
   "redirects": [
+    {
+      "source": "/repo",
+      "destination": "/paketler",
+      "permanent": false
+    },
+    {
+      "source": "/repo/",
+      "destination": "/paketler",
+      "permanent": false
+    },
+    {
+      "source": "/repo/chestzip",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/chestzip_1.1.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/chestzip/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/chestzip_1.1.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/codium",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/codium_1.140.06880_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/codium/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/codium_1.140.06880_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/codium/arm64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/codium_1.140.06880_arm64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/heroic",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/heroic_2.22.4_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/heroic/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/heroic_2.22.4_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/nanolimiter",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/nanolimiter_1.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/nanolimiter/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/nanolimiter_1.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/orvixos-base",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/orvixos-base_1.1.0_all.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/orvixos-desktop",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/orvixos-desktop_1.1.0_all.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/pybench",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/pybench_2.0.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/pybench/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/pybench_2.0.0_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/subpulse",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/subpulse_1.0.1_all.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/trlde",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/trlde_0.5.0-1orvixos1_all.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/vira-browser",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/vira-browser_1.0.0-1orvixos1_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/vira-browser/amd64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/vira-browser_1.0.0-1orvixos1_amd64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/vira-browser/arm64",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/vira-browser_1.0.0-1orvixos1_arm64.deb",
+      "permanent": false
+    },
+    {
+      "source": "/repo/vpx",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/vpx_1.1.0_all.deb",
+      "permanent": false
+    },
     {
       "source": "/repo/:path*",
       "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/:path*",

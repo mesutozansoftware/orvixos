@@ -19,4 +19,10 @@ case "${1:-status}" in
     down)
         command -v brightnessctl >/dev/null 2>&1 && brightnessctl -c backlight -q set 5%-
         ;;
+    kbd-up)
+        command -v brightnessctl >/dev/null 2>&1 && brightnessctl -d '*kbd_backlight*' -q set 10%+
+        ;;
+    kbd-down)
+        command -v brightnessctl >/dev/null 2>&1 && brightnessctl -d '*kbd_backlight*' -q set 10%-
+        ;;
 esac

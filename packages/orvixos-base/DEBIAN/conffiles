@@ -1,3 +1,4 @@
 /etc/orvixos-release
 /etc/default/grub.d/orvixos.cfg
 /etc/update-motd.d/05-orvixos
+/etc/apt/sources.list.d/orvixos.sources

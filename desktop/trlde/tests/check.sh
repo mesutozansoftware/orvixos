@@ -40,6 +40,8 @@ for program in (
     "bin/trlde-quick-settings",
     "bin/trlde-update",
     "bin/trlde-wifi",
+    "bin/trlde-gestures",
+    "bin/orvix-welcome",
     "bin/trlde-appearance",
     "bin/trlde-notifications",
     "bin/trlde-about",

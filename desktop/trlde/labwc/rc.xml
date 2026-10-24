@@ -182,6 +182,41 @@
     <keybind key="XF86MonBrightnessDown">
       <action name="Execute" command="trlde-brightness down" />
     </keybind>
+    <!-- Klavye ışığı, mikrofon ve medya tuşları (Mac ve dizüstü klavyeleri) -->
+    <keybind key="XF86KbdBrightnessUp">
+      <action name="Execute" command="trlde-brightness kbd-up" />
+    </keybind>
+    <keybind key="XF86KbdBrightnessDown">
+      <action name="Execute" command="trlde-brightness kbd-down" />
+    </keybind>
+    <keybind key="XF86AudioMicMute">
+      <action name="Execute" command="wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle" />
+    </keybind>
+    <keybind key="XF86AudioPlay">
+      <action name="Execute" command="playerctl play-pause" />
+    </keybind>
+    <keybind key="XF86AudioPause">
+      <action name="Execute" command="playerctl pause" />
+    </keybind>
+    <keybind key="XF86AudioNext">
+      <action name="Execute" command="playerctl next" />
+    </keybind>
+    <keybind key="XF86AudioPrev">
+      <action name="Execute" command="playerctl previous" />
+    </keybind>
+    <keybind key="XF86LaunchA">
+      <action name="Execute" command="trlde-launcher" />
+    </keybind>
+    <keybind key="XF86Search">
+      <action name="Execute" command="trlde-launcher" />
+    </keybind>
+    <!-- Dokunmatik yüzey hareketleri (trlde-gestures) bu kısayolları gönderir -->
+    <keybind key="W-C-A-Left">
+      <action name="GoToDesktop" to="left" wrap="yes" />
+    </keybind>
+    <keybind key="W-C-A-Right">
+      <action name="GoToDesktop" to="right" wrap="yes" />
+    </keybind>
   </keyboard>
 
   <mouse>

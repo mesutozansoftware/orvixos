@@ -9,6 +9,11 @@ if dpkg-query -W -f='${Status}\n' firefox-esr chromium 2>/dev/null | grep -q "in
 fi
 /usr/lib/orvixos/set-browser vira
 
+# Canlı kullanıcı dokunmatik yüzey hareketleri için "input" grubunda olsun.
+mkdir -p /etc/live/config.conf.d
+printf '%s\n' 'LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor input sudo"' \
+    > /etc/live/config.conf.d/orvixos-groups.conf
+
 update-alternatives --set x-session-manager /usr/bin/trlde-session || true
 printf '%s\n' /usr/bin/sddm > /etc/X11/default-display-manager
 systemctl enable sddm.service || true

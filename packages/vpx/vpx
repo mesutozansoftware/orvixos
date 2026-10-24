@@ -53,8 +53,21 @@ Sorgulama
   files <paket>           Kurulu paketin dosyalarını listeler
   owner <dosya>           Dosyanın hangi pakete ait olduğunu bulur
 
+Masaüstü, oyun ve geliştirme
+  desktop list            Kurulabilir masaüstlerini gösterir
+  desktop install <ad>    Masaüstü kurar (kde, gnome, xfce, cinnamon, mate, hyprland, trlde)
+  desktop remove <ad>     Masaüstünü kaldırır
+  gaming setup            Steam, Heroic, Wine, Vulkan, MangoHud ve GameMode kurar
+  dev [python|web|rust]   Geliştirici araçlarını kurar (varsayılan: hepsi + VSCodium)
+
 Bakım
-  clean | autoclean       İndirilen paket önbelleğini temizler
+  clean                   Önbellekleri, gereksiz paketleri ve eski günlükleri temizler
+  autoclean               Yalnızca eski paket önbelleğini temizler
+  snapshot create [ad]    Sistem geri yükleme noktası oluşturur (Timeshift)
+  snapshot list           Geri yükleme noktalarını listeler
+  snapshot restore <ad>   Sistemi seçilen noktaya geri döndürür
+  power save|balanced|performance|status
+                          Güç kipini ayarlar (pil tasarrufu / dengeli / yüksek performans)
   doctor                  Paket veritabanını denetler ve onarır
   sources                 Etkin depo tanımlarını gösterir
   version                 vpx ve APT sürümlerini gösterir
@@ -79,6 +92,231 @@ ensure_lists() {
         say "Paket listeleri ilk kez indiriliyor"
         "$VPX_APT" update
     fi
+}
+
+# Debian depolarında contrib ve non-free bileşenlerini açar (Steam, Wine için).
+ensure_components() {
+    changed=0
+    for file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+        [ -f "$file" ] || continue
+        if grep -Eq '^deb(-src)? .*debian(-security)?/? ' "$file"; then
+            for component in contrib non-free non-free-firmware; do
+                if grep -E '^deb(-src)? .*debian' "$file" | grep -vq " $component"; then
+                    sed -i -E "/^deb(-src)? .*debian/{/ $component( |\$)/!s/\$/ $component/}" "$file"
+                    changed=1
+                fi
+            done
+        fi
+    done
+    for file in /etc/apt/sources.list.d/*.sources; do
+        [ -f "$file" ] || continue
+        grep -q 'debian' "$file" || continue
+        for component in contrib non-free non-free-firmware; do
+            if grep -E '^Components:' "$file" | grep -vq " $component"; then
+                sed -i -E "/^Components:/{/ $component( |\$)/!s/\$/ $component/}" "$file"
+                changed=1
+            fi
+        done
+    done
+    [ "$changed" = 0 ] || "$VPX_APT" update
+}
+
+installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed"; }
+
+user_home() {
+    if [ -n "${SUDO_USER:-}" ]; then
+        getent passwd "$SUDO_USER" | cut -d: -f6
+    else
+        printf '%s\n' "$HOME"
+    fi
+}
+
+desktop_packages() {
+    case "$1" in
+        kde|plasma) echo "task-kde-desktop" ;;
+        gnome) echo "task-gnome-desktop" ;;
+        xfce) echo "task-xfce-desktop" ;;
+        cinnamon) echo "task-cinnamon-desktop" ;;
+        mate) echo "task-mate-desktop" ;;
+        hyprland) echo "hyprland waybar wofi kitty" ;;
+        trlde|orvixos) echo "orvixos-desktop" ;;
+        *) return 1 ;;
+    esac
+}
+
+desktop_command() {
+    action=${1:-list}
+    [ "$#" -gt 0 ] && shift
+    case "$action" in
+        list)
+            printf '%s\n' "Masaüstü ortamları (kurmak için: $program desktop install <ad>)"
+            for name in trlde kde gnome xfce cinnamon mate hyprland; do
+                first=$(desktop_packages "$name" | cut -d" " -f1)
+                if installed "$first"; then state="${accent}kurulu${reset}"; else state="kurulabilir"; fi
+                printf '  %-10s %-26s %s\n' "$name" "$(desktop_packages "$name")" "$state"
+            done
+            ;;
+        install|remove)
+            [ "$#" -gt 0 ] || die "Bir masaüstü adı yaz. Örnek: $program desktop $action kde" 2
+            packages=$(desktop_packages "$1") || die "Bilinmeyen masaüstü: $1 ($program desktop list)" 2
+            need_root desktop "$action" "$@"
+            if [ "$action" = install ]; then
+                ensure_lists
+                say "$1 kuruluyor: $packages"
+                # shellcheck disable=SC2086
+                "$VPX_APT" install $packages
+                # OrvixOS giriş ekranı (SDDM) varsayılan kalsın.
+                if [ -x /usr/bin/sddm ]; then
+                    printf '%s\n' /usr/bin/sddm > /etc/X11/default-display-manager
+                    systemctl enable --force sddm.service >/dev/null 2>&1 || true
+                fi
+                say "Bitti. Oturumu kapat; giriş ekranında sol alttaki Oturum menüsünden $1 seç."
+            else
+                if [ "$1" = trlde ] || [ "$1" = orvixos ]; then
+                    die "OrvixOS masaüstü (TRLDE) kaldırılamaz; sistemin bir parçası." 2
+                fi
+                say "$1 kaldırılıyor"
+                # shellcheck disable=SC2086
+                "$VPX_APT" purge $packages
+                "$VPX_APT" autoremove --purge
+            fi
+            ;;
+        *) die "Kullanım: $program desktop list|install <ad>|remove <ad>" 2 ;;
+    esac
+}
+
+gaming_command() {
+    [ "${1:-}" = setup ] || die "Kullanım: $program gaming setup" 2
+    shift
+    need_root gaming setup "$@"
+    arch=$(dpkg --print-architecture)
+    ensure_lists
+    common="libvulkan1 vulkan-tools mesa-vulkan-drivers mangohud gamemode"
+    if [ "$arch" = amd64 ]; then
+        say "Steam ve Wine için contrib/non-free bileşenleri ve 32 bit desteği açılıyor"
+        ensure_components
+        if ! dpkg --print-foreign-architectures | grep -qx i386; then
+            dpkg --add-architecture i386
+            "$VPX_APT" update
+        fi
+        say "Oyun paketleri kuruluyor"
+        # shellcheck disable=SC2086
+        "$VPX_APT" install "$@" steam-installer wine wine64 wine32:i386 winetricks \
+            mesa-vulkan-drivers:i386 libvulkan1:i386 $common
+        "$VPX_APT" install "$@" heroic || say "Heroic, OrvixOS deposuna ulaşılamadığı için kurulamadı (internetini kontrol et)."
+        say "Bitti. Steam'i uygulama menüsünden aç; ilk açılışta kendini günceller."
+        say "Oyunda FPS göstergesi: Steam > oyun > Özellikler > Başlatma seçenekleri: mangohud gamemoderun %command%"
+    else
+        say "Steam, Wine ve Heroic yalnızca x64 bilgisayarlarda çalışır; $arch için Vulkan, MangoHud ve GameMode kuruluyor."
+        # shellcheck disable=SC2086
+        "$VPX_APT" install "$@" $common
+    fi
+}
+
+dev_command() {
+    need_root dev "$@"
+    ensure_lists
+    python="python3 python3-pip python3-venv python3-dev build-essential"
+    web="nodejs npm yarnpkg git curl"
+    rust="rustc cargo"
+    tools="git curl gdb make pkg-config"
+    case "${1:-all}" in
+        python) set -- $python $tools ;;
+        web|node|js) set -- $web $tools ;;
+        rust) set -- $rust $tools ;;
+        all|"") set -- $python $web $rust $tools ;;
+        *) die "Kullanım: $program dev [python|web|rust]" 2 ;;
+    esac
+    say "Geliştirici araçları kuruluyor"
+    "$VPX_APT" install "$@"
+    if ! installed codium; then
+        "$VPX_APT" install codium || say "VSCodium, OrvixOS deposuna ulaşılamadığı için kurulamadı."
+    fi
+    say "Bitti. Kod düzenleyici: VSCodium (uygulama menüsünde)."
+}
+
+clean_command() {
+    need_root clean "$@"
+    before=$(df -k / | awk 'NR==2 {print $4}')
+    say "Paket önbelleği temizleniyor"
+    "$VPX_APT" clean
+    say "Artık gerekmeyen paketler kaldırılıyor"
+    "$VPX_APT" autoremove --purge -y
+    say "3 günden eski sistem günlükleri siliniyor"
+    journalctl --vacuum-time=3d >/dev/null 2>&1 || true
+    home=$(user_home)
+    if [ -n "$home" ] && [ -d "$home/.cache/thumbnails" ]; then
+        say "Küçük resim önbelleği temizleniyor"
+        rm -rf "$home/.cache/thumbnails/"*
+    fi
+    trash="$home/.local/share/Trash"
+    if [ -n "$home" ] && [ -d "$trash/files" ] && [ -n "$(ls -A "$trash/files" 2>/dev/null)" ]; then
+        printf 'Çöp kutusu kalıcı olarak boşaltılsın mı? [e/H] '
+        read -r answer || answer=
+        case "$answer" in
+            e|E|evet|y|Y) rm -rf "$trash/files/"* "$trash/info/"*; say "Çöp kutusu boşaltıldı" ;;
+            *) say "Çöp kutusuna dokunulmadı" ;;
+        esac
+    fi
+    after=$(df -k / | awk 'NR==2 {print $4}')
+    say "Bitti. Açılan alan: $(( (after - before) / 1024 )) MB"
+}
+
+snapshot_command() {
+    action=${1:-list}
+    [ "$#" -gt 0 ] && shift
+    need_root snapshot "$action" "$@"
+    if ! command -v timeshift >/dev/null 2>&1; then
+        ensure_lists
+        say "Geri yükleme aracı (Timeshift) kuruluyor"
+        "$VPX_APT" install -y timeshift
+    fi
+    case "$action" in
+        create)
+            name=${1:-"vpx $(date '+%Y-%m-%d %H:%M')"}
+            say "Geri yükleme noktası oluşturuluyor: $name"
+            exec timeshift --create --comments "$name" --scripted
+            ;;
+        list) exec timeshift --list ;;
+        restore)
+            [ "$#" -gt 0 ] || die "Geri yüklenecek noktayı yaz (adı için: $program snapshot list)" 2
+            say "Sistem $1 noktasına geri döndürülecek; işlem bitince bilgisayar yeniden başlar."
+            exec timeshift --restore --snapshot "$1"
+            ;;
+        *) die "Kullanım: $program snapshot create [ad]|list|restore <ad>" 2 ;;
+    esac
+}
+
+power_command() {
+    mode=${1:-status}
+    case "$mode" in
+        save|saver|power-saver) profile=power-saver ;;
+        balanced) profile=balanced ;;
+        performance|perf) profile=performance ;;
+        status) profile= ;;
+        *) die "Kullanım: $program power save|balanced|performance|status" 2 ;;
+    esac
+    if ! command -v powerprofilesctl >/dev/null 2>&1; then
+        need_root power "$@"
+        ensure_lists
+        say "Güç kipi hizmeti (power-profiles-daemon) kuruluyor"
+        "$VPX_APT" install -y power-profiles-daemon
+        systemctl enable --now power-profiles-daemon.service >/dev/null 2>&1 || true
+    fi
+    if [ -z "$profile" ]; then
+        printf 'Güç kipi: %s\n' "$(powerprofilesctl get 2>/dev/null || echo bilinmiyor)"
+        exit 0
+    fi
+    if ! powerprofilesctl set "$profile" 2>/dev/null; then
+        if [ "$profile" = performance ]; then
+            die "Bu bilgisayar yüksek performans kipini desteklemiyor." 1
+        fi
+        die "Güç kipi değiştirilemedi." 1
+    fi
+    if [ "$profile" = power-saver ] && command -v brightnessctl >/dev/null 2>&1; then
+        brightnessctl -q set 50% 2>/dev/null || true
+    fi
+    say "Güç kipi: $profile"
 }
 
 require_args() {
@@ -111,7 +349,13 @@ case "$command_name" in
         require_args "$command_name" "$@"
         exec "$VPX_APT" "$command_name" "$@"
         ;;
-    autoremove|autopurge|update|upgrade|full-upgrade|dist-upgrade|clean|autoclean|satisfy|build-dep|edit-sources)
+    desktop|desktops|de) desktop_command "$@" ;;
+    gaming|game|games) gaming_command "$@" ;;
+    dev|develop) dev_command "$@" ;;
+    clean|cleanup) clean_command "$@" ;;
+    snapshot|snapshots) snapshot_command "$@" ;;
+    power) power_command "$@" ;;
+    autoremove|autopurge|update|upgrade|full-upgrade|dist-upgrade|autoclean|satisfy|build-dep|edit-sources)
         need_root "$command_name" "$@"
         exec "$VPX_APT" "$command_name" "$@"
         ;;

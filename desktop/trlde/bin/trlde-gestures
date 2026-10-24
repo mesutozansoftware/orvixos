@@ -1,0 +1,89 @@
+#!/usr/bin/python3
+"""OrvixOS dokunmatik yüzey hareketleri (Mac ve dizüstü bilgisayarlar).
+
+  3 parmak sola / sağa kaydır   Sonraki / önceki sanal masaüstü
+  4 parmak yukarı kaydır        Uygulama menüsü (Başlat)
+  4 parmakla kıstır             Uygulama menüsü (Başlat)
+
+libinput hareket olaylarını okur (libinput-tools); kullanıcının "input"
+grubunda olması gerekir. Oturumda trlde-autostart tarafından başlatılır.
+"""
+
+import os
+import shutil
+import subprocess
+import sys
+
+THRESHOLD = 70.0  # piksel; daha kısa kaydırmalar yok sayılır
+PINCH_IN = 0.75
+
+
+def run(argv):
+    try:
+        subprocess.Popen(argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
+    except OSError:
+        pass
+
+
+def workspace(direction):
+    # labwc kısayolu: W-C-A-Left / W-C-A-Right (rc.xml)
+    run(["wtype", "-M", "logo", "-M", "ctrl", "-M", "alt", "-k", direction,
+         "-m", "alt", "-m", "ctrl", "-m", "logo"])
+
+
+def launcher():
+    run(["trlde-launcher"])
+
+
+def main():
+    if not shutil.which("libinput") or not shutil.which("wtype"):
+        return 0
+    try:
+        events = subprocess.Popen(["stdbuf", "-oL", "libinput", "debug-events"],
+                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    except OSError:
+        return 0
+
+    kind, fingers, dx, dy, scale = None, 0, 0.0, 0.0, 1.0
+    for line in events.stdout:
+        parts = line.split()
+        if len(parts) < 4 or not parts[1].startswith("GESTURE_"):
+            continue
+        event = parts[1]
+        try:
+            count = int(parts[3])
+        except ValueError:
+            continue
+        if event.endswith("_BEGIN"):
+            kind, fingers, dx, dy, scale = event.split("_")[1], count, 0.0, 0.0, 1.0
+        elif event.endswith("_UPDATE") and kind:
+            numbers = line.split("\t")[-1].replace("/", " ").split()
+            try:
+                if kind == "SWIPE" and len(numbers) >= 3:
+                    dx += float(numbers[1])
+                    dy += float(numbers[2])
+                elif kind == "PINCH":
+                    at = numbers.index("@") if "@" in numbers else -1
+                    if at > 0:
+                        scale = float(numbers[at - 1])
+            except ValueError:
+                pass
+        elif event.endswith("_END") and kind:
+            cancelled = "cancelled" in line
+            if not cancelled and kind == "SWIPE":
+                if fingers == 3 and abs(dx) > abs(dy) and abs(dx) > THRESHOLD:
+                    # Mac'teki gibi: sola kaydırınca sağdaki masaüstüne geçilir.
+                    workspace("Right" if dx < 0 else "Left")
+                elif fingers == 4 and abs(dy) > abs(dx) and dy < -THRESHOLD:
+                    launcher()
+            elif not cancelled and kind == "PINCH" and fingers >= 4 and scale < PINCH_IN:
+                launcher()
+            kind = None
+    return 0
+
+
+if __name__ == "__main__":
+    if os.environ.get("WAYLAND_DISPLAY") is None:
+        sys.exit(0)
+    sys.exit(main())

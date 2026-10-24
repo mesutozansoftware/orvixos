@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=OrvixOS Kurulum Sihirbazı
+Name[en]=OrvixOS Setup Wizard
+Comment=Tarayıcı, tema ve hızlı kurulum
+Comment[en]=Browser, theme and quick setup
+Exec=orvix-welcome
+Icon=orvixos
+Type=Application
+Categories=System;Settings;
+Keywords=hoş geldin;welcome;kurulum;setup;tarayıcı;browser;oyun;gaming;

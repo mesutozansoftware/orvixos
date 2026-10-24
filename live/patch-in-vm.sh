@@ -58,7 +58,7 @@ chroot "$root" sh -c '
     set -e
     export DEBIAN_FRONTEND=noninteractive LC_ALL=C
     printf "#!/bin/sh\nexit 101\n" > /usr/sbin/policy-rc.d; chmod 755 /usr/sbin/policy-rc.d
-    apt-get -q update
+    apt-get -q update || true
     # Sürüm numarası değişmese de yeni paketlerin kurulması için dpkg -i;
     # eksik bağımlılıklar ardından apt ile tamamlanır.
     dpkg -i /tmp/orvixos/*.deb || true

@@ -1,0 +1,7 @@
+# OrvixOS paket deposu (vpx): Debian'da olmayan OrvixOS ve mesutozansoftware
+# paketleri, VSCodium, Heroic. İmzalıdır (orvixos-archive-keyring).
+# Asıl adres orvixos.is-a.dev; ulaşılamazsa orvixos.vercel.app kullanılır.
+Types: deb
+URIs: https://orvixos.is-a.dev/repo/ https://orvixos.vercel.app/repo/
+Suites: ./
+Signed-By: /usr/share/keyrings/orvixos-archive-keyring.gpg

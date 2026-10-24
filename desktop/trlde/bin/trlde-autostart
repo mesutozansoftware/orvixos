@@ -160,7 +160,12 @@ if ls /sys/class/bluetooth/hci* >/dev/null 2>&1; then
 fi
 start_if_available swayidle -w timeout 600 "trlde-lock" before-sleep "trlde-lock"
 # Canlı sistemde kurulum penceresi zaten çıkıyor; ikinci karşılama gösterilmez.
-[ -d /run/live/medium ] || start_if_available trlde-welcome --first-run
+# Dokunmatik yüzey hareketleri (yalnızca "input" grubundaki kullanıcılar için)
+if id -nG | tr ' ' '\n' | grep -qx input; then
+    start_if_available trlde-gestures
+fi
+# İlk açılışta kurulum sihirbazı (tarayıcı, tema, hızlı kurulum)
+[ -d /run/live/medium ] || start_if_available orvix-welcome --first-run
 
 polkit_agent=
 for candidate in \

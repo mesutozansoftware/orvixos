@@ -1,0 +1,36 @@
+# OrvixOS paket deposu (https://orvixos.is-a.dev/repo, yedek: https://orvixos.vercel.app/repo)
+#
+# Depoda yalnızca Debian'da bulunmayan paketler durur; geri kalan her şey
+# vpx ile doğrudan Debian depolarından gelir. Depo imzalıdır (orvixos-archive-keyring).
+#
+# Biçim: paket  mimariler  kaynak  lisans
+#   kaynak: build = scripts/build-debs.sh üretir
+#           source:AD = kaynak koddan paketlenir (tools/repo-debs.sh)
+#           binary:SAHİP/DEPO = GitHub sürümündeki Linux programı paketlenir
+#           github:SAHİP/DEPO = o projenin GitHub sürümündeki hazır .deb indirilir
+#
+# Linux sürümü olmayan projeler (KalkanDPI, Crewterm, GloFind, GloShort, msoPS5,
+# Android uygulamaları) depoda yok.
+
+# --- OrvixOS'un kendi paketleri ---
+vpx                 all            build                          GPL-3.0
+orvixos-base        all            build                          GPL-3.0
+orvixos-desktop     all            build                          GPL-3.0
+trlde               all            build                          GPL-3.0
+vira-browser        amd64,arm64    build                          MIT
+
+# --- mesutozansoftware projeleri (Linux sürümü olanlar) ---
+# Alan adı keşfi ve HTTP yoklama aracı
+subpulse            all            source:SubPulse                MIT
+# Arşiv yöneticisi
+chestzip            amd64          github:mesutozansoftware/chestzip   MIT
+# Bilgisayar performans testi (CPU, GPU, RAM, depolama)
+pybench             amd64          binary:mesutozansoftware/pybench    (mesutozansoftware)
+# Az bellekli HTTP ters vekil ve hız sınırlayıcı (sunucu koruması)
+nanolimiter         amd64          binary:mesutozansoftware/nanolimiter  MIT
+
+# --- Debian'da olmayan açık kaynak programlar ---
+# VS Code'un açık kaynak derlemesi (vpx dev)
+codium              amd64,arm64    github:VSCodium/vscodium       MIT
+# Epic/GOG oyunları için başlatıcı (vpx gaming setup)
+heroic              amd64          github:Heroic-Games-Launcher/HeroicGamesLauncher  GPL-3.0

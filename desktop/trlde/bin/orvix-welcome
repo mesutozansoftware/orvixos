@@ -1,0 +1,282 @@
+#!/usr/bin/python3
+"""OrvixOS ilk açılış sihirbazı: tarayıcı, tema ve hızlı kurulum.
+
+  orvix-welcome              Sihirbazı açar.
+  orvix-welcome --first-run  Yalnızca daha önce tamamlanmadıysa açar.
+"""
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # noqa: E402
+
+CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "orvixos"
+DONE = CONFIG / "welcome-done"
+
+
+def _lang():
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        if os.environ.get(variable):
+            return os.environ[variable].split(":")[0][:2].lower()
+    return "tr"
+
+
+TURKISH = _lang() in ("tr", "c", "po")
+
+
+def T(turkish, english):
+    return turkish if TURKISH else english
+
+
+BROWSERS = (
+    ("vira", "Vira Browser", "vira-browser", T("Hızlı, gizlilik odaklı; kurulu gelir (önerilen)",
+                                               "Fast and privacy-focused; preinstalled (recommended)")),
+    ("firefox", "Firefox ESR", "firefox-esr", T("Mozilla'nın uzun süreli destek sürümü (internetten kurulur)",
+                                                "Mozilla's extended support release (downloaded)")),
+    ("chromium", "Chromium", "chromium", T("Chrome'un açık kaynak temeli (internetten kurulur)",
+                                           "The open-source base of Chrome (downloaded)")),
+)
+
+CSS = b"""
+window { background: #111820; color: #e8edf7; }
+.title { font-size: 24px; font-weight: bold; }
+.subtitle { color: #9ba1b6; }
+.card { background: #18222d; border-radius: 12px; padding: 14px; }
+.card-title { font-weight: bold; }
+.dim { color: #9ba1b6; font-size: 12px; }
+button { background-image: none; background-color: #232e47; color: #e8edf7; border: none;
+         box-shadow: none; text-shadow: none; border-radius: 8px; padding: 8px 16px; }
+button:hover { background-color: #2c3a59; }
+button.primary { background-color: #2ee6d6; color: #0e1626; font-weight: bold; }
+radiobutton, checkbutton { color: #e8edf7; }
+.step { color: #4a5670; font-size: 20px; }
+.step.active { color: #2ee6d6; }
+"""
+
+
+def in_terminal(title, command):
+    """Yönetici şifresi isteyebilen komutları terminalde çalıştırır."""
+    script = f'{command}; code=$?; printf "\\n%s" "{T("Kapatmak için Enter", "Press Enter to close")}"; read _; exit $code'
+    for terminal in (["xfce4-terminal", "-T", title, "-x", "sh", "-c", script],
+                     ["foot", "-T", title, "sh", "-c", script]):
+        try:
+            subprocess.Popen(terminal, start_new_session=True)
+            return
+        except OSError:
+            continue
+
+
+class Wizard(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app, title=T("OrvixOS'a Hoş Geldin", "Welcome to OrvixOS"))
+        self.set_default_size(720, 520)
+        self.set_icon_name("orvixos")
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(self.get_screen(), provider,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        settings = Gtk.Settings.get_default()
+        if settings:
+            settings.set_property("gtk-application-prefer-dark-theme", True)
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18, margin=28)
+        self.add(outer)
+        self.dots = Gtk.Box(spacing=8, halign=Gtk.Align.CENTER)
+        outer.pack_start(self.dots, False, False, 0)
+        self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        outer.pack_start(self.stack, True, True, 0)
+
+        self.pages = [self.page_welcome(), self.page_browser(), self.page_theme(),
+                      self.page_quick(), self.page_done()]
+        for index, page in enumerate(self.pages):
+            self.stack.add_named(page, str(index))
+            dot = Gtk.Label(label="●")
+            dot.get_style_context().add_class("step")
+            self.dots.pack_start(dot, False, False, 0)
+
+        nav = Gtk.Box(spacing=10)
+        self.back = Gtk.Button(label=T("Geri", "Back"))
+        self.back.connect("clicked", lambda *_: self.go(self.index - 1))
+        nav.pack_start(self.back, False, False, 0)
+        self.next = Gtk.Button(label=T("İleri", "Next"))
+        self.next.get_style_context().add_class("primary")
+        self.next.connect("clicked", lambda *_: self.go(self.index + 1))
+        nav.pack_end(self.next, False, False, 0)
+        outer.pack_end(nav, False, False, 0)
+        self.index = 0
+        self.go(0)
+        # Pencere kapatılırsa sihirbaz bir daha kendiliğinden açılmaz.
+        self.connect("delete-event", lambda *_: self.mark_done() or False)
+
+    # --- sayfalar ---
+    def heading(self, title, subtitle):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        label = Gtk.Label(label=title, xalign=0)
+        label.get_style_context().add_class("title")
+        box.pack_start(label, False, False, 0)
+        sub = Gtk.Label(label=subtitle, xalign=0, wrap=True)
+        sub.get_style_context().add_class("subtitle")
+        box.pack_start(sub, False, False, 0)
+        return box
+
+    def page_welcome(self):
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18, valign=Gtk.Align.CENTER)
+        logo = Gtk.Image.new_from_file("/usr/share/pixmaps/orvixos-logo.png")
+        page.pack_start(logo, False, False, 0)
+        page.pack_start(self.heading(T("OrvixOS'a hoş geldin", "Welcome to OrvixOS"),
+                                     T("Birkaç adımda tarayıcını, temanı ve ihtiyacın olan araçları seçelim. "
+                                       "Bu ayarları daha sonra Ayarlar'dan değiştirebilirsin.",
+                                       "Let's pick your browser, theme and the tools you need in a few steps. "
+                                       "You can change these later in Settings.")), False, False, 0)
+        return page
+
+    def page_browser(self):
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        page.pack_start(self.heading(T("Tarayıcı", "Browser"),
+                                     T("Varsayılan tarayıcını seç. Vira Browser kurulu gelir; diğerleri internetten "
+                                       "indirilir.", "Choose your default browser. Vira Browser is preinstalled; "
+                                       "the others are downloaded.")), False, False, 0)
+        group = None
+        self.browser_buttons = {}
+        for key, name, _package, description in BROWSERS:
+            card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            card.get_style_context().add_class("card")
+            button = Gtk.RadioButton.new_with_label_from_widget(group, name)
+            group = group or button
+            card.pack_start(button, False, False, 0)
+            label = Gtk.Label(label=description, xalign=0)
+            label.get_style_context().add_class("dim")
+            label.set_margin_start(26)
+            card.pack_start(label, False, False, 0)
+            page.pack_start(card, False, False, 0)
+            self.browser_buttons[key] = button
+        return page
+
+    def page_theme(self):
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        page.pack_start(self.heading(T("Görünüm", "Appearance"),
+                                     T("Koyu tema göz yorgunluğunu azaltır; açık tema aydınlık ortamlarda daha "
+                                       "okunaklıdır.", "Dark mode is easier on the eyes; light mode reads better in "
+                                       "bright rooms.")), False, False, 0)
+        self.dark = Gtk.RadioButton.new_with_label_from_widget(None, T("Koyu tema (önerilen)", "Dark mode (recommended)"))
+        self.light = Gtk.RadioButton.new_with_label_from_widget(self.dark, T("Açık tema", "Light mode"))
+        for button in (self.dark, self.light):
+            card = Gtk.Box()
+            card.get_style_context().add_class("card")
+            card.pack_start(button, True, True, 0)
+            page.pack_start(card, False, False, 0)
+        return page
+
+    def page_quick(self):
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        page.pack_start(self.heading(T("Hızlı kurulum", "Quick setup"),
+                                     T("İstersen sık kullanılan araç paketlerini şimdi kur. Kurulum ayrı bir "
+                                       "pencerede yapılır ve yönetici şifresi sorar.",
+                                       "Optionally install popular tool sets now. Installation runs in a separate "
+                                       "window and asks for your password.")), False, False, 0)
+        for title, description, command in (
+            (T("Oyun", "Gaming"), T("Steam, Heroic, Wine, Vulkan, MangoHud, GameMode", "Steam, Heroic, Wine, Vulkan, "
+                                    "MangoHud, GameMode"), "vpx gaming setup"),
+            (T("Geliştirici", "Developer"), T("Python, Node.js, Rust, Git ve VSCodium", "Python, Node.js, Rust, Git "
+                                              "and VSCodium"), "vpx dev"),
+            (T("Başka masaüstü", "Another desktop"), T("KDE, GNOME, XFCE ve diğerleri: vpx desktop list",
+                                                       "KDE, GNOME, XFCE and more: vpx desktop list"),
+             "vpx desktop list"),
+        ):
+            card = Gtk.Box(spacing=12)
+            card.get_style_context().add_class("card")
+            texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            label = Gtk.Label(label=title, xalign=0)
+            label.get_style_context().add_class("card-title")
+            texts.pack_start(label, False, False, 0)
+            sub = Gtk.Label(label=description, xalign=0, wrap=True)
+            sub.get_style_context().add_class("dim")
+            texts.pack_start(sub, False, False, 0)
+            card.pack_start(texts, True, True, 0)
+            button = Gtk.Button(label=T("Kur", "Install") if "list" not in command else T("Göster", "Show"))
+            button.set_valign(Gtk.Align.CENTER)
+            button.connect("clicked", lambda *_, c=command, t=title: in_terminal(f"OrvixOS — {t}", c))
+            card.pack_end(button, False, False, 0)
+            page.pack_start(card, False, False, 0)
+        return page
+
+    def page_done(self):
+        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16, valign=Gtk.Align.CENTER)
+        page.pack_start(self.heading(T("Hazırsın", "You're all set"),
+                                     T("Başlat menüsü için Super tuşuna bas. Masaüstüne sağ tıklayarak sık kullanılan "
+                                       "işlemlere, Ayarlar'dan güncellemelere ulaşabilirsin.",
+                                       "Press the Super key for the Start menu. Right-click the desktop for common "
+                                       "actions; updates are in Settings.")), False, False, 0)
+        shortcuts = Gtk.Button(label=T("Klavye kısayollarını göster", "Show keyboard shortcuts"))
+        shortcuts.set_halign(Gtk.Align.START)
+        shortcuts.connect("clicked", lambda *_: subprocess.Popen(["trlde-welcome"], start_new_session=True))
+        page.pack_start(shortcuts, False, False, 0)
+        return page
+
+    # --- gezinme ---
+    def go(self, index):
+        if index >= len(self.pages):
+            self.finish()
+            return
+        index = max(0, index)
+        if self.index == 1 and index == 2:
+            self.apply_browser()
+        if self.index == 2 and index == 3:
+            self.apply_theme()
+        self.index = index
+        self.stack.set_visible_child_name(str(index))
+        for number, dot in enumerate(self.dots.get_children()):
+            context = dot.get_style_context()
+            (context.add_class if number == index else context.remove_class)("active")
+        self.back.set_sensitive(index > 0)
+        self.next.set_label(T("Bitir", "Finish") if index == len(self.pages) - 1 else T("İleri", "Next"))
+
+    def apply_browser(self):
+        for key, name, package, _description in BROWSERS:
+            if not self.browser_buttons[key].get_active():
+                continue
+            if key == "vira":
+                return
+            in_terminal(f"OrvixOS — {name}",
+                        f"sudo sh -c 'vpx install -y {package} && /usr/lib/orvixos/set-browser {key}'")
+            return
+
+    def apply_theme(self):
+        dark = self.dark.get_active()
+        for key, value in (("color-scheme", "prefer-dark" if dark else "default"),
+                           ("gtk-theme", "Adwaita-dark" if dark else "Adwaita")):
+            subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", key, value], check=False)
+
+    def mark_done(self):
+        try:
+            CONFIG.mkdir(parents=True, exist_ok=True)
+            DONE.touch()
+        except OSError:
+            pass
+
+    def finish(self):
+        self.mark_done()
+        self.get_application().quit()
+
+
+class App(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.orvixos.Welcome")
+
+    def do_activate(self):
+        window = self.get_active_window()
+        if window:
+            window.present()
+            return
+        Wizard(self).show_all()
+
+
+if __name__ == "__main__":
+    if "--first-run" in sys.argv and DONE.exists():
+        sys.exit(0)
+    sys.exit(App().run(sys.argv[:1]))

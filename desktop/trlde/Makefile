@@ -57,6 +57,9 @@ install:
 	install -m 755 bin/trlde-display-profiles $(DESTDIR)$(PREFIX)/bin/trlde-display-profiles
 	install -m 755 bin/trlde-taskbar $(DESTDIR)$(PREFIX)/bin/trlde-taskbar
 	install -m 755 bin/trlde-wifi $(DESTDIR)$(PREFIX)/bin/trlde-wifi
+	install -m 755 bin/trlde-gestures $(DESTDIR)$(PREFIX)/bin/trlde-gestures
+	install -m 755 bin/orvix-welcome $(DESTDIR)$(PREFIX)/bin/orvix-welcome
+	install -m 644 applications/orvix-welcome.desktop $(DESTDIR)$(DATADIR)/applications/orvix-welcome.desktop
 	install -m 755 bin/trlde-autostart $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	install -m 755 bin/trlde-clipboard-watch $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	install -m 755 bin/trlde-update-refresh $(DESTDIR)$(LIBEXECDIR)/trlde-update-refresh
@@ -145,7 +148,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-input
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-display-profiles
 	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-taskbar
-	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-wifi
+	rm -f $(DESTDIR)$(PREFIX)/bin/trlde-wifi $(DESTDIR)$(PREFIX)/bin/trlde-gestures $(DESTDIR)$(PREFIX)/bin/orvix-welcome
+	rm -f $(DESTDIR)$(DATADIR)/applications/orvix-welcome.desktop
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-autostart
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-clipboard-watch
 	rm -f $(DESTDIR)$(LIBEXECDIR)/trlde-update-refresh $(DESTDIR)$(LIBEXECDIR)/trlde-update-install

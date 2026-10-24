@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/repo/:path*",
+      "destination": "https://github.com/mesutozansoftware/orvixos/releases/download/packages/:path*",
+      "permanent": false
+    }
+  ]
+}

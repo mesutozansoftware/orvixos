@@ -6,8 +6,10 @@
   <title>OrvixOS — Debian tabanlı, hızlı ve sade işletim sistemi</title>
   <meta name="description" content="OrvixOS; Debian tabanlı, TRLDE Wayland masaüstü ve vpx paket yöneticisiyle gelen ücretsiz ve özgür bir işletim sistemidir. ARM64 ve x64 için indir.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://orvixos.is-a.dev/">
+  <link rel="canonical" href="https://orvixos.is-a.dev/">
   <meta property="og:title" content="OrvixOS — Debian tabanlı işletim sistemi">
-  <meta property="og:description" content="TRLDE masaüstü, vpx paket yöneticisi ve kurulumda seçilen tarayıcı. ARM64 ve x64.">
+  <meta property="og:description" content="TRLDE masaüstü, vpx paket yöneticisi ve Vira Browser. ARM64 ve x64.">
   <meta property="og:image" content="/icon.png">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="apple-touch-icon" href="icon.png">
@@ -107,6 +109,8 @@
 
     .downloads { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
     .download h3 { font-size: 22px; margin-bottom: 4px; }
+    .download.soon { margin-top: 18px; opacity: 0.85; }
+    .btn.disabled { pointer-events: none; opacity: 0.6; }
     .download .for { color: var(--muted); margin-bottom: 18px; font-size: 15px; }
     .download .facts { display: flex; gap: 18px; flex-wrap: wrap; color: var(--dim); font-size: 14px; margin-bottom: 22px; }
     .download .btn { width: 100%; }
@@ -213,11 +217,11 @@
 
         <div class="terminal" aria-label="vpx">
           <div class="terminal-bar"><i></i><i></i><i></i><span>orvix@orvixos: ~</span></div>
-<pre data-i18n="hero.terminal"><span class="p">$</span> vpx install htop
-<span class="c">Paketler indiriliyor…</span>
-<span class="ok">✓</span> htop kuruldu
-<span class="p">$</span> vpx search editör
-<span class="p">$</span> vpx sync   <span class="c"># listeleri yenile ve tüm sistemi güncelle</span></pre>
+<pre data-i18n="hero.terminal"><span class="p">$</span> vpx desktop install kde
+<span class="ok">✓</span> KDE Plasma kuruldu <span class="c"># giriş ekranından seç</span>
+<span class="p">$</span> vpx gaming setup
+<span class="ok">✓</span> Steam, Heroic, Wine, MangoHud hazır
+<span class="p">$</span> vpx sync   <span class="c"># tüm sistemi güncelle</span></pre>
         </div>
       </div>
     </section>
@@ -258,7 +262,7 @@
           <div class="card">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
             <h3 data-i18n="f6.title">İstediğin masaüstü</h3>
-            <p data-i18n="f6.text">KDE Plasma, GNOME veya XFCE mi istiyorsun? <code>vpx install task-kde-desktop</code> ve giriş ekranından seç.</p>
+            <p data-i18n="f6.text">KDE Plasma, GNOME, XFCE ya da Hyprland mı istiyorsun? <code>vpx desktop install kde</code> yaz, giriş ekranından seç.</p>
           </div>
         </div>
       </div>
@@ -285,7 +289,7 @@
       <div class="container">
         <div class="section-head">
           <div class="eyebrow" data-i18n="dl.eyebrow">İndir</div>
-          <h2>OrvixOS 1.0 “Origin”</h2>
+          <h2>OrvixOS 1.1 “Nova”</h2>
           <p data-i18n="dl.lead">Bilgisayarına uygun sürümü seç. ISO açılınca OrvixOS canlı olarak çalışır: önce dene, beğenirsen birkaç dakikada kur. Kurulum için internet gerekmez.</p>
         </div>
         <div class="downloads">
@@ -293,7 +297,7 @@
             <h3>ARM64</h3>
             <div class="for" data-i18n="dl.arm64.for">ARM64 işlemcili bilgisayarlar ve sanal makineler</div>
             <div class="facts"><span data-i18n="dl.arm64.size">Canlı ISO • 1,21 GB</span><span>UEFI</span></div>
-            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-arm64.iso" data-i18n="dl.arm64.button">ARM64 ISO'yu indir</a>
+            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.1.0/OrvixOS-1.1.0-live-arm64.iso" data-i18n="dl.arm64.button">ARM64 ISO'yu indir</a>
             <div class="sha"><b>SHA-256:</b> <span class="mono">f7a2ab66575ce4475d8214c0287d28c89c7659a6d96b0653ef539ccdbdc03b31</span></div>
           </div>
           <div class="card download">
@@ -301,10 +305,15 @@
             <div class="for" data-i18n="dl.x64.for">Intel ve AMD işlemcili bilgisayarlar</div>
             <div class="facts"><span data-i18n="dl.x64.size">Canlı ISO • 1,27 GB</span><span data-i18n="dl.x64.boot">UEFI ve BIOS</span></div>
             <!--X64-->
-            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.0.0/OrvixOS-1.0.0-live-amd64.iso" data-i18n="dl.x64.button">x64 ISO'yu indir</a>
+            <a class="btn btn-primary" href="https://github.com/mesutozansoftware/orvixos/releases/download/v1.1.0/OrvixOS-1.1.0-live-amd64.iso" data-i18n="dl.x64.button">x64 ISO'yu indir</a>
             <div class="sha"><b>SHA-256:</b> <span class="mono">88c90f5059b88b9ba6ad1332a6c90d53ef07aa3b0ee8ed19ee0b5adab5722c57</span></div>
             <!--/X64-->
           </div>
+        </div>
+        <div class="card download soon">
+          <h3 data-i18n="dl.mac.title">Apple Silicon (M1/M2/M3)</h3>
+          <div class="for" data-i18n="dl.mac.text">Asahi Linux tabanlı, Apple Silicon Mac'ler için OrvixOS sürümü hazırlanıyor.</div>
+          <span class="btn btn-ghost disabled" aria-disabled="true" data-i18n="dl.mac.soon">Yakında</span>
         </div>
         <div class="card live-info">
           <h3 data-i18n="live.title">Canlı sistem girişi</h3>
@@ -379,8 +388,9 @@
         <div class="faq">
           <details><summary data-i18n="q1">OrvixOS ücretsiz mi?</summary><p data-i18n="a1">Evet. OrvixOS ve içindeki tüm bileşenler ücretsiz ve özgür yazılımdır.</p></details>
           <details><summary data-i18n="q2">vpx ile apt arasındaki fark nedir?</summary><p data-i18n="a2">vpx, APT'nin üzerinde çalışır ve aynı depoları kullanır. <code>apt install</code> yerine <code>vpx install</code> yazarsın; gerektiğinde yönetici yetkisini kendisi ister. <code>vpx sync</code>, <code>vpx files</code> ve <code>vpx owner</code> gibi kısa yollar da sunar. Tanımadığı komutları olduğu gibi apt'ye iletir.</p></details>
-          <details><summary data-i18n="q3">Başka masaüstü kurabilir miyim?</summary><p data-i18n="a3">Evet: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> veya <code>task-mate-desktop</code>. Ardından giriş ekranının sağ altındaki <b>Oturum</b> menüsünden seçebilirsin.</p></details>
+          <details><summary data-i18n="q3">Başka masaüstü kurabilir miyim?</summary><p data-i18n="a3">Evet: <code>vpx desktop list</code> seçenekleri gösterir; <code>vpx desktop install kde</code> (ya da <code>gnome</code>, <code>xfce</code>, <code>cinnamon</code>, <code>mate</code>, <code>hyprland</code>) kurar. Ardından giriş ekranının sağ altındaki <b>Oturum</b> menüsünden seçebilirsin.</p></details>
           <details><summary data-i18n="q4">Kurmadan deneyebilir miyim?</summary><p data-i18n="a4">Evet. ISO'yu açtığında OrvixOS canlı olarak çalışır; bilgisayarındaki hiçbir şey değişmez. Beğenirsen masaüstündeki <b>OrvixOS'u Kur</b> ile kurarsın. Kurulum için internet gerekmez.</p></details>
+          <details><summary data-i18n="q6">OrvixOS deposunda neler var?</summary><p data-i18n="a6">Debian paketleri doğrudan Debian'dan gelir. İmzalı OrvixOS deposu Debian'da olmayanları ekler: OrvixOS'un kendisi, Vira Browser, mesutozansoftware uygulamaları (SubPulse, ChestZip, PyBench, nanolimiter), VSCodium (<code>vpx dev</code>) ve Heroic (<code>vpx gaming setup</code>). Hepsi <code>vpx install</code> ile kurulur, örneğin <code>vpx install subpulse</code>.</p></details>
           <details><summary data-i18n="q5">Canlı sistemin şifresi nedir?</summary><p data-i18n="a5">Canlı sistem otomatik giriş yapar. Terminalde, kilit ekranında ya da başka bir yerde sorulursa kullanıcı adı <code>orvix</code>, şifre <code>live</code>. Kurduğun sistemde ise kurulumda belirlediğin şifre geçerlidir.</p></details>
         </div>
       </div>
@@ -409,7 +419,7 @@
         "hero.lead": "OrvixOS is a free, Debian-based operating system with the TRLDE Wayland desktop and the <b>vpx</b> package manager. Try it live before installing; it runs on ARM64 and x64 computers.",
         "hero.cta": "Download OrvixOS", "hero.more": "What's inside?",
         "hero.meta": "Free • Open source • ARM64 and x64",
-        "hero.terminal": "<span class=\"p\">$</span> vpx install htop\n<span class=\"c\">Downloading packages…</span>\n<span class=\"ok\">✓</span> htop installed\n<span class=\"p\">$</span> vpx search editor\n<span class=\"p\">$</span> vpx sync   <span class=\"c\"># refresh lists and update the whole system</span>",
+        "hero.terminal": "<span class=\"p\">$</span> vpx desktop install kde\n<span class=\"ok\">✓</span> KDE Plasma installed <span class=\"c\"># pick it on the login screen</span>\n<span class=\"p\">$</span> vpx gaming setup\n<span class=\"ok\">✓</span> Steam, Heroic, Wine, MangoHud ready\n<span class=\"p\">$</span> vpx sync   <span class=\"c\"># update the whole system</span>",
         "features.eyebrow": "Features", "features.title": "Ready for everyday use",
         "features.lead": "Desktop, apps and updates are ready the moment installation finishes.",
         "f1.title": "TRLDE desktop",
@@ -422,7 +432,7 @@
         "f5.title": "Try first, then install",
         "f5.text": "The ISO boots into a live session: try it without touching your computer and install in a few minutes if you like it. ARM64 and x64.",
         "f6.title": "Any desktop you want",
-        "f6.text": "Prefer KDE Plasma, GNOME or XFCE? Run <code>vpx install task-kde-desktop</code> and pick it on the login screen.",
+        "f6.text": "Prefer KDE Plasma, GNOME, XFCE or Hyprland? Run <code>vpx desktop install kde</code> and pick it on the login screen.",
         "browser.eyebrow": "Browser", "browser.title": "Vira Browser comes ready",
         "browser.lead": "Vira Browser is the only browser in OrvixOS; if you want another one, install it with something like <code>vpx install firefox-esr</code>.",
         "browser.recommended": "Default",
@@ -462,7 +472,12 @@
         "q2": "How is vpx different from apt?",
         "a2": "vpx runs on top of APT and uses the same repositories. Type <code>vpx install</code> instead of <code>apt install</code>; it asks for admin rights by itself when needed. It also offers shortcuts like <code>vpx sync</code>, <code>vpx files</code> and <code>vpx owner</code>, and passes any other command straight to apt.",
         "q3": "Can I install another desktop?",
-        "a3": "Yes: <code>vpx install task-kde-desktop</code>, <code>task-gnome-desktop</code>, <code>task-xfce-desktop</code>, <code>task-cinnamon-desktop</code> or <code>task-mate-desktop</code>. Then pick it from the <b>Session</b> menu at the bottom right of the login screen.",
+        "a3": "Yes: <code>vpx desktop list</code> shows the options and <code>vpx desktop install kde</code> (or <code>gnome</code>, <code>xfce</code>, <code>cinnamon</code>, <code>mate</code>, <code>hyprland</code>) installs one. Then pick it from the <b>Session</b> menu at the bottom right of the login screen.",
+        "q6": "What is in the OrvixOS repository?",
+        "a6": "Debian packages come straight from Debian. The signed OrvixOS repository adds what Debian lacks: OrvixOS itself, Vira Browser, mesutozansoftware apps (SubPulse, ChestZip, PyBench, nanolimiter), VSCodium (<code>vpx dev</code>) and Heroic (<code>vpx gaming setup</code>). Install any of them with <code>vpx install</code>, e.g. <code>vpx install subpulse</code>.",
+        "dl.mac.title": "Apple Silicon (M1/M2/M3)",
+        "dl.mac.text": "An OrvixOS edition for Apple Silicon Macs, based on Asahi Linux, is in the works.",
+        "dl.mac.soon": "Coming soon",
         "q4": "Can I try it without installing?",
         "a4": "Yes. The ISO boots into a live OrvixOS session and nothing on your computer changes. If you like it, click <b>Install OrvixOS</b> on the desktop. No internet needed to install.",
         "q5": "What is the live session password?",

@@ -66,8 +66,8 @@ fi
 
 say "GitHub'a yükleme ($repo $tag)"
 if ! gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
-    gh release create "$tag" --repo "$repo" --title "OrvixOS $ORVIXOS_VERSION “$ORVIXOS_CODENAME”" \
-        --notes "OrvixOS $ORVIXOS_VERSION “$ORVIXOS_CODENAME” canlı ISO'ları (ARM64 ve x64). Ayrıntılar: https://orvixos.is-a.dev — yedek: https://orvixos.vercel.app"
+    gh release create "$tag" --repo "$repo" --title "OrvixOS $ORVIXOS_VERSION “${ORVIXOS_CODENAME}”" \
+        --notes "OrvixOS $ORVIXOS_VERSION “${ORVIXOS_CODENAME}” canlı ISO'ları (ARM64 ve x64). Ayrıntılar: https://orvixos.is-a.dev — yedek: https://orvixos.vercel.app"
 fi
 for arch in "$@"; do
     iso=outputs/OrvixOS-$ORVIXOS_VERSION-live-$arch.iso

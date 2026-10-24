@@ -111,7 +111,11 @@ mkdir -p "$stage"
     mkdir -p "$stage/$dir"
 done
 (cd "$root/packages/orvixos-base/root" && find . -type f) | while IFS= read -r file; do
-    render "$root/packages/orvixos-base/root/$file" > "$stage/$file"
+    case "$file" in
+        # İkili dosyalar (APT anahtarı) olduğu gibi kopyalanır.
+        *.gpg) cp "$root/packages/orvixos-base/root/$file" "$stage/$file" ;;
+        *) render "$root/packages/orvixos-base/root/$file" > "$stage/$file" ;;
+    esac
     if [ -x "$root/packages/orvixos-base/root/$file" ]; then chmod 755 "$stage/$file"; fi
 done
 mkdir -p "$stage/usr/share/pixmaps" "$stage/usr/share/icons/hicolor/scalable/apps" "$stage/usr/share/icons/hicolor/256x256/apps"
